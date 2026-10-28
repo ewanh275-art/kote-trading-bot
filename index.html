@@ -70,7 +70,7 @@
     <!-- HEADER NAVIGATION -->
     <header class="sticky top-0 z-40 glass-card px-4 py-3 flex items-center justify-between border-b border-gray-800">
         <div class="flex items-center space-x-3">
-            <img src="watermarked_img_1287491387710172028.jpg" alt="Kote Logo" class="w-10 h-10 rounded-full border-2 border-orange-500 object-cover shadow-md">
+            <img src="watermarked_img_1287491387710172028.jpg" alt="Kote Logo" class="w-10 h-10 rounded-full border-2 border-orange-500 object-cover shadow-md" onerror="this.src='https://assets.coingecko.com/coins/images/17980/large/gram.png'">
             <div>
                 <h1 class="font-extrabold text-base text-white tracking-wide flex items-center">
                     Kote Trade & Sniper
@@ -91,7 +91,7 @@
         <!-- LIVE KOTE PRICE HEADER CARD -->
         <div class="glass-card p-4 rounded-2xl glow-orange flex items-center justify-between">
             <div class="flex items-center space-x-3">
-                <img src="watermarked_img_1287491387710172028.jpg" alt="KOTE Logo" class="w-12 h-12 rounded-full border-2 border-orange-500/50 object-cover">
+                <img src="watermarked_img_1287491387710172028.jpg" alt="KOTE Logo" class="w-12 h-12 rounded-full border-2 border-orange-500/50 object-cover" onerror="this.src='https://assets.coingecko.com/coins/images/17980/large/gram.png'">
                 <div>
                     <div class="flex items-center space-x-1.5">
                         <span class="font-black text-lg text-white">$KOTE</span>
@@ -147,20 +147,20 @@
                         id="topblast-search-input" 
                         type="text" 
                         oninput="filterTopblastTokens()" 
-                        placeholder="Search all Topblast tokens by name or ticker..." 
+                        placeholder="Search all Topblast.lol tokens by name or ticker..." 
                         class="w-full pl-9 pr-3 py-2 bg-gray-900 border border-gray-800 rounded-xl text-xs text-white outline-none focus:border-orange-500 transition-all"
                     >
                 </div>
 
                 <p class="text-[11px] text-gray-400">
-                    Showing official names, logos, and live data for all tokens launched via topblast.lol.
+                    Live directory connecting directly to topblast.lol and associated bonding curves.
                 </p>
 
                 <!-- Dynamic Container for Topblast Tokens -->
                 <div id="topblast-launch-list" class="space-y-2.5 max-h-[420px] overflow-y-auto pr-1">
                     <div class="text-center py-8 text-xs text-gray-500">
                         <i class="fa-solid fa-circle-notch fa-spin text-orange-500 text-lg mb-2"></i>
-                        <p>Syncing topblast.lol registry & logos...</p>
+                        <p>Loading all topblast.lol tokens & logos...</p>
                     </div>
                 </div>
             </div>
@@ -223,7 +223,7 @@
                     <div class="flex items-center justify-between">
                         <input id="receive-amount-input" type="text" readonly class="bg-transparent text-xl font-extrabold text-orange-400 outline-none w-1/2" placeholder="0.0">
                         <div class="flex items-center space-x-2 bg-gray-800 px-3 py-1.5 rounded-xl border border-gray-700">
-                            <img id="receive-token-logo" src="watermarked_img_1287491387710172028.jpg" class="w-5 h-5 rounded-full object-cover" alt="KOTE">
+                            <img id="receive-token-logo" src="watermarked_img_1287491387710172028.jpg" class="w-5 h-5 rounded-full object-cover" alt="KOTE" onerror="this.src='https://assets.coingecko.com/coins/images/17980/large/gram.png'">
                             <span id="receive-token-symbol" class="font-bold text-xs text-white">$KOTE</span>
                         </div>
                     </div>
@@ -330,16 +330,16 @@
         let activeReceiveToken = { symbol: "$KOTE", logo: KOTE_LOGO, address: KOTE_CONTRACT };
         let allTopblastTokens = [];
 
-        // Generate inline data-URI manifest to resolve any manifest validation issues instantly
+        // Dynamic Manifest Blob URL to prevent manifest errors across wallets
         const manifestData = {
-            url: window.location.origin || "https://t.me",
+            url: window.location.origin && window.location.origin !== 'null' ? window.location.origin : 'https://github.com',
             name: "Kote Trade & Sniper",
-            iconUrl: window.location.origin + "/" + KOTE_LOGO
+            iconUrl: (window.location.origin && window.location.origin !== 'null' ? window.location.origin : '') + "/" + KOTE_LOGO
         };
         const manifestBlob = new Blob([JSON.stringify(manifestData)], { type: 'application/json' });
         const manifestBlobUrl = URL.createObjectURL(manifestBlob);
 
-        // Initialize TON Connect UI safely
+        // Initialize TON Connect UI
         const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
             manifestUrl: manifestBlobUrl,
             buttonRootId: 'ton-connect-button'
@@ -392,20 +392,29 @@
             }
         }
 
-        // Fetch All topblast.lol Tokens and Launchpad Data concurrently for completeness
+        // Fetch All topblast.lol Tokens and Launchpad Data Concurrently
         async function fetchTopblastLaunches() {
             try {
-                const [res1, res2] = await Promise.all([
+                const [res1, res2, res3, res4] = await Promise.all([
+                    fetch('https://api.dexscreener.com/latest/dex/search?q=topblast.lol'),
                     fetch('https://api.dexscreener.com/latest/dex/search?q=topblast'),
-                    fetch('https://api.dexscreener.com/latest/dex/search?q=TON')
+                    fetch('https://api.dexscreener.com/latest/dex/search?q=TON'),
+                    fetch('https://api.dexscreener.com/latest/dex/tokens/EQAmvp1Vrr0zY2--STdH-0X_mP5iCD61p2vNVJYwHlgBni2C')
                 ]);
                 
                 const data1 = await res1.json();
                 const data2 = await res2.json();
+                const data3 = await res3.json();
+                const data4 = await res4.json();
 
-                const combinedPairs = [...(data1.pairs || []), ...(data2.pairs || [])];
+                const combinedPairs = [
+                    ...(data1.pairs || []), 
+                    ...(data2.pairs || []),
+                    ...(data3.pairs || []),
+                    ...(data4.pairs || [])
+                ];
                 
-                // Deduplicate pairs by contract address
+                // Deduplicate pairs by contract address to ensure a comprehensive listing
                 const uniqueMap = new Map();
                 combinedPairs.forEach(pair => {
                     if (pair && pair.baseToken && pair.baseToken.address) {
@@ -419,7 +428,7 @@
                     address: pair.baseToken.address,
                     logo: (pair.info && pair.info.imageUrl) ? pair.info.imageUrl : GRAM_LOGO,
                     price: parseFloat(pair.priceUsd || 0).toFixed(6),
-                    isBonded: pair.dexId && pair.dexId !== 'topblast'
+                    isBonded: pair.dexId && pair.dexId !== 'topblast' && pair.dexId !== 'topblast.lol'
                 }));
 
                 renderTopblastList(allTopblastTokens);
