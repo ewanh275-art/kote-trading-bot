@@ -70,7 +70,7 @@
     <!-- HEADER NAVIGATION -->
     <header class="sticky top-0 z-40 glass-card px-4 py-3 flex items-center justify-between border-b border-gray-800">
         <div class="flex items-center space-x-3">
-            <img src="watermarked_img_1287491387710172028.jpg" alt="Kote Logo" class="w-10 h-10 rounded-full border-2 border-orange-500 object-cover shadow-md" onerror="this.src='https://assets.coingecko.com/coins/images/17980/large/gram.png'">
+            <img src="https://assets.coingecko.com/coins/images/17980/large/gram.png" alt="Kote Logo" class="w-10 h-10 rounded-full border-2 border-orange-500 object-cover shadow-md">
             <div>
                 <h1 class="font-extrabold text-base text-white tracking-wide flex items-center">
                     Kote Trade & Sniper
@@ -91,7 +91,7 @@
         <!-- LIVE KOTE PRICE HEADER CARD -->
         <div class="glass-card p-4 rounded-2xl glow-orange flex items-center justify-between">
             <div class="flex items-center space-x-3">
-                <img src="watermarked_img_1287491387710172028.jpg" alt="KOTE Logo" class="w-12 h-12 rounded-full border-2 border-orange-500/50 object-cover" onerror="this.src='https://assets.coingecko.com/coins/images/17980/large/gram.png'">
+                <img src="https://assets.coingecko.com/coins/images/17980/large/gram.png" alt="KOTE Logo" class="w-12 h-12 rounded-full border-2 border-orange-500/50 object-cover">
                 <div>
                     <div class="flex items-center space-x-1.5">
                         <span class="font-black text-lg text-white">$KOTE</span>
@@ -223,7 +223,7 @@
                     <div class="flex items-center justify-between">
                         <input id="receive-amount-input" type="text" readonly class="bg-transparent text-xl font-extrabold text-orange-400 outline-none w-1/2" placeholder="0.0">
                         <div class="flex items-center space-x-2 bg-gray-800 px-3 py-1.5 rounded-xl border border-gray-700">
-                            <img id="receive-token-logo" src="watermarked_img_1287491387710172028.jpg" class="w-5 h-5 rounded-full object-cover" alt="KOTE" onerror="this.src='https://assets.coingecko.com/coins/images/17980/large/gram.png'">
+                            <img id="receive-token-logo" src="https://assets.coingecko.com/coins/images/17980/large/gram.png" class="w-5 h-5 rounded-full object-cover" alt="KOTE">
                             <span id="receive-token-symbol" class="font-bold text-xs text-white">$KOTE</span>
                         </div>
                     </div>
@@ -322,19 +322,18 @@
     <!-- JAVASCRIPT LOGIC -->
     <script>
         const KOTE_CONTRACT = "EQAmvp1Vrr0zY2--STdH-0X_mP5iCD61p2vNVJYwHlgBni2C";
-        const KOTE_LOGO = "watermarked_img_1287491387710172028.jpg";
         const GRAM_LOGO = "https://assets.coingecko.com/coins/images/17980/large/gram.png";
 
         let userWalletAddress = null;
         let activePayToken = { symbol: "GRAM", logo: GRAM_LOGO, address: "native" };
-        let activeReceiveToken = { symbol: "$KOTE", logo: KOTE_LOGO, address: KOTE_CONTRACT };
+        let activeReceiveToken = { symbol: "$KOTE", logo: GRAM_LOGO, address: KOTE_CONTRACT };
         let allTopblastTokens = [];
 
-        // Guaranteed Foolproof Inline Data-URI Manifest Initialization
+        // Guaranteed Foolproof Inline Data-URI Manifest Initialization (Bypasses all GitHub Pages file/CORS/Content errors)
         const manifestData = {
             url: "https://ewanh275-art.github.io/kote-trading-bot",
             name: "Kote Trade & Sniper",
-            iconUrl: "https://ewanh275-art.github.io/kote-trading-bot/watermarked_img_1287491387710172028.jpg"
+            iconUrl: "https://assets.coingecko.com/coins/images/17980/large/gram.png"
         };
         const encodedManifest = "data:application/json;charset=utf-8," + encodeURIComponent(JSON.stringify(manifestData));
 
