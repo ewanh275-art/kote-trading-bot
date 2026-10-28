@@ -138,7 +138,7 @@
                     </a>
                 </div>
 
-                <!-- LIVE SEARCH INPUT FOR ALL TOPBLAST TOTOKENS -->
+                <!-- LIVE SEARCH INPUT FOR ALL TOPBLAST TOKENS -->
                 <div class="relative">
                     <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-400">
                         <i class="fa-solid fa-magnifying-glass text-xs"></i>
@@ -330,9 +330,18 @@
         let activeReceiveToken = { symbol: "$KOTE", logo: KOTE_LOGO, address: KOTE_CONTRACT };
         let allTopblastTokens = [];
 
-        // Initialize TON Connect UI
+        // Generate inline data-URI manifest to resolve any manifest validation issues instantly
+        const manifestData = {
+            url: window.location.origin || "https://t.me",
+            name: "Kote Trade & Sniper",
+            iconUrl: window.location.origin + "/" + KOTE_LOGO
+        };
+        const manifestBlob = new Blob([JSON.stringify(manifestData)], { type: 'application/json' });
+        const manifestBlobUrl = URL.createObjectURL(manifestBlob);
+
+        // Initialize TON Connect UI safely
         const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
-            manifestUrl: window.location.origin + '/tonconnect-manifest.json',
+            manifestUrl: manifestBlobUrl,
             buttonRootId: 'ton-connect-button'
         });
 
@@ -383,31 +392,42 @@
             }
         }
 
-        // Fetch All topblast.lol Tokens and Launchpad Data
+        // Fetch All topblast.lol Tokens and Launchpad Data concurrently for completeness
         async function fetchTopblastLaunches() {
             try {
-                // Query topblast.lol ecosystem & category indexers
-                const response = await fetch('https://api.dexscreener.com/latest/dex/search?q=topblast');
-                const data = await response.json();
+                const [res1, res2] = await Promise.all([
+                    fetch('https://api.dexscreener.com/latest/dex/search?q=topblast'),
+                    fetch('https://api.dexscreener.com/latest/dex/search?q=TON')
+                ]);
+                
+                const data1 = await res1.json();
+                const data2 = await res2.json();
 
-                if (data && data.pairs) {
-                    // Filter or map all unique tokens associated with topblast.lol
-                    allTopblastTokens = data.pairs.map(pair => ({
-                        symbol: pair.baseToken.symbol || "TOKEN",
-                        name: pair.baseToken.name || "Topblast Token",
-                        address: pair.baseToken.address,
-                        logo: (pair.info && pair.info.imageUrl) ? pair.info.imageUrl : GRAM_LOGO,
-                        price: parseFloat(pair.priceUsd || 0).toFixed(6),
-                        isBonded: pair.dexId && pair.dexId !== 'topblast'
-                    }));
+                const combinedPairs = [...(data1.pairs || []), ...(data2.pairs || [])];
+                
+                // Deduplicate pairs by contract address
+                const uniqueMap = new Map();
+                combinedPairs.forEach(pair => {
+                    if (pair && pair.baseToken && pair.baseToken.address) {
+                        uniqueMap.set(pair.baseToken.address, pair);
+                    }
+                });
 
-                    renderTopblastList(allTopblastTokens);
-                }
+                allTopblastTokens = Array.from(uniqueMap.values()).map(pair => ({
+                    symbol: pair.baseToken.symbol || "TOKEN",
+                    name: pair.baseToken.name || "Topblast Token",
+                    address: pair.baseToken.address,
+                    logo: (pair.info && pair.info.imageUrl) ? pair.info.imageUrl : GRAM_LOGO,
+                    price: parseFloat(pair.priceUsd || 0).toFixed(6),
+                    isBonded: pair.dexId && pair.dexId !== 'topblast'
+                }));
+
+                renderTopblastList(allTopblastTokens);
             } catch (err) {
                 console.error("Error fetching topblast.lol tokens:", err);
                 document.getElementById('topblast-launch-list').innerHTML = `
                     <div class="text-center py-6 text-xs text-red-400">
-                        <p>Failed to load topblast.lol registry. Please retry.</p>
+                        <p>Failed to sync topblast.lol registry. Please retry.</p>
                     </div>
                 `;
             }
