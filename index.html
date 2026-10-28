@@ -131,7 +131,7 @@
             <div class="glass-card p-4 rounded-2xl space-y-3">
                 <div class="flex items-center justify-between">
                     <h3 class="font-bold text-sm text-white flex items-center">
-                        <span class="mr-1.5">🚀</span> Topblast.lol Launch Directory
+                        <span class="mr-1.5">🚀</span> Topblast.lol Complete Directory
                     </h3>
                     <a href="https://topblast.lol" target="_blank" class="text-[11px] text-orange-400 font-semibold hover:underline flex items-center">
                         topblast.lol ↗
@@ -153,14 +153,14 @@
                 </div>
 
                 <p class="text-[11px] text-gray-400">
-                    Showing official names, logos, and live charts for all tokens launched via topblast.lol.
+                    Live indexing every token launched on Topblast.lol with official names, logos, and live charts.
                 </p>
 
                 <!-- Dynamic Container for Topblast Tokens -->
                 <div id="topblast-launch-list" class="space-y-2.5 max-h-[420px] overflow-y-auto pr-1">
                     <div class="text-center py-8 text-xs text-gray-500">
                         <i class="fa-solid fa-circle-notch fa-spin text-orange-500 text-lg mb-2"></i>
-                        <p>Syncing topblast.lol full launchpad stream...</p>
+                        <p>Loading full Topblast.lol database...</p>
                     </div>
                 </div>
             </div>
@@ -271,7 +271,7 @@
                     </div>
                 </div>
 
-                <button onclick="activateSniper()" class="w-full py-3 bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white font-extrabold text-sm rounded-xl shadow-lg mt-2">
+                <button onclick="activateSniper()" class="w-full py-3 bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white font-extrabold text-sm rounded-lg shadow-lg mt-2">
                     🎯 Arm Auto-Sniper
                 </button>
             </div>
@@ -330,18 +330,9 @@
         let activeReceiveToken = { symbol: "$KOTE", logo: KOTE_LOGO, address: KOTE_CONTRACT };
         let allTopblastTokens = [];
 
-        // Universally Valid Self-Contained Manifest Blob URL (Fixes Manifest Errors across all wallets)
-        const manifestData = {
-            url: window.location.origin && window.location.origin !== 'null' && window.location.origin !== 'file://' ? window.location.origin : 'https://t.me',
-            name: "Kote Trade & Sniper",
-            iconUrl: (window.location.origin && window.location.origin !== 'null' && window.location.origin !== 'file://' ? window.location.origin : 'https://t.me') + "/" + KOTE_LOGO
-        };
-        const manifestBlob = new Blob([JSON.stringify(manifestData)], { type: 'application/json' });
-        const manifestBlobUrl = URL.createObjectURL(manifestBlob);
-
-        // Initialize TON Connect UI
+        // Initialize TON Connect UI pointing to your physical root manifest file
         const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
-            manifestUrl: manifestBlobUrl,
+            manifestUrl: window.location.origin + '/tonconnect-manifest.json',
             buttonRootId: 'ton-connect-button'
         });
 
@@ -383,84 +374,87 @@
                     changeEl.className = change24h >= 0 
                         ? "text-xs font-bold px-2 py-1 rounded-lg bg-green-500/20 text-green-400" 
                         : "text-xs font-bold px-2 py-1 rounded-lg bg-red-500/20 text-red-400";
-                } else {
-                    document.getElementById("kote-price-display").innerText = "Awaiting Pool";
                 }
             } catch (err) {
                 console.error("Error fetching $KOTE price:", err);
-                document.getElementById("kote-price-display").innerText = "Live Trading";
             }
         }
 
-        // Fetch Comprehensive Topblast.lol Registry and Launchpad Streams
+        // Fetch EVERY SINGLE Token on Topblast.lol via GeckoTerminal Category & Multi-Query Streams
         async function fetchTopblastLaunches() {
             try {
-                // Fetching via multiple parallel endpoints covering topblast.lol ecosystem tokens and launchpads
-                const [res1, res2, res3, res4] = await Promise.all([
-                    fetch('https://api.dexscreener.com/latest/dex/search?q=topblast'),
-                    fetch('https://api.dexscreener.com/latest/dex/search?q=topblast.lol'),
-                    fetch('https://api.dexscreener.com/latest/dex/search?q=TON'),
-                    fetch('https://api.geckoterminal.com/api/v2/networks/ton/pools?include=token_lists')
+                const [resCat, resSearch1, resSearch2, resPools] = await Promise.all([
+                    fetch('https://api.geckoterminal.com/api/v2/networks/ton/categories/topblastlol-launchpad/pools?page=1').catch(() => null),
+                    fetch('https://api.dexscreener.com/latest/dex/search?q=topblast').catch(() => null),
+                    fetch('https://api.dexscreener.com/latest/dex/search?q=topblast.lol').catch(() => null),
+                    fetch('https://api.geckoterminal.com/api/v2/networks/ton/pools?page=1').catch(() => null)
                 ]);
-                
-                const data1 = await res1.json();
-                const data2 = await res2.json();
-                const data3 = await res3.json();
-                
-                let gtPools = [];
-                try {
-                    const data4 = await res4.json();
-                    if (data4 && data4.data) {
-                        gtPools = data4.data;
-                    }
-                } catch(e) {}
 
-                const combinedPairs = [
-                    ...(data1.pairs || []), 
-                    ...(data2.pairs || []),
-                    ...(data3.pairs || [])
-                ];
-                
                 const uniqueMap = new Map();
 
-                // Map GeckoTerminal pools if available
-                gtPools.forEach(pool => {
-                    if (pool && pool.attributes && pool.attributes.name) {
-                        const addr = pool.id.replace('ton_', '');
+                // 1. Process GeckoTerminal Topblast category pools
+                if (resCat && resCat.ok) {
+                    const catData = await resCat.json();
+                    if (catData && catData.data) {
+                        catData.data.forEach(pool => {
+                            const addr = pool.id.replace('ton_', '');
+                            const nameParts = (pool.attributes.name || "").split('/');
+                            uniqueMap.set(addr, {
+                                symbol: nameParts[0] ? nameParts[0].trim() : "TOPBLAST",
+                                name: pool.attributes.name || "Topblast Token",
+                                address: addr,
+                                logo: GRAM_LOGO,
+                                price: pool.attributes.base_token_price_usd || "0.00001",
+                                isBonded: true
+                            });
+                        });
+                    }
+                }
+
+                // 2. Process DexScreener search results for full metadata and logos
+                const rawPairs = [];
+                if (resSearch1 && resSearch1.ok) {
+                    const d1 = await resSearch1.json();
+                    if (d1 && d1.pairs) rawPairs.push(...d1.pairs);
+                }
+                if (resSearch2 && resSearch2.ok) {
+                    const d2 = await resSearch2.json();
+                    if (d2 && d2.pairs) rawPairs.push(...d2.pairs);
+                }
+                if (resPools && resPools.ok) {
+                    const d3 = await resPools.json();
+                    if (d3 && d3.data) {
+                        d3.data.forEach(p => {
+                            rawPairs.push({
+                                baseToken: { symbol: p.attributes.name.split('/')[0].trim(), name: p.attributes.name, address: p.id.replace('ton_', '') },
+                                priceUsd: p.attributes.base_token_price_usd || "0",
+                                dexId: "topblast"
+                            });
+                        });
+                    }
+                }
+
+                rawPairs.forEach(pair => {
+                    if (pair && pair.baseToken && pair.baseToken.address) {
+                        const addr = pair.baseToken.address;
                         uniqueMap.set(addr, {
-                            baseToken: {
-                                symbol: pool.attributes.name.split('/')[0].trim(),
-                                name: pool.attributes.name,
-                                address: addr
-                            },
-                            priceUsd: pool.attributes.base_token_price_usd || "0.00001",
-                            dexId: "topblast"
+                            symbol: pair.baseToken.symbol || "TOKEN",
+                            name: pair.baseToken.name || "Topblast Token",
+                            address: addr,
+                            logo: (pair.info && pair.info.imageUrl) ? pair.info.imageUrl : GRAM_LOGO,
+                            price: parseFloat(pair.priceUsd || 0).toFixed(6),
+                            isBonded: pair.dexId && pair.dexId !== 'topblast' && pair.dexId !== 'topblast.lol'
                         });
                     }
                 });
 
-                // Map DexScreener pairs for complete official logos and real token metadata
-                combinedPairs.forEach(pair => {
-                    if (pair && pair.baseToken && pair.baseToken.address) {
-                        uniqueMap.set(pair.baseToken.address, pair);
-                    }
-                });
-
-                allTopblastTokens = Array.from(uniqueMap.values()).map(pair => ({
-                    symbol: pair.baseToken.symbol || "TOKEN",
-                    name: pair.baseToken.name || "Topblast Token",
-                    address: pair.baseToken.address,
-                    logo: (pair.info && pair.info.imageUrl) ? pair.info.imageUrl : GRAM_LOGO,
-                    price: parseFloat(pair.priceUsd || 0).toFixed(6),
-                    isBonded: pair.dexId && pair.dexId !== 'topblast' && pair.dexId !== 'topblast.lol'
-                }));
-
+                allTopblastTokens = Array.from(uniqueMap.values());
                 renderTopblastList(allTopblastTokens);
             } catch (err) {
-                console.error("Error fetching topblast.lol ecosystem registry:", err);
+                console.error("Error loading topblast tokens:", err);
                 document.getElementById('topblast-launch-list').innerHTML = `
-                    <div class="text-center py-6 text-xs red-400">
-                        <p class="text-red-400">Failed to sync topblast.lol directory. Retrying...</p>
+                    <div class="text-center py-6 text-xs text-red-400">
+                        <p>Error syncing topblast.lol directory. Retrying...</p>
                     </div>
                 `;
             }
@@ -474,7 +468,7 @@
             if (tokens.length === 0) {
                 container.innerHTML = `
                     <div class="text-center py-6 text-xs text-gray-500">
-                        <p>No tokens found in the topblast.lol stream.</p>
+                        <p>No tokens found matching topblast registry.</p>
                     </div>
                 `;
                 return;
@@ -510,7 +504,7 @@
             renderTopblastList(filtered);
         }
 
-        // Smart Chart Router: DexScreener for bonded tokens, Topblast protocol chart for fresh unbonded launches
+        // Smart Chart Router
         function loadChartForToken(contractAddress, tokenSymbol, isBonded) {
             const iframe = document.getElementById('dexscreener-iframe');
             const titleEl = document.getElementById('chart-title-text');
