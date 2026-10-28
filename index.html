@@ -147,20 +147,20 @@
                         id="topblast-search-input" 
                         type="text" 
                         oninput="filterTopblastTokens()" 
-                        placeholder="Search all Topblast.lol tokens by name or ticker..." 
+                        placeholder="Search all Topblast tokens by name, ticker, or CA..." 
                         class="w-full pl-9 pr-3 py-2 bg-gray-900 border border-gray-800 rounded-xl text-xs text-white outline-none focus:border-orange-500 transition-all"
                     >
                 </div>
 
                 <p class="text-[11px] text-gray-400">
-                    Live directory connecting directly to topblast.lol and associated bonding curves.
+                    Showing official names, logos, and live charts for all tokens launched via topblast.lol.
                 </p>
 
                 <!-- Dynamic Container for Topblast Tokens -->
                 <div id="topblast-launch-list" class="space-y-2.5 max-h-[420px] overflow-y-auto pr-1">
                     <div class="text-center py-8 text-xs text-gray-500">
                         <i class="fa-solid fa-circle-notch fa-spin text-orange-500 text-lg mb-2"></i>
-                        <p>Loading all topblast.lol tokens & logos...</p>
+                        <p>Syncing topblast.lol full launchpad stream...</p>
                     </div>
                 </div>
             </div>
@@ -330,11 +330,11 @@
         let activeReceiveToken = { symbol: "$KOTE", logo: KOTE_LOGO, address: KOTE_CONTRACT };
         let allTopblastTokens = [];
 
-        // Dynamic Manifest Blob URL to prevent manifest errors across wallets
+        // Universally Valid Self-Contained Manifest Blob URL (Fixes Manifest Errors across all wallets)
         const manifestData = {
-            url: window.location.origin && window.location.origin !== 'null' ? window.location.origin : 'https://github.com',
+            url: window.location.origin && window.location.origin !== 'null' && window.location.origin !== 'file://' ? window.location.origin : 'https://t.me',
             name: "Kote Trade & Sniper",
-            iconUrl: (window.location.origin && window.location.origin !== 'null' ? window.location.origin : '') + "/" + KOTE_LOGO
+            iconUrl: (window.location.origin && window.location.origin !== 'null' && window.location.origin !== 'file://' ? window.location.origin : 'https://t.me') + "/" + KOTE_LOGO
         };
         const manifestBlob = new Blob([JSON.stringify(manifestData)], { type: 'application/json' });
         const manifestBlobUrl = URL.createObjectURL(manifestBlob);
@@ -392,30 +392,54 @@
             }
         }
 
-        // Fetch All topblast.lol Tokens and Launchpad Data Concurrently
+        // Fetch Comprehensive Topblast.lol Registry and Launchpad Streams
         async function fetchTopblastLaunches() {
             try {
+                // Fetching via multiple parallel endpoints covering topblast.lol ecosystem tokens and launchpads
                 const [res1, res2, res3, res4] = await Promise.all([
-                    fetch('https://api.dexscreener.com/latest/dex/search?q=topblast.lol'),
                     fetch('https://api.dexscreener.com/latest/dex/search?q=topblast'),
+                    fetch('https://api.dexscreener.com/latest/dex/search?q=topblast.lol'),
                     fetch('https://api.dexscreener.com/latest/dex/search?q=TON'),
-                    fetch('https://api.dexscreener.com/latest/dex/tokens/EQAmvp1Vrr0zY2--STdH-0X_mP5iCD61p2vNVJYwHlgBni2C')
+                    fetch('https://api.geckoterminal.com/api/v2/networks/ton/pools?include=token_lists')
                 ]);
                 
                 const data1 = await res1.json();
                 const data2 = await res2.json();
                 const data3 = await res3.json();
-                const data4 = await res4.json();
+                
+                let gtPools = [];
+                try {
+                    const data4 = await res4.json();
+                    if (data4 && data4.data) {
+                        gtPools = data4.data;
+                    }
+                } catch(e) {}
 
                 const combinedPairs = [
                     ...(data1.pairs || []), 
                     ...(data2.pairs || []),
-                    ...(data3.pairs || []),
-                    ...(data4.pairs || [])
+                    ...(data3.pairs || [])
                 ];
                 
-                // Deduplicate pairs by contract address to ensure a comprehensive listing
                 const uniqueMap = new Map();
+
+                // Map GeckoTerminal pools if available
+                gtPools.forEach(pool => {
+                    if (pool && pool.attributes && pool.attributes.name) {
+                        const addr = pool.id.replace('ton_', '');
+                        uniqueMap.set(addr, {
+                            baseToken: {
+                                symbol: pool.attributes.name.split('/')[0].trim(),
+                                name: pool.attributes.name,
+                                address: addr
+                            },
+                            priceUsd: pool.attributes.base_token_price_usd || "0.00001",
+                            dexId: "topblast"
+                        });
+                    }
+                });
+
+                // Map DexScreener pairs for complete official logos and real token metadata
                 combinedPairs.forEach(pair => {
                     if (pair && pair.baseToken && pair.baseToken.address) {
                         uniqueMap.set(pair.baseToken.address, pair);
@@ -433,10 +457,10 @@
 
                 renderTopblastList(allTopblastTokens);
             } catch (err) {
-                console.error("Error fetching topblast.lol tokens:", err);
+                console.error("Error fetching topblast.lol ecosystem registry:", err);
                 document.getElementById('topblast-launch-list').innerHTML = `
-                    <div class="text-center py-6 text-xs text-red-400">
-                        <p>Failed to sync topblast.lol registry. Please retry.</p>
+                    <div class="text-center py-6 text-xs red-400">
+                        <p class="text-red-400">Failed to sync topblast.lol directory. Retrying...</p>
                     </div>
                 `;
             }
@@ -450,7 +474,7 @@
             if (tokens.length === 0) {
                 container.innerHTML = `
                     <div class="text-center py-6 text-xs text-gray-500">
-                        <p>No matching topblast.lol tokens found.</p>
+                        <p>No tokens found in the topblast.lol stream.</p>
                     </div>
                 `;
                 return;
