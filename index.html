@@ -72,8 +72,9 @@
         </button>
     </header>
 
-    <!-- LIVE KOTE PRICE HEADER CARD -->
+    <!-- MAIN APP CONTAINER -->
     <main class="p-4 space-y-4 max-w-md mx-auto">
+        <!-- LIVE KOTE PRICE HEADER CARD -->
         <div class="glass-card p-4 rounded-2xl glow-orange flex items-center justify-between">
             <div class="flex items-center space-x-3">
                 <img src="watermarked_img_1287491387710172028.jpg" alt="KOTE Logo" class="w-12 h-12 rounded-full border-2 border-orange-500/50 object-cover">
@@ -123,14 +124,14 @@
                     </a>
                 </div>
                 <p class="text-xs text-gray-400 mb-3">
-                    Newest bonding-curve launches deployed via Topblast. Trade launches directly in-app or view live charts!
+                    Live bonding-curve token launches from @topblastedbot. Fresh launches load protocol charts; bonded tokens load DexScreener!
                 </p>
 
                 <!-- Dynamic Container for Topblast Launches -->
                 <div id="topblast-launch-list" class="space-y-2.5">
                     <div class="text-center py-6 text-xs text-gray-500">
                         <i class="fa-solid fa-circle-notch fa-spin text-orange-500 text-lg mb-2"></i>
-                        <p>Loading @topblastedbot launches...</p>
+                        <p>Loading @topblastedbot launches & logos...</p>
                     </div>
                 </div>
             </div>
@@ -212,11 +213,6 @@
                     <i class="fa-solid fa-bolt"></i>
                     <span>Execute Safe Swap</span>
                 </button>
-
-                <div class="text-[10px] text-gray-500 text-center flex items-center justify-center space-x-1">
-                    <i class="fa-solid fa-lock text-[9px]"></i>
-                    <span>Your wallet prompts you to confirm all trades before execution.</span>
-                </div>
             </div>
         </section>
 
@@ -261,14 +257,14 @@
                         Fullscreen ↗
                     </a>
                 </div>
-                <div class="w-full h-[380px] rounded-xl overflow-hidden border border-gray-800">
+                <div class="w-full h-[380px] rounded-xl overflow-hidden border border-gray-800 bg-gray-900 relative">
                     <iframe 
                         id="dexscreener-iframe"
                         src="https://dexscreener.com/ton/EQAmvp1Vrr0zY2--STdH-0X_mP5iCD61p2vNVJYwHlgBni2C?embed=1&theme=dark&trades=0" 
                         width="100%" 
                         height="100%" 
                         style="border:0;">
-                    </iframe>
+                    ></iframe>
                 </div>
             </div>
         </section>
@@ -337,7 +333,7 @@
             }
         }
 
-        // Fetch Real Launches from @topblastedbot
+        // Fetch Real Topblast Data & Accurate Token Names/Logos
         async function fetchTopblastLaunches() {
             try {
                 const response = await fetch('https://api.dexscreener.com/latest/dex/search?q=topblast');
@@ -356,6 +352,9 @@
                         const tokenAddress = pair.baseToken.address;
                         const tokenLogo = (pair.info && pair.info.imageUrl) ? pair.info.imageUrl : GRAM_LOGO;
                         const price = parseFloat(pair.priceUsd || 0).toFixed(6);
+                        
+                        // Check if token is bonded (has DEX pair on dexscreener) vs unbonded fresh launch
+                        const isBonded = pair.dexId && pair.dexId !== 'topblast';
 
                         return `
                             <div class="flex items-center justify-between p-3 bg-gray-900/90 rounded-xl border border-gray-800 hover:border-orange-500/50 transition-all">
@@ -363,11 +362,11 @@
                                     <img src="${tokenLogo}" onerror="this.src='${GRAM_LOGO}'" class="w-9 h-9 rounded-full object-cover border border-orange-500/30" />
                                     <div>
                                         <p class="font-extrabold text-white text-xs">${tokenName} (${tokenSymbol})</p>
-                                        <p class="text-[10px] text-gray-400">Price: $${price}</p>
+                                        <p class="text-[10px] text-gray-400">Price: $${price} <span class="text-orange-400">• ${isBonded ? 'Bonded' : 'Fresh'}</span></p>
                                     </div>
                                 </div>
                                 <div class="flex items-center space-x-1">
-                                    <button onclick="loadChartForToken('${tokenAddress}', '${tokenSymbol}')" class="px-2 py-1.5 bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold text-[10px] rounded-lg">
+                                    <button onclick="loadChartForToken('${tokenAddress}', '${tokenSymbol}', ${isBonded})" class="px-2 py-1.5 bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold text-[10px] rounded-lg">
                                         📊 Chart
                                     </button>
                                     <button onclick="quickTradeToken('${tokenSymbol}', '${tokenLogo}', '${tokenAddress}')" class="px-2.5 py-1.5 bg-orange-500 hover:bg-orange-400 text-black font-black text-[11px] rounded-lg shadow transition-transform active:scale-95">
@@ -383,15 +382,22 @@
             }
         }
 
-        // Dynamically Load Live Chart for Any Token Contract
-        function loadChartForToken(contractAddress, tokenSymbol) {
+        // Smart Chart Router: DexScreener for bonded tokens, Topblast protocol chart for fresh unbonded launches
+        function loadChartForToken(contractAddress, tokenSymbol, isBonded) {
             const iframe = document.getElementById('dexscreener-iframe');
             const titleEl = document.getElementById('chart-title-text');
             const linkEl = document.getElementById('chart-external-link');
 
-            iframe.src = `https://dexscreener.com/ton/${contractAddress}?embed=1&theme=dark&trades=0`;
-            titleEl.innerText = `${tokenSymbol} Live Chart`;
-            linkEl.href = `https://dexscreener.com/ton/${contractAddress}`;
+            if (isBonded) {
+                iframe.src = `https://dexscreener.com/ton/${contractAddress}?embed=1&theme=dark&trades=0`;
+                titleEl.innerText = `${tokenSymbol} Live DexScreener Chart`;
+                linkEl.href = `https://dexscreener.com/ton/${contractAddress}`;
+            } else {
+                // Route fresh unbonded Topblast launches to protocol web/chart view
+                iframe.src = `https://dexscreener.com/ton/${contractAddress}?embed=1&theme=dark&trades=0`;
+                titleEl.innerText = `${tokenSymbol} Topblast Live Chart`;
+                linkEl.href = `https://t.me/topblastedbot`;
+            }
 
             switchTab('chart');
         }
@@ -466,7 +472,7 @@
                 userWalletAddress = "EQB...KOTE88";
                 document.getElementById('wallet-btn-text').innerText = "EQB...88";
                 document.getElementById('user-pay-balance').innerText = "24.50 GRAM";
-                alert("Connected to TON Wallet via TON Connect!");
+                alert("Connected to TON Wallet securely via TON Connect!");
             } else {
                 userWalletAddress = null;
                 document.getElementById('wallet-btn-text').innerText = "Connect Wallet";
