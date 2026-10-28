@@ -329,7 +329,7 @@
         let activeReceiveToken = { symbol: "$KOTE", logo: GRAM_LOGO, address: KOTE_CONTRACT };
         let allTopblastTokens = [];
 
-        // Inline Manifest pointing directly to your personal logo.png.jpeg file
+        // Inline Manifest Data Stream
         const manifestData = {
             url: "https://ewanh275-art.github.io/kote-trading-bot",
             name: "Kote Trade & Sniper",
@@ -337,7 +337,7 @@
         };
         const encodedManifest = "data:application/json;charset=utf-8," + encodeURIComponent(JSON.stringify(manifestData));
 
-        // Initialize TON Connect UI with bridge settings
+        // Initialize TON Connect UI with native modal fallback enabled
         const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
             manifestUrl: encodedManifest,
             buttonRootId: 'ton-connect-button',
@@ -593,7 +593,7 @@
         // Apple Pay MoonPay On-Ramp Modal
         function openApplePayModal() {
             const walletParam = userWalletAddress ? `&walletAddress=${userWalletAddress}` : '';
-            const moonpayUrl = `https://buy.moonpay.com?apiKey=pk_test_123&currencyCode=ton&paymentMethod=apple_pay${walletParam}`;
+            const moonpayUrl = `https://buy.moonpay.com?apiKey=pk_test_123&currencyCode=ton&paymentMethod=apple_pay${moonpayUrl}`;
             
             document.getElementById('moonpay-iframe').src = moonpayUrl;
             document.getElementById('apple-pay-modal').classList.remove('hidden');
