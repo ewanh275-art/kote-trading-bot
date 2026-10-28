@@ -330,15 +330,15 @@
         let activeReceiveToken = { symbol: "$KOTE", logo: KOTE_LOGO, address: KOTE_CONTRACT };
         let allTopblastTokens = [];
 
-        // Guaranteed Bulletproof Inline Data-URI Manifest (Bypasses all external fetch/CORS errors)
+        // Guaranteed Foolproof Inline Data-URI Manifest Initialization
         const manifestData = {
-            url: window.location.origin && window.location.origin !== 'null' ? window.location.origin : "https://ewanh275-art.github.io/kote-trading-bot",
+            url: "https://ewanh275-art.github.io/kote-trading-bot",
             name: "Kote Trade & Sniper",
-            iconUrl: (window.location.origin && window.location.origin !== 'null' ? window.location.origin : "https://ewanh275-art.github.io/kote-trading-bot") + "/" + KOTE_LOGO
+            iconUrl: "https://ewanh275-art.github.io/kote-trading-bot/watermarked_img_1287491387710172028.jpg"
         };
         const encodedManifest = "data:application/json;charset=utf-8," + encodeURIComponent(JSON.stringify(manifestData));
 
-        // Initialize TON Connect UI with the bulletproof embedded manifest
+        // Initialize TON Connect UI with the bulletproof embedded manifest data stream
         const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
             manifestUrl: encodedManifest,
             buttonRootId: 'ton-connect-button'
