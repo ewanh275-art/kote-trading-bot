@@ -329,7 +329,7 @@
         let activeReceiveToken = { symbol: "$KOTE", logo: GRAM_LOGO, address: KOTE_CONTRACT };
         let allTopblastTokens = [];
 
-        // Guaranteed Foolproof Inline Data-URI Manifest Initialization (Bypasses all GitHub Pages file/CORS/Content errors)
+        // Guaranteed Foolproof Inline Data-URI Manifest (Bypasses GitHub Pages CORS blocks and content errors)
         const manifestData = {
             url: "https://ewanh275-art.github.io/kote-trading-bot",
             name: "Kote Trade & Sniper",
@@ -337,7 +337,7 @@
         };
         const encodedManifest = "data:application/json;charset=utf-8," + encodeURIComponent(JSON.stringify(manifestData));
 
-        // Initialize TON Connect UI with the bulletproof embedded manifest data stream
+        // Initialize TON Connect UI with the embedded memory data stream
         const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
             manifestUrl: encodedManifest,
             buttonRootId: 'ton-connect-button'
