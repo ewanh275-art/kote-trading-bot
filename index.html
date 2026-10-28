@@ -131,7 +131,7 @@
             <div class="glass-card p-4 rounded-2xl space-y-3">
                 <div class="flex items-center justify-between">
                     <h3 class="font-bold text-sm text-white flex items-center">
-                        <span class="mr-1.5">🚀</span> Topblast.lol Complete Directory
+                        <span class="mr-1.5">🚀</span> Topblast.lol Full Directory
                     </h3>
                     <a href="https://topblast.lol" target="_blank" class="text-[11px] text-orange-400 font-semibold hover:underline flex items-center">
                         topblast.lol ↗
@@ -160,7 +160,7 @@
                 <div id="topblast-launch-list" class="space-y-2.5 max-h-[420px] overflow-y-auto pr-1">
                     <div class="text-center py-8 text-xs text-gray-500">
                         <i class="fa-solid fa-circle-notch fa-spin text-orange-500 text-lg mb-2"></i>
-                        <p>Loading full Topblast.lol database...</p>
+                        <p>Indexing all topblast.lol launches...</p>
                     </div>
                 </div>
             </div>
@@ -330,11 +330,28 @@
         let activeReceiveToken = { symbol: "$KOTE", logo: KOTE_LOGO, address: KOTE_CONTRACT };
         let allTopblastTokens = [];
 
-        // Initialize TON Connect UI linking directly to your physical repository manifest file
-        const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
-            manifestUrl: window.location.origin + '/tonconnect-manifest.json',
-            buttonRootId: 'ton-connect-button'
-        });
+        // Dual-Strategy Manifest initialization for guaranteed wallet connections
+        const primaryManifestUrl = window.location.origin + '/tonconnect-manifest.json';
+        
+        let tonConnectUI;
+        try {
+            tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
+                manifestUrl: primaryManifestUrl,
+                buttonRootId: 'ton-connect-button'
+            });
+        } catch (e) {
+            // Fallback to inline Data URI manifest if external host fetch fails
+            const fallbackManifest = {
+                url: window.location.origin || "https://ewanh275-art.github.io/kote-trading-bot",
+                name: "Kote Trade & Sniper",
+                iconUrl: (window.location.origin || "https://ewanh275-art.github.io/kote-trading-bot") + "/" + KOTE_LOGO
+            };
+            const dataUrl = "data:application/json;charset=utf-8," + encodeURIComponent(JSON.stringify(fallbackManifest));
+            tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
+                manifestUrl: dataUrl,
+                buttonRootId: 'ton-connect-button'
+            });
+        }
 
         // Listen to Wallet Connection Status Changes
         tonConnectUI.onStatusChange(wallet => {
@@ -380,37 +397,19 @@
             }
         }
 
-        // Fetch EVERY SINGLE Token via TonApi and GeckoTerminal Indexers
+        // Fetch ALL Topblast.lol launches across GeckoTerminal, TonApi, and DexScreener
         async function fetchTopblastLaunches() {
             try {
-                const [resTonApi, resCat, resSearch] = await Promise.all([
-                    fetch('https://tonapi.io/v2/jettons?limit=200&offset=0').catch(() => null),
+                const [resCat, resD1, resD2, resTonApi] = await Promise.all([
                     fetch('https://api.geckoterminal.com/api/v2/networks/ton/categories/topblastlol-launchpad/pools?page=1').catch(() => null),
-                    fetch('https://api.dexscreener.com/latest/dex/search?q=topblast').catch(() => null)
+                    fetch('https://api.dexscreener.com/latest/dex/search?q=topblast.lol').catch(() => null),
+                    fetch('https://api.dexscreener.com/latest/dex/search?q=topblast').catch(() => null),
+                    fetch('https://tonapi.io/v2/jettons?limit=100').catch(() => null)
                 ]);
 
                 const uniqueMap = new Map();
 
-                // 1. Process TonApi Global Jettons Index
-                if (resTonApi && resTonApi.ok) {
-                    const tonData = await resTonApi.json();
-                    if (tonData && tonData.jettons) {
-                        tonData.jettons.forEach(j => {
-                            if (j.address) {
-                                uniqueMap.set(j.address, {
-                                    symbol: j.symbol || "JETTON",
-                                    name: j.name || "TON Jetton",
-                                    address: j.address,
-                                    logo: j.image || GRAM_LOGO,
-                                    price: "0.00001",
-                                    isBonded: true
-                                });
-                            }
-                        });
-                    }
-                }
-
-                // 2. Process GeckoTerminal Category Pools
+                // 1. GeckoTerminal Topblast.lol Category Pools
                 if (resCat && resCat.ok) {
                     const catData = await resCat.json();
                     if (catData && catData.data) {
@@ -429,20 +428,44 @@
                     }
                 }
 
-                // 3. Process DexScreener Search Results for verified logos & tickers
-                if (resSearch && resSearch.ok) {
-                    const searchData = await resSearch.json();
-                    if (searchData && searchData.pairs) {
-                        searchData.pairs.forEach(pair => {
-                            if (pair && pair.baseToken && pair.baseToken.address) {
-                                const addr = pair.baseToken.address;
-                                uniqueMap.set(addr, {
-                                    symbol: pair.baseToken.symbol || "TOKEN",
-                                    name: pair.baseToken.name || "Topblast Token",
-                                    address: addr,
-                                    logo: (pair.info && pair.info.imageUrl) ? pair.info.imageUrl : GRAM_LOGO,
-                                    price: parseFloat(pair.priceUsd || 0).toFixed(6),
-                                    isBonded: pair.dexId && pair.dexId !== 'topblast'
+                // 2. DexScreener Indexed Pairs
+                const rawPairs = [];
+                if (resD1 && resD1.ok) {
+                    const d1 = await resD1.json();
+                    if (d1 && d1.pairs) rawPairs.push(...d1.pairs);
+                }
+                if (resD2 && resD2.ok) {
+                    const d2 = await resD2.json();
+                    if (d2 && d2.pairs) rawPairs.push(...d2.pairs);
+                }
+
+                rawPairs.forEach(pair => {
+                    if (pair && pair.baseToken && pair.baseToken.address) {
+                        const addr = pair.baseToken.address;
+                        uniqueMap.set(addr, {
+                            symbol: pair.baseToken.symbol || "TOKEN",
+                            name: pair.baseToken.name || "Topblast Token",
+                            address: addr,
+                            logo: (pair.info && pair.info.imageUrl) ? pair.info.imageUrl : GRAM_LOGO,
+                            price: parseFloat(pair.priceUsd || 0).toFixed(6),
+                            isBonded: pair.dexId && pair.dexId !== 'topblast' && pair.dexId !== 'topblast.lol'
+                        });
+                    }
+                });
+
+                // 3. TonApi Jetton Fallback
+                if (resTonApi && resTonApi.ok) {
+                    const tonData = await resTonApi.json();
+                    if (tonData && tonData.jettons) {
+                        tonData.jettons.forEach(j => {
+                            if (j.address && !uniqueMap.has(j.address)) {
+                                uniqueMap.set(j.address, {
+                                    symbol: j.symbol || "JETTON",
+                                    name: j.name || "TON Jetton",
+                                    address: j.address,
+                                    logo: j.image || GRAM_LOGO,
+                                    price: "0.00001",
+                                    isBonded: true
                                 });
                             }
                         });
