@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>KOTE Bot - Telegram Mini App Trading & Sniper</title>
+
+    <!-- Telegram WebApp SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Chart.js for Trading Charts -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- TON Connect UI CDN -->
+    <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
+
+    <!-- Tailwind Configuration -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        kote: {
+                            gold: '#FFD700',
+                            neon: '#00F0FF',
+                            purple: '#A855F7',
+                            dark: '#0A0E17',
+                            card: '#121824',
+                            border: '#1E293B',
+                            accent: '#3B82F6'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Base styles */
+        body {
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+            touch-action: manipulation;
+            font-family: 'Inter', sans-serif;
+            background-color: #0A0E17;
+            transition: background 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow-x: hidden;
+        }
+
+        /* Glassmorphism */
+        .glass-panel {
+            background: rgba(18, 24, 36, 0.75);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .glass-panel-interactive {
+            background: rgba(18, 24, 36, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .glass-panel-interactive:active {
+            transform: scale(0.97);
+        }
+
+        /* Background Particle Canvas */
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Dynamic Visual Themes */
+        .theme-cyberpunk {
+            background: radial-gradient(circle at 50% 10%, #1a0b2e 0%, #0a0518 100%) !important;
+        }
+        .theme-gold {
+            background: radial-gradient(circle at 50% 10%, #2a1f07 0%, #0d0a02 100%) !important;
+        }
+        .theme-space {
+            background: radial-gradient(circle at 50% 20%, #0d1b2a 0%, #020617 100%) !important;
+        }
+        .theme-minimal {
+            background: #080C14 !important;
+        }
+
+        /* Custom scrollbar */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* Custom TonConnect Styling Override */
+        #ton-connect-btn div button {
+            background: linear-gradient(135deg, #00F0FF 0%, #3B82F6 100%) !important;
+            border-radius: 12px !important;
+            font-weight: 700 !important;
+            font-size: 12px !important;
+            height: 36px !important;
+            padding: 0 12px !important;
+            color: #0A0E17 !important;
+            box-shadow: 0 0 12px rgba(0, 240, 255, 0.3) !important;
+        }
+
+        /* Glow utilities */
+        .glow-neon { box-shadow: 0 0 15px rgba(0, 240, 255, 0.25); }
+        .glow-gold { box-shadow: 0 0 15px rgba(255, 215, 0, 0.25); }
+    </style>
+</head>
+<body class="text-gray-100 min-h-screen flex flex-col justify-between relative antialiased theme-cyberpunk" id="app-body">
+
+    <!-- Background Dynamic Canvas -->
+    <canvas id="bg-canvas"></canvas>
+
+    <!-- Main Mobile Container -->
+    <div class="relative z-10 max-w-md w-full mx-auto flex-1 flex flex-col justify-between pb-20">
+
+        <!-- HEADER SECTION -->
+        <header class="p-3.5 space-y-2.5 sticky top-0 z-30 glass-panel border-b border-gray-800/80">
+            <!-- Top Bar: Brand, TON Price & Connect -->
+            <div class="flex items-center justify-between">
+                <!-- Brand Badge -->
+                <div class="flex items-center space-x-2">
+                    <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-500 via-purple-600 to-cyan-400 p-[2px] shadow-lg glow-neon">
+                        <div class="w-full h-full bg-slate-950 rounded-[14px] flex items-center justify-center">
+                            <span class="text-xl">🐈</span>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex items-center space-x-1.5">
+                            <span class="font-extrabold text-sm tracking-wider bg-gradient-to-r from-amber-300 via-amber-400 to-amber-200 bg-clip-text text-transparent">KOTE BOT</span>
+                            <span class="text-[9px] bg-cyan-500/20 text-cyan-400 px-1.5 py-0.5 rounded-full font-mono border border-cyan-500/30">TON v2.4</span>
+                        </div>
+                        <div class="flex items-center space-x-2 text-[10px] text-gray-400 font-mono">
+                            <span class="text-emerald-400 font-bold" id="ton-live-price">TON: $5.42</span>
+                            <span class="text-gray-500">•</span>
+                            <span class="text-amber-400">$KOTE: $0.042</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Actions: TON Connect Button & Theme -->
+                <div class="flex items-center space-x-2">
+                    <button onclick="openThemeModal()" class="w-9 h-9 rounded-xl glass-panel-interactive flex items-center justify-center text-gray-300 hover:text-amber-400 border border-gray-700/60">
+                        <i class="fa-solid fa-palette text-xs"></i>
+                    </button>
+                    <!-- TON Connect Container -->
+                    <div id="ton-connect-btn"></div>
+                </div>
+            </div>
+
+            <!-- User Balances & $KOTE Burn Widget -->
+            <div class="grid grid-cols-2 gap-2 pt-0.5">
+                <!-- User Balances Card -->
+                <div class="p-2.5 rounded-xl glass-panel border border-gray-800 flex flex-col justify-between">
+                    <div class="text-[10px] text-gray-400 font-medium uppercase tracking-wider">Connected Wallet</div>
+                    <div class="flex justify-between items-baseline mt-0.5">
+                        <span class="font-bold text-xs text-cyan-300 font-mono" id="balance-ton">0.00 <span class="text-[9px] text-gray-400">TON</span></span>
+                    </div>
+                    <div class="text-[10px] text-amber-400 font-mono font-semibold" id="balance-kote">
+                        0 <span class="text-[9px] text-amber-300/80">$KOTE</span>
+                    </div>
+                </div>
+
+                <!-- Live $KOTE Burn Widget -->
+                <div class="p-2.5 rounded-xl glass-panel border border-amber-500/30 bg-amber-500/5 flex flex-col justify-between relative overflow-hidden">
+                    <div class="absolute -right-3 -bottom-3 text-amber-500/10 text-4xl">
+                        <i class="fa-solid fa-fire"></i>
+                    </div>
+                    <div class="flex items-center justify-between text-[10px] text-amber-400 font-medium uppercase tracking-wider">
+                        <span><i class="fa-solid fa-fire text-amber-500 mr-1 animate-bounce"></i>KOTE Burned</span>
+                        <span class="text-[9px] text-emerald-400 font-bold">1% Fee</span>
+                    </div>
+                    <div class="font-extrabold text-xs text-amber-400 font-mono mt-0.5" id="total-burned">
+                        12,485,920
+                    </div>
+                    <div class="text-[9px] text-gray-400 flex items-center space-x-1 font-mono">
+                        <span>24h Volume:</span>
+                        <span class="text-amber-300">+24.8K TON</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Holder Tier Status Banner -->
+            <div class="p-2 rounded-xl bg-gradient-to-r from-purple-900/40 via-indigo-900/30 to-slate-900/60 border border-purple-500/30 flex items-center justify-between text-xs">
+                <div class="flex items-center space-x-2">
+                    <span class="px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300 font-mono font-bold text-[9px]" id="user-tier-badge">TIER 1</span>
+                    <span class="text-gray-300 text-[11px]" id="user-tier-desc">Hold 50k $KOTE for <strong>0.5% Swap Fee</strong></span>
+                </div>
+                <i class="fa-solid fa-shield-halved text-cyan-400 text-xs"></i>
+            </div>
+        </header>
+
+        <!-- MAIN APP CONTENT -->
+        <main class="p-3.5 space-y-3.5 flex-1">
+
+            <!-- TAB 1: DEX SWAP & SNIPER DASHBOARD -->
+            <div id="tab-trade" class="space-y-3.5">
+
+                <!-- Token Search Input -->
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
+                        <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                    </div>
+                    <input type="text" id="token-search" placeholder="Paste Jetton address or symbol..." 
+                        class="w-full pl-9 pr-20 py-2.5 bg-slate-900/90 border border-gray-700/70 rounded-2xl text-xs text-gray-100 placeholder-gray-500 focus:outline-none focus:border-cyan-500 font-mono transition">
+                    <button onclick="loadSearchToken()" class="absolute right-1.5 top-1.5 bottom-1.5 px-3 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-xl text-[11px] font-bold text-slate-950 active:scale-95 transition">
+                        Load
+                    </button>
+                </div>
+
+                <!-- Active Jetton Header -->
+                <div class="p-3 rounded-2xl glass-panel border border-gray-800 flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-9 h-9 rounded-xl bg-slate-800 border border-cyan-500/40 flex items-center justify-center text-lg">
+                            🐈
+                        </div>
+                        <div>
+                            <div class="flex items-center space-x-1.5">
+                                <span class="font-extrabold text-xs text-white" id="token-name">KOTE Token</span>
+                                <span class="text-[10px] text-gray-400 font-mono" id="token-symbol">$KOTE</span>
+                            </div>
+                            <div class="text-xs font-mono text-emerald-400 flex items-center space-x-2">
+                                <span id="token-price">$0.0428</span>
+                                <span class="text-[9px] text-emerald-400 bg-emerald-500/10 px-1 rounded font-bold">+14.2%</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-1">
+                        <button onclick="toggleFavorite()" class="p-1.5 text-gray-400 hover:text-amber-400"><i class="fa-regular fa-star text-xs"></i></button>
+                        <button onclick="refreshChart()" class="p-1.5 text-gray-400 hover:text-cyan-400"><i class="fa-solid fa-arrows-rotate text-xs"></i></button>
+                    </div>
+                </div>
+
+                <!-- Interactive Price Chart -->
+                <div class="p-3 rounded-2xl glass-panel border border-gray-800 space-y-2">
+                    <div class="flex justify-between items-center text-[11px]">
+                        <span class="text-gray-400 font-medium">STON.fi DEX Pool Chart</span>
+                        <div class="flex space-x-1 bg-slate-950 p-0.5 rounded-lg border border-gray-800 text-[9px] font-mono">
+                            <button onclick="setChartTime('1m')" class="px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 font-bold">1M</button>
+                            <button onclick="setChartTime('5m')" class="px-2 py-0.5 rounded text-gray-400 hover:text-white">5M</button>
+                            <button onclick="setChartTime('1h')" class="px-2 py-0.5 rounded text-gray-400 hover:text-white">1H</button>
+                            <button onclick="setChartTime('1d')" class="px-2 py-0.5 rounded text-gray-400 hover:text-white">1D</button>
+                        </div>
+                    </div>
+                    <div class="h-36 w-full relative">
+                        <canvas id="trading-chart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Fast Trading Terminal -->
+                <div class="p-3.5 rounded-2xl glass-panel border border-gray-800 space-y-3">
+                    <!-- Buy / Sell Mode Toggle -->
+                    <div class="grid grid-cols-2 gap-1.5 bg-slate-950 p-1 rounded-xl border border-gray-800">
+                        <button id="btn-mode-buy" onclick="setTradeMode('buy')" class="py-2 rounded-lg font-bold text-xs bg-emerald-500 text-slate-950 shadow-lg transition">
+                            BUY TON ➔ TOKEN
+                        </button>
+                        <button id="btn-mode-sell" onclick="setTradeMode('sell')" class="py-2 rounded-lg font-bold text-xs text-gray-400 hover:text-white transition">
+                            SELL TOKEN ➔ TON
+                        </button>
+                    </div>
+
+                    <!-- Preset Amount Buttons -->
+                    <div class="space-y-1">
+                        <div class="flex justify-between text-[11px] text-gray-400">
+                            <span>Amount:</span>
+                            <span id="amount-label-suffix" class="font-mono text-cyan-400">TON</span>
+                        </div>
+                        <div class="grid grid-cols-4 gap-1.5">
+                            <button onclick="selectPreset(0.5)" class="py-1.5 bg-slate-900 border border-gray-700/80 rounded-xl font-mono font-bold text-xs text-gray-200 active:border-cyan-500 transition">0.5</button>
+                            <button onclick="selectPreset(1.0)" class="py-1.5 bg-slate-900 border border-gray-700/80 rounded-xl font-mono font-bold text-xs text-gray-200 active:border-cyan-500 transition">1.0</button>
+                            <button onclick="selectPreset(5.0)" class="py-1.5 bg-slate-900 border border-gray-700/80 rounded-xl font-mono font-bold text-xs text-gray-200 active:border-cyan-500 transition">5.0</button>
+                            <button onclick="focusCustomAmount()" class="py-1.5 bg-slate-900 border border-gray-700/80 rounded-xl font-mono font-bold text-xs text-amber-400 active:border-amber-500 transition">Custom</button>
+                        </div>
+                    </div>
+
+                    <!-- Amount Input -->
+                    <div class="relative">
+                        <input type="number" id="trade-amount-input" value="1.0" step="0.1" 
+                            class="w-full py-2.5 px-3.5 bg-slate-950 border border-gray-700 rounded-xl text-base font-mono font-bold text-white focus:outline-none focus:border-cyan-400">
+                        <span class="absolute right-3.5 top-3 text-xs font-mono text-gray-400" id="input-unit">TON</span>
+                    </div>
+
+                    <!-- Slippage & Protection Row -->
+                    <div class="flex items-center justify-between text-[11px] pt-1 border-t border-gray-800 text-gray-400">
+                        <div class="flex items-center space-x-1">
+                            <span>Slippage:</span>
+                            <button onclick="cycleSlippage()" id="slippage-btn" class="font-mono text-cyan-400 font-bold bg-cyan-950/60 px-2 py-0.5 rounded border border-cyan-800">2.0%</button>
+                        </div>
+                        <div class="flex items-center space-x-1.5">
+                            <i class="fa-solid fa-shield-halved text-emerald-400"></i>
+                            <span>Anti-Rug Guard</span>
+                            <input type="checkbox" checked class="accent-emerald-500 w-3.5 h-3.5 rounded">
+                        </div>
+                    </div>
+
+                    <!-- Execute Order Button -->
+                    <button onclick="executeTrade()" id="execute-btn" class="w-full py-3 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 text-slate-950 font-black text-xs rounded-xl shadow-lg glow-neon active:scale-[0.98] transition flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-bolt"></i>
+                        <span>EXECUTE SWAP (1% KOTE BURN FEE)</span>
+                    </button>
+                </div>
+
+                <!-- Auto Token Sniper Module -->
+                <div class="p-3.5 rounded-2xl glass-panel border border-cyan-500/30 bg-cyan-950/10 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-2">
+                            <div class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></div>
+                            <span class="font-bold text-xs text-cyan-300 uppercase tracking-wider">Auto Token Sniper</span>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="sniper-toggle" onchange="toggleSniperMode()" class="sr-only peer">
+                            <div class="w-9 h-5 bg-gray-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-cyan-500"></div>
+                        </label>
+                    </div>
+
+                    <p class="text-[10px] text-gray-400">Fires instant buy orders on STON.fi or DeDust the millisecond liquidity is detected for a new token.</p>
+
+                    <div id="sniper-settings" class="space-y-2 text-xs opacity-40 pointer-events-none transition-all">
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="text-[10px] text-gray-400 block mb-0.5">Max Buy Amount</label>
+                                <input type="text" value="2.0 TON" class="w-full py-1.5 px-2 bg-slate-900 border border-gray-700 rounded-lg font-mono text-gray-200 text-xs">
+                            </div>
+                            <div>
+                                <label class="text-[10px] text-gray-400 block mb-0.5">Max Slippage</label>
+                                <input type="text" value="15.0%" class="w-full py-1.5 px-2 bg-slate-900 border border-gray-700 rounded-lg font-mono text-gray-200 text-xs">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- TAB 2: LIVE BOT ACTIVITY & BURNS -->
+            <div id="tab-activity" class="space-y-3 hidden">
+                <div class="flex items-center justify-between">
+                    <h3 class="font-bold text-xs text-gray-200">Live Bot Transactions & KOTE Burns</h3>
+                    <span class="text-[9px] bg-emerald-500/20 text-emerald-400 font-mono px-2 py-0.5 rounded-full">Realtime Pool</span>
+                </div>
+                <div class="space-y-2" id="activity-feed-list"></div>
+            </div>
+
+            <!-- TAB 3: CUSTOM THEMES & WALLPAPERS -->
+            <div id="tab-themes" class="space-y-3 hidden">
+                <div class="p-3 rounded-2xl glass-panel border border-amber-500/30 bg-amber-500/5">
+                    <h3 class="font-bold text-xs text-amber-400 flex items-center space-x-1.5">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i>
+                        <span>Custom KOTE Wallpapers</span>
+                    </h3>
+                    <p class="text-[11px] text-gray-400 mt-0.5">Customize your bot interface. Theme choices persist in your browser/Telegram storage.</p>
+                </div>
+
+                <div class="grid grid-cols-1 gap-2.5">
+                    <div onclick="setTheme('cyberpunk')" class="p-3 rounded-2xl glass-panel border-2 border-cyan-500 flex items-center justify-between cursor-pointer">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-900 to-cyan-500 flex items-center justify-center text-lg">🤖</div>
+                            <div>
+                                <h4 class="font-bold text-xs text-white">Neon Cyberpunk</h4>
+                                <p class="text-[10px] text-cyan-400 font-mono">Electric Blue Particles</p>
+                            </div>
+                        </div>
+                        <i class="fa-solid fa-circle-check text-cyan-400 text-base"></i>
+                    </div>
+
+                    <div onclick="setTheme('gold')" class="p-3 rounded-2xl glass-panel border border-gray-800 flex items-center justify-between cursor-pointer">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-700 to-yellow-500 flex items-center justify-center text-lg">👑</div>
+                            <div>
+                                <h4 class="font-bold text-xs text-white">Golden Luxury</h4>
+                                <p class="text-[10px] text-amber-400 font-mono">Gold Foil & Sparkles</p>
+                            </div>
+                        </div>
+                        <i class="fa-regular fa-circle text-gray-600 text-base"></i>
+                    </div>
+
+                    <div onclick="setTheme('space')" class="p-3 rounded-2xl glass-panel border border-gray-800 flex items-center justify-between cursor-pointer">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-slate-900 to-indigo-900 flex items-center justify-center text-lg">🚀</div>
+                            <div>
+                                <h4 class="font-bold text-xs text-white">Space Voyager</h4>
+                                <p class="text-[10px] text-indigo-400 font-mono">Cosmic Floating Stars</p>
+                            </div>
+                        </div>
+                        <i class="fa-regular fa-circle text-gray-600 text-base"></i>
+                    </div>
+
+                    <div onclick="setTheme('minimal')" class="p-3 rounded-2xl glass-panel border border-gray-800 flex items-center justify-between cursor-pointer">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-xl bg-slate-900 border border-gray-700 flex items-center justify-center text-lg">⚡</div>
+                            <div>
+                                <h4 class="font-bold text-xs text-white">Minimal Dark</h4>
+                                <p class="text-[10px] text-gray-400 font-mono">OLED Black Clean</p>
+                            </div>
+                        </div>
+                        <i class="fa-regular fa-circle text-gray-600 text-base"></i>
+                    </div>
+
+                    <div class="p-3 rounded-2xl glass-panel border border-gray-800 space-y-2">
+                        <span class="font-bold text-xs text-gray-300">Custom Image URL Wallpaper</span>
+                        <div class="flex space-x-2">
+                            <input type="text" id="custom-bg-url" placeholder="https://..." class="flex-1 px-3 py-2 bg-slate-950 border border-gray-700 rounded-xl text-xs text-gray-200">
+                            <button onclick="applyCustomBgUrl()" class="px-3 py-2 bg-purple-600 text-white font-bold text-xs rounded-xl">Apply</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- NAVIGATION BAR -->
+        <nav class="fixed bottom-0 left-0 right-0 max-w-md mx-auto glass-panel border-t border-gray-800 p-2 z-40 grid grid-cols-3 gap-1">
+            <button onclick="switchTab('trade')" id="nav-trade" class="py-1.5 flex flex-col items-center justify-center space-y-1 text-cyan-400">
+                <i class="fa-solid fa-chart-line text-sm"></i>
+                <span class="text-[9px] font-bold">Trade / Snipe</span>
+            </button>
+            <button onclick="switchTab('activity')" id="nav-activity" class="py-1.5 flex flex-col items-center justify-center space-y-1 text-gray-400">
+                <i class="fa-solid fa-list-check text-sm"></i>
+                <span class="text-[9px] font-bold">Activity Feed</span>
+            </button>
+            <button onclick="switchTab('themes')" id="nav-themes" class="py-1.5 flex flex-col items-center justify-center space-y-1 text-gray-400">
+                <i class="fa-solid fa-palette text-sm"></i>
+                <span class="text-[9px] font-bold">Themes</span>
+            </button>
+        </nav>
+
+    </div>
+
+    <!-- JAVASCRIPT LOGIC & TON CONNECT INTEGRATION -->
+    <script>
+        // Telegram WebApp Initialization
+        const tg = window.Telegram?.WebApp;
+        if (tg) {
+            tg.ready();
+            tg.expand();
+            if (tg.setHeaderColor) tg.setHeaderColor('#0A0E17');
+        }
+
+        // Global State
+        let tonConnectUI = null;
+        let currentTradeMode = 'buy';
+        let currentSlippage = 2.0;
+        let chartInstance = null;
+        let particlesActive = true;
+        let currentTheme = localStorage.getItem('kote_theme') || 'cyberpunk';
+
+        // Window Onload Logic
+        window.onload = function() {
+            initTonConnect();
+            initChart();
+            initParticles();
+            populateActivityFeed();
+            setTheme(currentTheme);
+        };
+
+        // Initialize TON Connect UI
+        function initTonConnect() {
+            try {
+                tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
+                    manifestUrl: 'https://raw.githubusercontent.com/ton-community/tutorials/main/03-client/test/public/tonconnect-manifest.json',
+                    buttonRootId: 'ton-connect-btn'
+                });
+
+                tonConnectUI.onStatusChange(wallet => {
+                    if (wallet) {
+                        const addr = wallet.account.address;
+                        const shortAddr = addr.substring(0, 4) + '...' + addr.substring(addr.length - 4);
+                        document.getElementById('balance-ton').innerText = `12.80 TON`;
+                        document.getElementById('balance-kote').innerText = `85,000 $KOTE`;
+                        if (tg?.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+                    } else {
+                        document.getElementById('balance-ton').innerText = `0.00 TON`;
+                        document.getElementById('balance-kote').innerText = `0 $KOTE`;
+                    }
+                });
+            } catch (err) {
+                console.log("TonConnect initialized fallback mode", err);
+            }
+        }
+
+        // Tab Navigation Switcher
+        function switchTab(tabId) {
+            if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
+            ['trade', 'activity', 'themes'].forEach(tab => {
+                document.getElementById(`tab-${tab}`).classList.add('hidden');
+                document.getElementById(`nav-${tab}`).className = 'py-1.5 flex flex-col items-center justify-center space-y-1 text-gray-400';
+            });
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+            document.getElementById(`nav-${tabId}`).className = 'py-1.5 flex flex-col items-center justify-center space-y-1 text-cyan-400';
+        }
+
+        // Trade Mode Switcher
+        function setTradeMode(mode) {
+            if (tg?.HapticFeedback) tg.HapticFeedback.selectionChanged();
+            currentTradeMode = mode;
+            const buyBtn = document.getElementById('btn-mode-buy');
+            const sellBtn = document.getElementById('btn-mode-sell');
+            const unitLabel = document.getElementById('input-unit');
+            const execBtn = document.getElementById('execute-btn');
+            const suffix = document.getElementById('amount-label-suffix');
+
+            if (mode === 'buy') {
+                buyBtn.className = "py-2 rounded-lg font-bold text-xs bg-emerald-500 text-slate-950 shadow-lg transition";
+                sellBtn.className = "py-2 rounded-lg font-bold text-xs text-gray-400 hover:text-white transition";
+                unitLabel.innerText = "TON";
+                suffix.innerText = "TON";
+                execBtn.className = "w-full py-3 bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 text-slate-950 font-black text-xs rounded-xl shadow-lg glow-neon active:scale-[0.98] transition flex items-center justify-center space-x-2";
+                execBtn.innerHTML = `<i class="fa-solid fa-bolt"></i><span>EXECUTE SWAP (1% KOTE BURN FEE)</span>`;
+            } else {
+                sellBtn.className = "py-2 rounded-lg font-bold text-xs bg-rose-500 text-white shadow-lg transition";
+                buyBtn.className = "py-2 rounded-lg font-bold text-xs text-gray-400 hover:text-white transition";
+                unitLabel.innerText = "$KOTE";
+                suffix.innerText = "$KOTE";
+                execBtn.className = "w-full py-3 bg-gradient-to-r from-rose-500 to-red-600 text-white font-black text-xs rounded-xl shadow-lg active:scale-[0.98] transition flex items-center justify-center space-x-2";
+                execBtn.innerHTML = `<i class="fa-solid fa-fire"></i><span>SELL & BURN KOTE FEE</span>`;
+            }
+        }
+
+        function selectPreset(amt) {
+            if (tg?.HapticFeedback) tg.HapticFeedback.selectionChanged();
+            document.getElementById('trade-amount-input').value = amt.toFixed(1);
+        }
+
+        function focusCustomAmount() {
+            const input = document.getElementById('trade-amount-input');
+            input.focus();
+            input.select();
+        }
+
+        function cycleSlippage() {
+            if (tg?.HapticFeedback) tg.HapticFeedback.selectionChanged();
+            const slips = [0.5, 1.0, 2.0, 5.0];
+            let idx = slips.indexOf(currentSlippage);
+            currentSlippage = slips[(idx + 1) % slips.length];
+            document.getElementById('slippage-btn').innerText = `${currentSlippage.toFixed(1)}%`;
+        }
+
+        function toggleSniperMode() {
+            const isChecked = document.getElementById('sniper-toggle').checked;
+            const settings = document.getElementById('sniper-settings');
+            if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
+            if (isChecked) {
+                settings.classList.remove('opacity-40', 'pointer-events-none');
+            } else {
+                settings.classList.add('opacity-40', 'pointer-events-none');
+            }
+        }
+
+        // Execute Swap Simulation
+        function executeTrade() {
+            if (tg?.HapticFeedback) tg.HapticFeedback.impactOccurred('heavy');
+            const amount = document.getElementById('trade-amount-input').value;
+            const execBtn = document.getElementById('execute-btn');
+            const origHtml = execBtn.innerHTML;
+
+            execBtn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i><span>SUBMITTING TO TON BLOCKCHAIN...</span>`;
+
+            setTimeout(() => {
+                execBtn.innerHTML = `<i class="fa-solid fa-circle-check"></i><span>SWAP SUCCESSFUL & BURNED!</span>`;
+                
+                // Increment burn stats
+                const burnElem = document.getElementById('total-burned');
+                let currentBurn = parseInt(burnElem.innerText.replace(/,/g, ''));
+                currentBurn += Math.floor(Math.random() * 150) + 50;
+                burnElem.innerText = currentBurn.toLocaleString();
+
+                if (tg?.showAlert) {
+                    tg.showAlert(`Successfully executed ${amount} TON swap on STON.fi! 1% fee burned into $KOTE.`);
+                }
+
+                setTimeout(() => { execBtn.innerHTML = origHtml; }, 2000);
+            }, 1200);
+        }
+
+        // Theme Switcher & Storage
+        function setTheme(themeName) {
+            currentTheme = themeName;
+            localStorage.setItem('kote_theme', themeName);
+            document.getElementById('app-body').className = `text-gray-100 min-h-screen flex flex-col justify-between relative antialiased theme-${themeName}`;
+        }
+
+        function applyCustomBgUrl() {
+            const url = document.getElementById('custom-bg-url').value;
+            if (url) {
+                document.getElementById('app-body').style.backgroundImage = `url('${url}')`;
+                document.getElementById('app-body').style.backgroundSize = 'cover';
+                switchTab('trade');
+            }
+        }
+
+        // Initialize Price Chart using Chart.js
+        function initChart() {
+            const ctx = document.getElementById('trading-chart').getContext('2d');
+            const gradient = ctx.createLinearGradient(0, 0, 0, 140);
+            gradient.addColorStop(0, 'rgba(0, 240, 255, 0.35)');
+            gradient.addColorStop(1, 'rgba(0, 240, 255, 0.0)');
+
+            chartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['11:00', '11:05', '11:10', '11:15', '11:20', '11:25', '11:30'],
+                    datasets: [{
+                        data: [0.038, 0.039, 0.037, 0.041, 0.040, 0.043, 0.0428],
+                        borderColor: '#00F0FF',
+                        borderWidth: 2,
+                        fill: true,
+                        backgroundColor: gradient,
+                        tension: 0.35,
+                        pointRadius: 2,
+                        pointBackgroundColor: '#00F0FF'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { color: '#64748B', font: { size: 8 } } },
+                        y: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#64748B', font: { size: 8 } } }
+                    }
+                }
+            });
+        }
+
+        function setChartTime(tf) {
+            if (!chartInstance) return;
+            chartInstance.data.datasets[0].data = Array.from({length: 7}, () => (0.036 + Math.random() * 0.009).toFixed(4));
+            chartInstance.update();
+        }
+
+        // Activity Feed Generator
+        function populateActivityFeed() {
+            const feedContainer = document.getElementById('activity-feed-list');
+            const samples = [
+                { type: 'BUY', amount: '5.0 TON', token: '$KOTE', fee: '240 $KOTE Burned', time: '8s ago' },
+                { type: 'SNIPE', amount: '12.5 TON', token: '$CATG', fee: '520 $KOTE Burned', time: '32s ago' },
+                { type: 'SELL', amount: '25,000 KOTE', token: 'TON', fee: '110 $KOTE Burned', time: '1m ago' }
+            ];
+
+            samples.forEach(item => {
+                const el = document.createElement('div');
+                el.className = "p-2.5 rounded-xl glass-panel border border-gray-800 flex items-center justify-between text-xs";
+                el.innerHTML = `
+                    <div class="flex items-center space-x-2">
+                        <span class="px-1.5 py-0.5 rounded font-mono font-bold text-[9px] ${item.type === 'BUY' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-cyan-500/20 text-cyan-400'}">${item.type}</span>
+                        <div>
+                            <div class="font-bold text-white font-mono text-[11px]">${item.amount} ➔ ${item.token}</div>
+                            <div class="text-[9px] text-amber-400 font-mono"><i class="fa-solid fa-fire mr-1"></i>${item.fee}</div>
+                        </div>
+                    </div>
+                    <span class="text-[9px] text-gray-500 font-mono">${item.time}</span>
+                `;
+                feedContainer.appendChild(el);
+            });
+        }
+
+        // Canvas Particle Engine
+        function initParticles() {
+            const canvas = document.getElementById('bg-canvas');
+            const ctx = canvas.getContext('2d');
+            function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+            resize();
+            window.addEventListener('resize', resize);
+
+            const particles = Array.from({ length: 30 }, () => ({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                radius: Math.random() * 2 + 0.5,
+                speedX: (Math.random() - 0.5) * 0.3,
+                speedY: (Math.random() - 0.5) * 0.3,
+                alpha: Math.random() * 0.5 + 0.2
+            }));
+
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                particles.forEach(p => {
+                    p.x += p.speedX; p.y += p.speedY;
+                    if (p.x < 0) p.x = canvas.width;
+                    if (p.x > canvas.width) p.x = 0;
+                    if (p.y < 0) p.y = canvas.height;
+                    if (p.y > canvas.height) p.y = 0;
+
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = currentTheme === 'gold' ? `rgba(255, 215, 0, ${p.alpha})` : `rgba(0, 240, 255, ${p.alpha})`;
+                    ctx.fill();
+                });
+                requestAnimationFrame(animate);
+            }
+            animate();
+        }
+    </script>
+</body>
+</html>
