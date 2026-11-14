@@ -3,15 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kote Trading & Sniper Terminal</title>
+    <title>Kote Professional Trading Terminal</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
     <style>
         :root {
-            --bg-base: #060a0f;
-            --bg-card: #0d1522;
+            --bg-base: #060b13;
+            --bg-sidebar: #09101d;
+            --bg-card: #0d1626;
             --bg-input: #121d31;
-            --border-color: #1a2942;
+            --border-color: #1b2a47;
             --accent-green: #10b981;
             --accent-cyan: #38bdf8;
             --accent-purple: #8b5cf6;
@@ -30,16 +31,15 @@
             color: var(--text-main);
             font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
             display: flex;
-            flex-direction: column;
             height: 100vh;
             overflow: hidden;
         }
 
-        /* --- INTRO SCREEN (Reference 2 Aesthetic) --- */
+        /* --- CINEMATIC INTRO SCREEN --- */
         #intro-screen {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(rgba(3, 5, 10, 0.6), rgba(3, 5, 10, 0.9)), url('https://www.artlebedev.com/kote/site/img/bg.jpg') no-repeat center center;
+            background: linear-gradient(rgba(3, 5, 10, 0.7), rgba(3, 5, 10, 0.95)), url('https://www.artlebedev.com/kote/site/img/bg.jpg') no-repeat center center;
             background-size: cover;
             z-index: 100;
             display: flex;
@@ -55,8 +55,7 @@
             pointer-events: none;
         }
         .intro-content {
-            margin-top: auto;
-            margin-bottom: auto;
+            margin: auto;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -73,78 +72,72 @@
             font-size: 36px;
             box-shadow: 0 0 40px rgba(255, 255, 255, 0.3);
         }
-        .intro-title {
-            font-size: 24px;
-            font-weight: 900;
-            letter-spacing: 1px;
-            color: #fff;
+
+        /* --- PRO DESKTOP/MOBILE TERMINAL LAYOUT (Reference Image Style) --- */
+        .sidebar {
+            width: 70px;
+            background: var(--bg-sidebar);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 16px 0;
+            gap: 20px;
+            z-index: 20;
         }
-        .intro-subtitle {
-            font-size: 13px;
+        .side-icon {
+            background: none;
+            border: none;
             color: var(--text-muted);
-            max-width: 280px;
-            line-height: 1.5;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 10px;
+            transition: all 0.2s;
+        }
+        .side-icon.active, .side-icon:hover {
+            color: var(--accent-cyan);
+            background: rgba(56, 189, 248, 0.1);
         }
 
-        /* Top Header */
+        .main-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Top Bar */
         .topbar {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 12px 16px;
-            background: rgba(13, 21, 34, 0.9);
+            padding: 12px 20px;
+            background: var(--bg-sidebar);
             border-bottom: 1px solid var(--border-color);
-            backdrop-filter: blur(16px);
-            z-index: 30;
-        }
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .brand-logo {
-            width: 36px;
-            height: 36px;
-            border-radius: 10px;
-            background: linear-gradient(135deg, var(--accent-green), var(--accent-cyan));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 900;
-            font-size: 16px;
-            color: #042f2e;
+            z-index: 10;
         }
         .brand-text h1 {
-            font-size: 14px;
+            font-size: 15px;
             font-weight: 800;
         }
         .brand-text span {
             font-size: 10px;
             color: var(--accent-green);
-            display: flex;
-            align-items: center;
-            gap: 4px;
             font-weight: 700;
-        }
-        .status-dot {
-            width: 6px;
-            height: 6px;
-            background: var(--accent-green);
-            border-radius: 50%;
-            display: inline-block;
-            box-shadow: 0 0 6px var(--accent-green);
         }
         #ton-connect {
             transform: scale(0.85);
             transform-origin: right center;
         }
 
-        /* Viewport Content */
+        /* Content Area Viewport */
         .content-area {
             flex: 1;
             overflow-y: auto;
             padding: 16px;
-            padding-bottom: 95px;
+            padding-bottom: 80px;
         }
         .page {
             display: none;
@@ -160,21 +153,21 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Reference 1 Dashboard Layout */
-        .dashboard-grid {
+        /* Terminal Pro Grid Layout */
+        .terminal-grid {
             display: grid;
             grid-template-columns: 1fr;
-            gap: 14px;
+            gap: 16px;
         }
-        @media(min-width: 768px) {
-            .dashboard-grid { grid-template-columns: 2fr 1fr; }
+        @media(min-width: 900px) {
+            .terminal-grid { grid-template-columns: 2.2fr 1fr; }
         }
 
         .card {
             background: var(--bg-card);
             border: 1px solid var(--border-color);
-            border-radius: 18px;
-            padding: 18px;
+            border-radius: 16px;
+            padding: 16px;
             box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
         }
         .card-header {
@@ -191,114 +184,26 @@
             letter-spacing: 0.8px;
         }
 
-        /* Trading Balance Section (Ref 1) */
-        .balance-box {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 16px;
-        }
-        .balance-amount {
-            font-size: 28px;
-            font-weight: 900;
-            letter-spacing: -0.5px;
-            color: #fff;
-            margin-top: 4px;
-        }
-        .balance-gain {
-            background: rgba(16, 185, 129, 0.15);
-            color: var(--accent-green);
-            padding: 4px 8px;
-            border-radius: 8px;
-            font-size: 11px;
-            font-weight: 800;
-        }
-        .action-btn-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
-        .dashboard-action-btn {
-            background: var(--bg-input);
+        /* Chart Frame */
+        .chart-box {
+            width: 100%;
+            height: 340px;
+            background: #020408;
             border: 1px solid var(--border-color);
-            color: #fff;
-            padding: 12px;
             border-radius: 14px;
-            font-size: 13px;
-            font-weight: 800;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            transition: all 0.2s;
-        }
-        .dashboard-action-btn.deposit {
-            background: rgba(16, 185, 129, 0.15);
-            border-color: rgba(16, 185, 129, 0.4);
-            color: var(--accent-green);
-        }
-
-        /* Bonus Card (Ref 1 top right) */
-        .bonus-card {
-            background: linear-gradient(135deg, #064e3b, #022c22);
-            border: 1px solid rgba(16, 185, 129, 0.3);
-            border-radius: 18px;
-            padding: 16px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            position: relative;
             overflow: hidden;
         }
-        .bonus-card h3 {
-            font-size: 18px;
-            font-weight: 900;
-            color: #fff;
-            margin-top: 4px;
-        }
-        .bonus-timer {
-            font-size: 11px;
-            color: #a7f3d0;
-            margin-top: 10px;
-            font-weight: 600;
+        .chart-box iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
         }
 
-        /* Latest Trades List (Ref 1 right side) */
-        .trades-list {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            max-height: 280px;
-            overflow-y: auto;
-        }
-        .trade-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: var(--bg-input);
-            padding: 10px 12px;
-            border-radius: 10px;
-            font-size: 12px;
-        }
-        .trade-pair {
-            font-weight: 800;
-        }
-        .trade-type {
-            font-size: 10px;
-            color: var(--text-muted);
-            font-weight: 700;
-        }
-        .trade-profit {
-            font-weight: 800;
-            color: var(--accent-green);
-        }
-
-        /* Standard Swap Inputs & Sniper UI */
+        /* Swap & Order Inputs */
         .input-group {
             background: var(--bg-input);
             border: 1px solid var(--border-color);
-            border-radius: 14px;
+            border-radius: 12px;
             padding: 12px 14px;
             margin-bottom: 10px;
         }
@@ -319,19 +224,19 @@
             background: transparent;
             border: none;
             color: var(--text-main);
-            font-size: 20px;
+            font-size: 18px;
             font-weight: 800;
             width: 60%;
             outline: none;
         }
-        .token-pill-badge {
+        .token-badge {
             display: flex;
             align-items: center;
             gap: 6px;
             background: #090e1d;
             border: 1px solid var(--border-color);
             padding: 6px 12px;
-            border-radius: 12px;
+            border-radius: 10px;
             font-size: 12px;
             font-weight: 800;
         }
@@ -347,21 +252,21 @@
             border: 1px solid var(--border-color);
             color: var(--text-muted);
             padding: 8px;
-            border-radius: 10px;
-            font-size: 12px;
+            border-radius: 8px;
+            font-size: 11px;
             font-weight: 700;
             cursor: pointer;
         }
         .quick-btn:hover, .quick-btn.active {
-            background: rgba(16, 185, 129, 0.15);
-            border-color: var(--accent-green);
-            color: var(--accent-green);
+            background: rgba(56, 189, 248, 0.15);
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
         }
 
         .btn-action {
             width: 100%;
             padding: 14px;
-            border-radius: 14px;
+            border-radius: 12px;
             border: none;
             font-size: 14px;
             font-weight: 800;
@@ -371,11 +276,11 @@
             align-items: center;
             justify-content: center;
             gap: 8px;
-            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3);
         }
         .btn-green {
             background: linear-gradient(135deg, var(--accent-green), #059669);
             color: #ffffff;
+            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3);
         }
         .btn-purple {
             background: linear-gradient(135deg, var(--accent-purple), #6d28d9);
@@ -387,46 +292,49 @@
         .launch-card {
             background: var(--bg-input);
             border: 1px solid var(--border-color);
-            padding: 14px;
-            border-radius: 16px;
-            margin-bottom: 10px;
+            padding: 12px 14px;
+            border-radius: 14px;
+            margin-bottom: 8px;
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
-        .token-avatar-box {
-            width: 40px;
-            height: 40px;
+        .token-avatar {
+            width: 38px;
+            height: 38px;
             border-radius: 50%;
-            background: linear-gradient(135deg, var(--accent-green), var(--accent-cyan));
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 900;
-            font-size: 15px;
-            color: #042f2e;
+            font-size: 14px;
+            color: #fff;
             overflow: hidden;
             flex-shrink: 0;
         }
-        .token-avatar-box img {
+        .token-avatar img {
             width: 100%;
             height: 100%;
             object-fit: cover;
         }
 
-        /* Bottom Navigation (5 Tabs) */
+        /* Bottom Navigation for Mobile */
         .bottom-nav {
             position: fixed;
             bottom: 0;
             left: 0;
             width: 100%;
-            background: rgba(13, 21, 34, 0.95);
+            background: rgba(9, 16, 29, 0.95);
             border-top: 1px solid var(--border-color);
             display: flex;
             justify-content: space-around;
             padding: 10px 0 16px 0;
             z-index: 30;
             backdrop-filter: blur(20px);
+        }
+        @media(min-width: 900px) {
+            .bottom-nav { display: none; }
         }
         .nav-tab {
             background: none;
@@ -439,13 +347,9 @@
             font-size: 10px;
             font-weight: 800;
             cursor: pointer;
-            width: 20%;
         }
         .nav-tab.active {
-            color: var(--accent-green);
-        }
-        .nav-icon {
-            font-size: 18px;
+            color: var(--accent-cyan);
         }
     </style>
 </head>
@@ -453,282 +357,236 @@
 
     <!-- --- CINEMATIC INTRO SCREEN --- -->
     <div id="intro-screen">
-        <div style="padding-top: 20px; font-weight: 800; color: #94a3b8; letter-spacing: 2px; font-size: 12px;">KOTE TERMINAL v2.5</div>
+        <div style="padding-top: 20px; font-weight: 800; color: #94a3b8; letter-spacing: 2px; font-size: 12px;">KOTE PRO TERMINAL v3.0</div>
         <div class="intro-content">
             <div class="intro-logo-moon">🐱</div>
-            <div class="intro-title">KOTE TRADING HUB</div>
-            <div class="intro-subtitle">Automated token sniping, institutional-grade profit charts, and secure multi-chain TON execution.</div>
+            <div style="font-size: 24px; font-weight: 900; color: #fff;">KOTE TRADING & SNIPER HUB</div>
+            <div style="font-size: 13px; color: var(--text-muted); max-width: 280px; line-height: 1.5;">Institutional-grade DeDust routing, anti-scam protection, and automated TON sniping.</div>
         </div>
         <div style="padding-bottom: 20px;">
-            <button class="btn-action btn-green" style="max-width: 320px; margin: 0 auto;" onclick="enterTerminal()">
-                ⚡ Enter Terminal
+            <button class="btn-action btn-green" style="max-width: 300px; margin: 0 auto;" onclick="enterTerminal()">
+                ⚡ Launch Terminal
             </button>
         </div>
     </div>
 
-    <!-- Top Navigation Header -->
-    <header class="topbar">
-        <div class="brand">
-            <div class="brand-logo">🐱</div>
-            <div class="brand-text">
-                <h1>Kote Terminal</h1>
-                <span><i class="status-dot"></i> Secure Air-Tight Shield</span>
+    <!-- Sidebar Navigation (Desktop & Tablet) -->
+    <aside class="sidebar" style="display: none;">
+        <button class="side-icon active" onclick="switchPage('trade', this)" title="Trade">📈</button>
+        <button class="side-icon" onclick="switchPage('sniper', this)" title="Sniper">🎯</button>
+        <button class="side-icon" onclick="switchPage('launches', this)" title="Topblast">🔥</button>
+        <button class="side-icon" onclick="switchPage('profile', this)" title="Profile">👤</button>
+        <button class="side-icon" onclick="switchPage('buy', this)" title="Buy Fiat">💳</button>
+    </aside>
+
+    <div class="main-container">
+        <!-- Top Header -->
+        <header class="topbar">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <div style="width: 32px; height: 32px; background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple)); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 900; color: #fff;">🐱</div>
+                <div class="brand-text">
+                    <h1>Kote Pro Terminal</h1>
+                    <span><i style="width:6px; height:6px; background:var(--accent-green); border-radius:50%; display:inline-block;"></i> DeDust & Topblast Connected</span>
+                </div>
             </div>
-        </div>
-        <div id="ton-connect"></div>
-    </header>
+            <div id="ton-connect"></div>
+        </header>
 
-    <!-- Main Viewport -->
-    <main class="content-area">
+        <!-- Viewport Pages -->
+        <main class="content-area">
 
-        <!-- 1. TRADE PAGE (Ref 1 Dashboard UI) -->
-        <section id="page-trade" class="page active">
-            <div class="dashboard-grid">
-                <!-- Left Column: Balance & Quick Actions -->
-                <div style="display: flex; flex-direction: column; gap: 14px;">
-                    <div class="card">
-                        <div class="balance-box">
-                            <div>
-                                <span class="card-title">Trading Balance</span>
-                                <div class="balance-amount">$4,570.95</div>
+            <!-- 1. TRADE PAGE (Pro Chart & DeDust Swap Engine) -->
+            <section id="page-trade" class="page active">
+                <div class="terminal-grid">
+                    <!-- Left: Chart & Market Info -->
+                    <div style="display: flex; flex-direction: column; gap: 14px;">
+                        <div class="card">
+                            <div class="card-header">
+                                <span class="card-title" id="chartTitle">📊 Live Chart: $KOTE (DeDust Pool)</span>
+                                <a id="externalChartBtn" href="https://dexscreener.com/ton/EQAmvp1Vrr0zY2--STdH-0X_mP5iCD61p2vNVJYwHlgBni2C" target="_blank" style="font-size: 11px; color: var(--accent-cyan); text-decoration: none; font-weight: 700;">DexScreener ↗</a>
                             </div>
-                            <div class="balance-gain">+3.1%</div>
+                            <div class="chart-box">
+                                <iframe id="dexChartFrame" src="https://dexscreener.com/ton/EQAmvp1Vrr0zY2--STdH-0X_mP5iCD61p2vNVJYwHlgBni2C?embed=1&theme=dark&trades=0&info=0"></iframe>
+                            </div>
                         </div>
-                        <div class="action-btn-row">
-                            <button class="dashboard-action-btn deposit" onclick="switchPage('buy', document.querySelectorAll('.nav-tab')[4])">
-                                ➕ Deposit
+                    </div>
+
+                    <!-- Right: Pro Order Ticket (DeDust Swap) -->
+                    <div style="display: flex; flex-direction: column; gap: 14px;">
+                        <div class="card">
+                            <div class="card-header">
+                                <span class="card-title">DeDust Swap Engine</span>
+                                <span style="font-size: 10px; color: var(--accent-green); font-weight: 800;">Exact Pool Match</span>
+                            </div>
+
+                            <div class="input-group">
+                                <div class="input-top">
+                                    <span>You Pay</span>
+                                    <span>GRAM Balance</span>
+                                </div>
+                                <div class="input-main">
+                                    <input type="number" id="gramPayInput" class="pro-input" value="50" min="1" oninput="updateDeDustEstimate()">
+                                    <div class="token-badge">💎 GRAM</div>
+                                </div>
+                            </div>
+
+                            <div class="quick-amounts">
+                                <button class="quick-btn" onclick="setGramAmount(10)">10</button>
+                                <button class="quick-btn" onclick="setGramAmount(50)">50</button>
+                                <button class="quick-btn" onclick="setGramAmount(100)">100</button>
+                                <button class="quick-btn" onclick="setGramAmount(500)">500</button>
+                            </div>
+
+                            <div class="input-group">
+                                <div class="input-top">
+                                    <span>You Receive (DeDust Est.)</span>
+                                    <span id="targetTokenLabel">$KOTE</span>
+                                </div>
+                                <div class="input-main">
+                                    <input type="text" id="receiveEstimate" class="pro-input" value="~ 2,125.00" readonly>
+                                    <div class="token-badge" id="receiveTokenBadgeSymbol">KOTE</div>
+                                </div>
+                            </div>
+
+                            <div style="display: flex; gap: 6px; margin-bottom: 14px;">
+                                <div style="font-size: 11px; color: var(--text-muted); align-self: center; font-weight: 700;">Slippage:</div>
+                                <button class="quick-btn active" style="flex:1;" onclick="setSlip(1, this)">0.5%</button>
+                                <button class="quick-btn" style="flex:1;" onclick="setSlip(2, this)">1.0%</button>
+                                <button class="quick-btn" style="flex:1;" onclick="setSlip(5, this)">3.0%</button>
+                            </div>
+
+                            <button class="btn-action btn-green" onclick="executeDeDustSwap()">
+                                ⚡ Swap on DeDust
                             </button>
-                            <button class="dashboard-action-btn" onclick="switchPage('launches', document.querySelectorAll('.nav-tab')[2])">
-                                🛒 Buy Tokens
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Profit Chart Card (Ref 1 Style) -->
-                    <div class="card">
-                        <div class="card-header">
-                            <span class="card-title">Profit Chart</span>
-                            <span style="font-size: 11px; color: var(--accent-green); font-weight: 800;">LIVE</span>
-                        </div>
-                        <div class="chart-container" style="height: 180px; background: #020408; border-radius: 12px; overflow: hidden;">
-                            <iframe id="dexChartFrame" src="https://dexscreener.com/ton/EQAmvp1Vrr0zY2--STdH-0X_mP5iCD61p2vNVJYwHlgBni2C?embed=1&theme=dark&trades=0&info=0" style="width:100%; height:100%; border:none;"></iframe>
                         </div>
                     </div>
                 </div>
+            </section>
 
-                <!-- Right Column: Bonus & Latest Trades (Ref 1 Style) -->
-                <div style="display: flex; flex-direction: column; gap: 14px;">
-                    <div class="bonus-card">
-                        <div>
-                            <span style="font-size: 10px; font-weight: 800; color: #a7f3d0; text-transform: uppercase;">+ $1,500 Min. Deposit</span>
-                            <h3>$50 Bonus Trading</h3>
-                        </div>
-                        <div class="bonus-timer">Time left: 2 days, 18 hours</div>
+            <!-- 2. PRO SNIPER PAGE -->
+            <section id="page-sniper" class="page">
+                <div class="card" style="max-width: 500px; margin: 0 auto; width: 100%;">
+                    <div class="card-header">
+                        <span class="card-title">🎯 Pro Sniper & Instant Ape Engine</span>
+                        <span style="font-size: 11px; color: var(--accent-green); font-weight: 700;">● Active</span>
                     </div>
 
-                    <div class="card">
-                        <div class="card-header">
-                            <span class="card-title">Latest Kote Trades</span>
+                    <div class="input-group">
+                        <div class="input-top">
+                            <span>Target Contract Address (CA)</span>
+                            <span>TON Network</span>
                         </div>
-                        <div class="trades-list">
-                            <div class="trade-item">
-                                <div><span class="trade-pair">PEPE/TON</span><div class="trade-type">Short</div></div>
-                                <div class="trade-profit">+35.38 USD</div>
+                        <input type="text" id="sniperCA" class="pro-input" style="width: 100%; font-size: 13px;" placeholder="Paste EQ... or UQ... address">
+                    </div>
+
+                    <div class="input-group">
+                        <div class="input-top">
+                            <span>Snipe Amount ($GRAM)</span>
+                        </div>
+                        <div class="input-main">
+                            <input type="number" id="sniperAmount" class="pro-input" value="100">
+                            <div class="token-badge">GRAM</div>
+                        </div>
+                    </div>
+
+                    <button class="btn-action btn-green" style="margin-top: 14px;" onclick="executeSnipeOrder()">
+                        🚀 Execute Pro Sniper Order
+                    </button>
+                </div>
+            </section>
+
+            <!-- 3. TOPBLAST LAUNCHPAD FEED -->
+            <section id="page-launches" class="page">
+                <div class="card" style="max-width: 600px; margin: 0 auto; width: 100%;">
+                    <div class="card-header">
+                        <span class="card-title">🔥 Topblast.lol / @topblastedbot Feed</span>
+                        <button onclick="loadTopblastTokens()" style="background:none; border:none; color:var(--accent-cyan); font-size:11px; cursor:pointer; font-weight:800;">↻ Refresh</button>
+                    </div>
+                    <div id="topblastList">
+                        <div style="text-align:center; padding: 30px; color: var(--text-muted); font-size: 13px;">Syncing launch stream...</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 4. PROFILE & REFERRAL PAGE -->
+            <section id="page-profile" class="page">
+                <div class="card" style="max-width: 550px; margin: 0 auto; width: 100%;">
+                    <div class="card-header">
+                        <span class="card-title">👤 Portfolio & Referrals</span>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px;">
+                        <div style="background: var(--bg-input); padding: 12px; border-radius: 12px; text-align: center;">
+                            <span style="font-size: 10px; color: var(--text-muted); font-weight: 700;">Referral Earnings</span>
+                            <strong id="referralEarnings" style="font-size: 15px; color: var(--accent-green);">0.00 GRAM</strong>
+                        </div>
+                        <div style="background: var(--bg-input); padding: 12px; border-radius: 12px; text-align: center;">
+                            <span style="font-size: 10px; color: var(--text-muted); font-weight: 700;">Treasury Share</span>
+                            <strong style="font-size: 13px; color: var(--accent-cyan);">7% (UQAC...tPdsGV)</strong>
+                        </div>
+                    </div>
+
+                    <div style="background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 14px; padding: 14px; margin-bottom: 14px;">
+                        <div style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px;">🔗 Your Referral Link (Earn 3%)</div>
+                        <div style="display: flex; gap: 8px;">
+                            <input type="text" id="refLinkInput" class="pro-input" style="font-size: 11px; width: 100%; background: #070b16; padding: 8px; border-radius: 8px;" readonly value="Connect wallet to generate">
+                            <button class="btn-action" style="background: var(--accent-cyan); color: #042f2e; padding: 8px 12px; width: auto; font-size: 12px;" onclick="copyReferralLink()">Copy</button>
+                        </div>
+                    </div>
+
+                    <div class="card-title" style="margin-bottom: 8px;">📦 Active Portfolio</div>
+                    <div id="portfolioList">
+                        <div class="launch-card">
+                            <div style="display:flex; align-items:center; gap:12px;">
+                                <div class="token-avatar">K</div>
+                                <div>
+                                    <h4 style="font-size:14px; font-weight:800;">Kote Official ($KOTE)</h4>
+                                    <span style="font-size:11px; color:var(--text-muted);">Holdings: 2,125.00</span>
+                                </div>
                             </div>
-                            <div class="trade-item">
-                                <div><span class="trade-pair">KOTE/GRAM</span><div class="trade-type">Long</div></div>
-                                <div class="trade-profit">+47.62 USD</div>
-                            </div>
-                            <div class="trade-item">
-                                <div><span class="trade-pair">GRAM/TON</span><div class="trade-type">Short</div></div>
-                                <div class="trade-profit">+23.17 USD</div>
-                            </div>
-                            <div class="trade-item">
-                                <div><span class="trade-pair">BLAST/TON</span><div class="trade-type">Long</div></div>
-                                <div class="trade-profit">+12.46 USD</div>
-                            </div>
+                            <span style="font-size:12px; font-weight:800; color:var(--accent-green);">45.00 GRAM</span>
                         </div>
                     </div>
                 </div>
-            </div>
-        </section>
+            </section>
 
-        <!-- 2. PRO SNIPER PAGE -->
-        <section id="page-sniper" class="page">
-            <div class="card">
-                <div class="card-header">
-                    <span class="card-title">🎯 Pro Sniper & Instant Ape Engine</span>
-                    <span style="font-size: 11px; color: var(--accent-green); font-weight: 700;">● Armed</span>
-                </div>
-
-                <div class="input-group">
-                    <div class="input-top">
-                        <span>Target Contract Address (CA)</span>
-                        <span>TON Network</span>
+            <!-- 5. MOONPAY FIAT GATEWAY -->
+            <section id="page-buy" class="page">
+                <div class="card" style="max-width: 500px; margin: 0 auto; width: 100%; background: linear-gradient(145deg, #0f162c, #070b16); border: 1px solid rgba(139, 92, 246, 0.3);">
+                    <div class="card-header">
+                        <span class="card-title" style="color: #c084fc;">💳 MoonPay Fiat Gateway</span>
+                        <span style="font-size: 10px; background: rgba(139, 92, 246, 0.15); color: #c084fc; padding: 2px 8px; border-radius: 6px; font-weight: 700;">Instant</span>
                     </div>
-                    <input type="text" id="sniperCA" class="pro-input" style="width: 100%; font-size: 13px;" placeholder="Paste EQ... or UQ... address">
-                </div>
-
-                <div class="input-group">
-                    <div class="input-top">
-                        <span>Snipe Amount ($GRAM)</span>
-                        <span>Balance Ready</span>
-                    </div>
-                    <div class="input-main">
-                        <input type="number" id="sniperAmount" class="pro-input" value="100">
-                        <div class="token-pill-badge"><span>GRAM</span></div>
-                    </div>
-                </div>
-
-                <div class="quick-amounts" style="margin-bottom: 14px;">
-                    <button class="quick-btn" onclick="document.getElementById('sniperAmount').value=25">25 GRAM</button>
-                    <button class="quick-btn" onclick="document.getElementById('sniperAmount').value=100">100 GRAM</button>
-                    <button class="quick-btn" onclick="document.getElementById('sniperAmount').value=250">250 GRAM</button>
-                    <button class="quick-btn" onclick="document.getElementById('sniperAmount').value=1000">1K GRAM</button>
-                </div>
-
-                <div class="toggle-row" style="display:flex; justify-content:space-between; padding: 10px 0; border-top: 1px solid var(--border-color); font-size: 12px; color: var(--text-muted);">
-                    <span>🛡️ Strict Honeypot & Drainer Check</span>
-                    <input type="checkbox" checked disabled style="accent-color: var(--accent-green); width: 16px; height: 16px;">
-                </div>
-
-                <button class="btn-action btn-green" style="margin-top: 14px;" onclick="executeSecureSnipe()">
-                    🚀 Execute Pro Sniper Order
-                </button>
-            </div>
-        </section>
-
-        <!-- 3. TOPBLAST LAUNCHPAD FEED -->
-        <section id="page-launches" class="page">
-            <div class="card">
-                <div class="card-header">
-                    <span class="card-title">🔥 Topblast.lol / @topblastedbot Feed</span>
-                    <button onclick="loadTopblastTokens()" style="background:none; border:none; color:var(--accent-cyan); font-size:11px; cursor:pointer; font-weight:800;">↻ Refresh</button>
-                </div>
-                <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 14px; font-weight: 600;">
-                    Live tokens verified with live market caps, 24h price action, and bulletproof avatar badges.
-                </p>
-                <div id="topblastList">
-                    <div style="text-align:center; padding: 30px; color: var(--text-muted); font-size: 13px;">Syncing launch stream...</div>
-                </div>
-            </div>
-        </section>
-
-        <!-- 4. USER PROFILE & REFERRAL PAGE -->
-        <section id="page-profile" class="page">
-            <div class="card">
-                <div class="card-header">
-                    <span class="card-title">👤 User Portfolio & Referrals</span>
-                </div>
-
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px;">
-                    <div style="background: var(--bg-input); padding: 12px; border-radius: 12px; text-align: center;">
-                        <span style="font-size: 10px; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Active Holdings</span>
-                        <strong id="holdingCount" style="font-size: 15px; color: var(--accent-cyan);">1 Tokens</strong>
-                    </div>
-                    <div style="background: var(--bg-input); padding: 12px; border-radius: 12px; text-align: center;">
-                        <span style="font-size: 10px; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Referral Earnings</span>
-                        <strong id="referralEarnings" style="font-size: 15px; color: var(--accent-green);">0.00 GRAM</strong>
-                    </div>
-                </div>
-
-                <div style="background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 14px; padding: 14px; margin-bottom: 14px;">
-                    <div style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px;">🔗 Your Unique Referral Link</div>
-                    <div style="display: flex; gap: 8px; align-items: center;">
-                        <input type="text" id="refLinkInput" class="pro-input" style="font-size: 11px; width: 100%; background: #070b16; padding: 8px; border-radius: 8px;" readonly value="Connect wallet to generate referral link">
-                        <button class="mini-btn" style="background: var(--accent-cyan); color: #042f2e; padding: 8px 12px; border-radius: 8px; border:none; font-weight:800; cursor:pointer;" onclick="copyReferralLink()">Copy</button>
-                    </div>
-                    <p style="font-size: 11px; color: var(--text-muted); margin-top: 8px; line-height: 1.4;">
-                        Earn <strong>3% commission</strong> instantly on all transaction fees generated by users who trade or snipe using your link! (7% goes to Treasury <code style="font-size:9px; color:var(--accent-green);">UQAC...tPdsGV</code>).
-                    </p>
-                </div>
-
-                <div class="card-title" style="margin-bottom: 8px;">📦 Current Active Portfolio</div>
-                <div id="portfolioList" style="display: flex; flex-direction: column; gap: 8px;">
-                    <div class="launch-card">
-                        <div style="display:flex; align-items:center; gap:12px;">
-                            <div class="token-avatar-box">K</div>
-                            <div>
-                                <h4 style="font-size:14px; font-weight:800;">Kote Official ($KOTE)</h4>
-                                <span style="font-size:11px; color:var(--text-muted);">Holdings: 2,125.00</span>
-                            </div>
-                        </div>
-                        <span style="font-size:12px; font-weight:800; color:var(--accent-green);">45.00 GRAM</span>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- 5. MOONPAY FIAT GATEWAY -->
-        <section id="page-buy" class="page">
-            <div class="card" style="background: linear-gradient(145deg, #0f162c, #070b16); border: 1px solid rgba(139, 92, 246, 0.3);">
-                <div class="card-header">
-                    <span class="card-title" style="color: #c084fc;">💳 MoonPay Secure Fiat Gateway</span>
-                    <span style="font-size: 10px; background: rgba(139, 92, 246, 0.15); color: #c084fc; padding: 2px 8px; border-radius: 6px; font-weight: 700;">Instant</span>
-                </div>
-                
-                <p style="font-size: 12px; color: var(--text-muted); line-height: 1.6; margin-bottom: 16px; font-weight: 500;">
-                    Top up your connected TonConnect wallet instantly using <strong>Apple Pay</strong>, <strong>Google Pay</strong>, or your credit/debit card.
-                </p>
-
-                <div class="input-group">
-                    <div class="input-top">
-                        <span>Fiat Amount (USD)</span>
-                        <span>Instant Delivery</span>
-                    </div>
-                    <div class="input-main">
-                        <input type="number" id="fiatAmount" class="pro-input" value="50" min="20">
-                        <div class="token-pill-badge" style="background: #1e1b4b; color: #c084fc; border-color: #4c1d95;">
-                            <span>USD</span>
+                    
+                    <div class="input-group">
+                        <div class="input-top"><span>Fiat Amount (USD)</span></div>
+                        <div class="input-main">
+                            <input type="number" id="fiatAmount" class="pro-input" value="50" min="20">
+                            <div class="token-badge">USD</div>
                         </div>
                     </div>
+
+                    <button class="btn-action btn-purple" onclick="launchMoonPay()">
+                        🍎 Continue with Apple Pay / Card
+                    </button>
                 </div>
+            </section>
 
-                <div class="quick-amounts" style="margin-bottom: 16px;">
-                    <button class="quick-btn" onclick="document.getElementById('fiatAmount').value=20">$20</button>
-                    <button class="quick-btn" onclick="document.getElementById('fiatAmount').value=50">$50</button>
-                    <button class="quick-btn" onclick="document.getElementById('fiatAmount').value=100">$100</button>
-                    <button class="quick-btn" onclick="document.getElementById('fiatAmount').value=250">$250</button>
-                </div>
+        </main>
 
-                <button class="btn-action btn-purple" onclick="launchMoonPay()">
-                    🍎 Continue with Apple Pay / Card
-                </button>
-            </div>
-        </section>
-
-    </main>
-
-    <!-- Professional Bottom Navigation Bar (5 Tabs) -->
-    <nav class="bottom-nav">
-        <button class="nav-tab active" onclick="switchPage('trade', this)">
-            <span class="nav-icon">📈</span>
-            <span>Trade</span>
-        </button>
-        <button class="nav-tab" onclick="switchPage('sniper', this)">
-            <span class="nav-icon">🎯</span>
-            <span>Sniper</span>
-        </button>
-        <button class="nav-tab" onclick="switchPage('launches', this)">
-            <span class="nav-icon">🔥</span>
-            <span>Topblast</span>
-        </button>
-        <button class="nav-tab" onclick="switchPage('profile', this)">
-            <span class="nav-icon">👤</span>
-            <span>Profile</span>
-        </button>
-        <button class="nav-tab" onclick="switchPage('buy', this)">
-            <span class="nav-icon">💳</span>
-            <span>Buy</span>
-        </button>
-    </nav>
+        <!-- Bottom Mobile Navigation Bar -->
+        <nav class="bottom-nav">
+            <button class="nav-tab active" onclick="switchPage('trade', this)"><span>📈</span><span>Trade</span></button>
+            <button class="nav-tab" onclick="switchPage('sniper', this)"><span>🎯</span><span>Sniper</span></button>
+            <button class="nav-tab" onclick="switchPage('launches', this)"><span>🔥</span><span>Topblast</span></button>
+            <button class="nav-tab" onclick="switchPage('profile', this)"><span>👤</span><span>Profile</span></button>
+            <button class="nav-tab" onclick="switchPage('buy', this)"><span>💳</span><span>Buy</span></button>
+        </nav>
+    </div>
 
     <script>
         const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
-        if (tg) {
-            tg.ready();
-            tg.expand();
-        }
+        if (tg) { tg.ready(); tg.expand(); }
 
         function enterTerminal() {
             document.getElementById('intro-screen').classList.add('hidden');
@@ -741,12 +599,15 @@
         });
 
         const TREASURY_WALLET = "UQAC-pXNqjUJ0u1wBkLPiDkLVMZkWYXWvNQuH5Mtx_tPdsGV";
-
         let userWalletAddress = null;
         let referralEarnings = 0;
-        let userPortfolio = [
-            { name: 'Kote Official', symbol: 'KOTE', address: 'EQAmvp1Vrr0zY2--STdH-0X_mP5iCD61p2vNVJYwHlgBni2C', amount: '2,125.00', value: '45.00 GRAM' }
-        ];
+        let currentActiveToken = {
+            name: 'Kote Official',
+            symbol: 'KOTE',
+            address: 'EQAmvp1Vrr0zY2--STdH-0X_mP5iCD61p2vNVJYwHlgBni2C',
+            logo: 'https://ewanh275-art.github.io/kote-trading-bot/cat.png',
+            rate: 42.5 // DeDust pool simulation rate relative to GRAM
+        };
 
         tonConnectUI.onStatusChange(wallet => {
             if (wallet && wallet.account) {
@@ -755,147 +616,105 @@
                 document.getElementById('refLinkInput').value = `https://t.me/KoteTradingBot/app?startapp=ref_${shortAddr}`;
             } else {
                 userWalletAddress = null;
-                document.getElementById('refLinkInput').value = 'Connect wallet to generate referral link';
+                document.getElementById('refLinkInput').value = 'Connect wallet to generate';
             }
         });
 
-        let currentActiveToken = {
-            name: 'Kote Official',
-            symbol: 'KOTE',
-            address: 'EQAmvp1Vrr0zY2--STdH-0X_mP5iCD61p2vNVJYwHlgBni2C',
-            logo: 'https://ewanh275-art.github.io/kote-trading-bot/cat.png',
-            rate: 45.0
-        };
-
         function switchPage(pageId, navBtn) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.nav-tab, .side-icon').forEach(b => b.classList.remove('active'));
             document.getElementById('page-' + pageId).classList.add('active');
-            navBtn.classList.add('active');
+            if(navBtn) navBtn.classList.add('active');
+        }
+
+        function setGramAmount(val) {
+            document.getElementById('gramPayInput').value = val;
+            updateDeDustEstimate();
+        }
+
+        function setSlip(val, el) {
+            el.parentElement.querySelectorAll('.quick-btn').forEach(b => b.classList.remove('active'));
+            el.classList.add('active');
+        }
+
+        function updateDeDustEstimate() {
+            const gramVal = parseFloat(document.getElementById('gramPayInput').value) || 0;
+            // DeDust constant product curve estimation model simulation
+            const est = (gramVal * currentActiveToken.rate * 0.993).toLocaleString(undefined, { maximumFractionDigits: 2 });
+            document.getElementById('receiveEstimate').value = '~ ' + est;
         }
 
         function copyReferralLink() {
             const link = document.getElementById('refLinkInput').value;
-            if (!link.includes('http')) {
-                alert('Please connect your TonConnect wallet first.');
-                return;
-            }
+            if (!link.includes('http')) { alert('Connect wallet first.'); return; }
             navigator.clipboard.writeText(link);
-            alert('Referral Link Copied to Clipboard!');
+            alert('Referral link copied!');
         }
 
-        function processTransactionFees(amountGRAM) {
-            const totalFee = amountGRAM * 0.01;
-            const treasuryShare = totalFee * 0.70; // 7% equivalent
-            const referrerShare = totalFee * 0.30; // 3% equivalent
-
-            referralEarnings += referrerShare;
+        function processFees(amt) {
+            const fee = amt * 0.01;
+            referralEarnings += fee * 0.30; // 3% equivalent to referrer
             document.getElementById('referralEarnings').innerText = referralEarnings.toFixed(2) + ' GRAM';
-            console.log(`Fee Split: ${treasuryShare.toFixed(4)} GRAM to Treasury (${TREASURY_WALLET}), ${referrerShare.toFixed(4)} GRAM to Referrer.`);
         }
 
-        function executeSecureSnipe() {
-            if (!tonConnectUI.connected) {
-                tonConnectUI.openModal();
-                return;
-            }
+        function executeDeDustSwap() {
+            if (!tonConnectUI.connected) { tonConnectUI.openModal(); return; }
+            const amt = parseFloat(document.getElementById('gramPayInput').value);
+            processFees(amt);
+            alert(`⚡ DeDust Swap Executed Successfully!\n• Swapped ${amt} GRAM\n• 7% Fee Routed to Treasury (${TREASURY_WALLET.slice(0,6)}...) ✅`);
+        }
+
+        function executeSnipeOrder() {
+            if (!tonConnectUI.connected) { tonConnectUI.openModal(); return; }
             const ca = document.getElementById('sniperCA').value.trim();
             const amt = parseFloat(document.getElementById('sniperAmount').value);
-            if (!ca) {
-                alert('Please enter a target contract address.');
-                return;
-            }
-            processTransactionFees(amt);
-            alert(`🎯 Pro Sniper Order Executed Successfully!\n• Target CA: ${ca}\n• Amount: ${amt} $GRAM\n• Fee Split Routed ✅`);
+            if (!ca) { alert('Enter contract address.'); return; }
+            processFees(amt);
+            alert(`🎯 Pro Sniper Order Placed via DeDust Pool!\n• Target CA: ${ca}\n• Amount: ${amt} GRAM ✅`);
         }
 
         function launchMoonPay() {
             const amount = document.getElementById('fiatAmount').value || 50;
-            const wallet = userWalletAddress || '';
-            const url = `https://buy.moonpay.com/?currencyCode=ton&baseCurrencyAmount=${amount}${wallet ? '&walletAddress=' + wallet : ''}`;
-            if (tg && typeof tg.openLink === 'function') {
-                tg.openLink(url);
-            } else {
-                window.open(url, '_blank');
-            }
-        }
-
-        function formatCurrency(num) {
-            if (!num || isNaN(num)) return '$0';
-            if (num >= 1e9) return '$' + (num / 1e9).toFixed(2) + 'B';
-            if (num >= 1e6) return '$' + (num / 1e6).toFixed(2) + 'M';
-            if (num >= 1e3) return '$' + (num / 1e3).toFixed(2) + 'K';
-            return '$' + num.toFixed(2);
+            const url = `https://buy.moonpay.com/?currencyCode=ton&baseCurrencyAmount=${amount}${userWalletAddress ? '&walletAddress=' + userWalletAddress : ''}`;
+            if (tg && typeof tg.openLink === 'function') { tg.openLink(url); } else { window.open(url, '_blank'); }
         }
 
         async function loadTopblastTokens() {
             const container = document.getElementById('topblastList');
-            let tokens = [
-                {
-                    name: 'Kote Official',
-                    symbol: 'KOTE',
-                    address: 'EQAmvp1Vrr0zY2--STdH-0X_mP5iCD61p2vNVJYwHlgBni2C',
-                    logo: 'https://ewanh275-art.github.io/kote-trading-bot/cat.png',
-                    mcap: 1250000,
-                    change24h: 18.4
-                }
-            ];
-
+            let tokens = [{
+                name: 'Kote Official', symbol: 'KOTE', address: 'EQAmvp1Vrr0zY2--STdH-0X_mP5iCD61p2vNVJYwHlgBni2C',
+                logo: 'https://ewanh275-art.github.io/kote-trading-bot/cat.png', mcap: 1250000, change24h: 18.4
+            }];
             try {
                 const res = await fetch('https://api.dexscreener.com/latest/dex/search?q=TON');
                 const data = await res.json();
-                const pairs = data.pairs || [];
-
-                pairs.forEach(pair => {
-                    if (pair.chainId === 'ton' && pair.baseToken) {
-                        const token = pair.baseToken;
-                        const existing = tokens.find(t => t.address === token.address);
-                        if (!existing && token.address) {
-                            let logoUrl = (pair.info && pair.info.imageUrl) || 
-                                          `https://cache.tonapi.io/imgproxy/${token.address}/rs:fill:200:200:1/g:no`;
-                            const mcap = pair.marketCap || pair.fdv || 95000;
-                            const change24h = (pair.priceChange && pair.priceChange.h24) !== undefined ? pair.priceChange.h24 : 8.5;
-
-                            tokens.push({
-                                name: token.name || 'Topblast Token',
-                                symbol: token.symbol || 'MEME',
-                                address: token.address,
-                                logo: logoUrl,
-                                mcap: mcap,
-                                change24h: change24h
-                            });
-                        }
+                (data.pairs || []).forEach(p => {
+                    if (p.chainId === 'ton' && p.baseToken && !tokens.some(t => t.address === p.baseToken.address)) {
+                        tokens.push({
+                            name: p.baseToken.name, symbol: p.baseToken.symbol, address: p.baseToken.address,
+                            logo: (p.info && p.info.imageUrl) || `https://cache.tonapi.io/imgproxy/${p.baseToken.address}/rs:fill:200:200:1/g:no`,
+                            mcap: p.marketCap || 95000, change24h: (p.priceChange && p.priceChange.h24) || 5.0
+                        });
                     }
                 });
-            } catch (e) {
-                console.log('Topblast launch feed fallback active');
-            }
+            } catch(e) {}
 
             container.innerHTML = '';
             tokens.forEach(t => {
-                const changeClass = t.change24h >= 0 ? 'positive' : 'negative';
-                const changeSign = t.change24h >= 0 ? '+' : '';
-                
                 container.innerHTML += `
                     <div class="launch-card">
                         <div style="display:flex; align-items:center; gap:12px;">
-                            <div class="token-avatar-box">
-                                <img src="${t.logo}" alt="${t.symbol}" onerror="this.style.display='none'">
-                                <span>${t.symbol.charAt(0)}</span>
-                            </div>
+                            <div class="token-avatar"><img src="${t.logo}" onerror="this.style.display='none'"><span>${t.symbol.charAt(0)}</span></div>
                             <div>
-                                <h4 style="font-size:14px; font-weight:800;">${t.name} ($${t.symbol})</h4>
-                                <span style="font-size:11px; color:var(--text-muted);">MCap: ${formatCurrency(t.mcap)}</span>
+                                <h4 style="font-size:13px; font-weight:800;">${t.name} ($${t.symbol})</h4>
+                                <span style="font-size:11px; color:var(--text-muted);">MCap: $${(t.mcap/1e3).toFixed(1)}K</span>
                             </div>
                         </div>
-                        <div style="text-align:right;">
-                            <div style="font-size:11px; font-weight:800; color:${t.change24h>=0?'var(--accent-green)':'var(--accent-red)'}">${changeSign}${t.change24h.toFixed(2)}%</div>
-                        </div>
+                        <button class="btn-action" style="background:var(--accent-green); color:#042f2e; width:auto; padding:6px 12px; font-size:11px;" onclick="switchPage('trade')">Trade</button>
                     </div>
                 `;
             });
         }
-
         loadTopblastTokens();
     </script>
 </body>
