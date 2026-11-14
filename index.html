@@ -485,7 +485,7 @@
 
     <!-- --- CINEMATIC INTRO SCREEN --- -->
     <div id="intro-screen">
-        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v10.7</div>
+        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v10.8</div>
         <div class="intro-content">
             <div class="intro-logo-moon">🐱</div>
             <div style="font-size: 24px; font-weight: 900; color: #fff; letter-spacing: 0.5px;">GRAM & TOPBLAST MEMES</div>
@@ -700,6 +700,12 @@
                             <span style="font-size: 10px; color: var(--text-muted); font-weight: 800;">Treasury Wallet (7%)</span>
                             <strong style="font-size: 11px; color: var(--accent-red);">UQAC...tPdsGV</strong>
                         </div>
+                    </div>
+
+                    <div style="margin-bottom: 14px;">
+                        <button class="btn-action btn-red" onclick="manualSyncPortfolio()">
+                            ↻ Force Sync On-Chain Data
+                        </button>
                     </div>
 
                     <div style="background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 14px; padding: 14px; margin-bottom: 14px;">
@@ -1320,6 +1326,27 @@
             }
         }
 
+        window.manualSyncPortfolio = function() {
+            if (!userWalletAddress) {
+                alert('Please connect your wallet first.');
+                return;
+            }
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '🔄 Syncing Blockchain...';
+            
+            Promise.all([
+                fetchRealWalletHoldings(userWalletAddress),
+                verifyBlockchainTransactions(userWalletAddress)
+            ]).then(() => {
+                btn.innerHTML = originalText;
+                alert('✅ On-chain data synchronized successfully!');
+            }).catch(err => {
+                btn.innerHTML = originalText;
+                alert('Sync failed, please try again in a few seconds.');
+            });
+        };
+
         window.copyReferralLink = function() {
             const link = document.getElementById('refLinkInput').value;
             if (!link.includes('http')) { alert('Connect wallet first.'); return; }
@@ -1410,8 +1437,11 @@
                 alert(`✅ In-App DeDust Swap Confirmed!\n\n• Swapped: ${netAmount} GRAM for $${currentActiveToken.symbol}\n• Fee Split Processed On-Chain\n• Tx Hash: ${result.boc ? result.boc.slice(0, 20) + '...' : 'Success'}`);
 
                 setTimeout(() => {
-                    if (userWalletAddress) verifyBlockchainTransactions(userWalletAddress);
-                }, 4000);
+                    if (userWalletAddress) {
+                        verifyBlockchainTransactions(userWalletAddress);
+                        fetchRealWalletHoldings(userWalletAddress);
+                    }
+                }, 12000); // 12 seconds to allow TonAPI indexing
 
                 btn.innerHTML = originalText;
                 btn.disabled = false;
@@ -1484,8 +1514,11 @@
                 alert(`🎯 In-App Snipe Confirmed!\n\n• Target CA: ${ca}\n• Net Snipe: ${netAmount} GRAM\n• Fee Split & Routing Executed On-Chain`);
 
                 setTimeout(() => {
-                    if (userWalletAddress) verifyBlockchainTransactions(userWalletAddress);
-                }, 4000);
+                    if (userWalletAddress) {
+                        verifyBlockchainTransactions(userWalletAddress);
+                        fetchRealWalletHoldings(userWalletAddress);
+                    }
+                }, 12000); // 12 seconds to allow TonAPI indexing
 
                 btn.innerHTML = originalText;
                 btn.disabled = false;
