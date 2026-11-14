@@ -27,7 +27,6 @@
             -webkit-tap-highlight-color: transparent;
         }
         body {
-            /* Custom background across the entire bot and every page */
             background: linear-gradient(rgba(5, 5, 7, 0.75), rgba(5, 5, 7, 0.90)), url('./bg.jpg.JPG') no-repeat center center fixed;
             background-size: cover;
             color: var(--text-main);
@@ -471,11 +470,11 @@
 
     <!-- --- CINEMATIC INTRO SCREEN --- -->
     <div id="intro-screen">
-        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE CRIMSON TERMINAL v7.3</div>
+        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE CRIMSON TERMINAL v7.4</div>
         <div class="intro-content">
             <div class="intro-logo-moon">🐱</div>
             <div style="font-size: 25px; font-weight: 900; color: #fff; letter-spacing: 0.5px;">KOTE SNIPER & TOPBLAST HUB</div>
-            <div style="font-size: 13px; color: var(--text-muted); max-width: 290px; line-height: 1.5;">Custom background theme across all pages, live DexScreener sync & anti-scam protection.</div>
+            <div style="font-size: 13px; color: var(--text-muted); max-width: 290px; line-height: 1.5;">Real-time live price streaming, official TonViewer/TonAPI logos, and custom background theme.</div>
         </div>
         <div style="padding-bottom: 20px;">
             <button class="btn-action btn-red" style="max-width: 300px; margin: 0 auto;" onclick="enterTerminal()">
@@ -491,7 +490,7 @@
                 <div class="brand-logo-box">🐱</div>
                 <div class="brand-text">
                     <h1>Kote Pro Terminal</h1>
-                    <span>● Custom Background Active</span>
+                    <span>● Live Price Stream Active</span>
                 </div>
             </div>
             <div id="ton-connect"></div>
@@ -621,13 +620,13 @@
                 </div>
             </section>
 
-            <!-- 3. TOPBLAST LAUNCHPAD FEED -->
+            <!-- 3. TOPBLAST LAUNCHPAD FEED WITH REAL-TIME PRICES & TONVIEWER LOGOS -->
             <section id="page-launches" class="page">
                 <div class="card" style="max-width: 650px; margin: 0 auto; width: 100%;">
                     <div class="card-header">
                         <div>
                             <span class="card-title" style="color: var(--accent-red);">🔥 Official Topblast.lol Launches</span>
-                            <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">100% Verified Topblast Launches • Audited Contracts</div>
+                            <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Real-Time Price Feed • TonViewer Proxies • Audited</div>
                         </div>
                         <button onclick="loadTopblastOnlyTokens()" style="background: rgba(239,68,68,0.15); border: 1px solid var(--accent-red); color: var(--accent-red); padding: 6px 10px; border-radius: 8px; font-size: 11px; cursor: pointer; font-weight: 800;">↻ Sync All</button>
                     </div>
@@ -637,7 +636,7 @@
                     </div>
 
                     <div id="topblastList">
-                        <div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 12px;">Fetching audited Topblast.lol launch registry...</div>
+                        <div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 12px;">Streaming live Topblast prices & TonViewer logos...</div>
                     </div>
                 </div>
             </section>
@@ -986,7 +985,7 @@
                     const symbol = b.jetton.symbol || 'JETTON';
                     const decimals = b.jetton.decimals || 9;
                     const rawAmount = parseFloat(b.balance) / Math.pow(10, decimals);
-                    const image = b.jetton.image || '';
+                    const image = b.jetton.image || `https://cache.tonapi.io/imgproxy/${b.jetton.address}/rs:fill:200:200:1/g:no`;
                     const estUsdValue = rawAmount * (b.price?.prices?.USD || 0.01);
                     return { name, symbol, amount: rawAmount, image, estUsdValue };
                 });
@@ -1227,6 +1226,7 @@
                         const liveLiq = p.liquidity?.usd || 18200;
                         const liveVol = p.volume?.h24 || 12400;
                         const livePriceUSD = p.priceUsd ? parseFloat(p.priceUsd) : 0.01;
+                        // Guaranteed official TonViewer / TonAPI image proxy fallback
                         const liveLogo = (p.info && p.info.imageUrl) || `https://cache.tonapi.io/imgproxy/${p.baseToken.address}/rs:fill:200:200:1/g:no`;
                         
                         const existingIdx = topblastRegistry.findIndex(t => t.address === p.baseToken.address || t.symbol === p.baseToken.symbol);
@@ -1247,6 +1247,9 @@
             renderTopblastList(allTopblastTokens);
         }
 
+        // Real-Time Polling Interval (Updates every 8 seconds)
+        setInterval(loadTopblastOnlyTokens, 8000);
+
         function filterTopblastList() {
             const q = document.getElementById('topblastSearchInput').value.toLowerCase();
             const filtered = allTopblastTokens.filter(t => t.name.toLowerCase().includes(q) || t.symbol.toLowerCase().includes(q) || t.address.toLowerCase().includes(q));
@@ -1263,6 +1266,7 @@
             container.innerHTML = '';
             list.forEach(t => {
                 const formattedMcap = t.mcap >= 1e6 ? '$' + (t.mcap/1e6).toFixed(2) + 'M' : '$' + (t.mcap/1e3).toFixed(1) + 'K';
+                const formattedPrice = t.priceUSD < 0.001 ? '$' + t.priceUSD.toFixed(6) : '$' + t.priceUSD.toFixed(4);
                 container.innerHTML += `
                     <div class="launch-card">
                         <div style="display:flex; align-items:center; gap:12px;">
@@ -1275,7 +1279,9 @@
                                     <h4 style="font-size:13px; font-weight:800;">${t.name} ($${t.symbol})</h4>
                                     <span class="badge-topblast">Topblast</span>
                                 </div>
-                                <span style="font-size:11px; color:var(--accent-green); font-weight:700;">Live MCap: ${formattedMcap} • Audited</span>
+                                <div style="font-size:11px; color:var(--accent-green); font-weight:700; margin-top:2px;">
+                                    Price: ${formattedPrice} • MCap: ${formattedMcap}
+                                </div>
                             </div>
                         </div>
                         <button class="btn-action btn-red" style="width:auto; padding:7px 14px; font-size:11px;" onclick="selectTokenForTrade('${t.address}', '${t.name.replace(/'/g, "\\'")}', '${t.symbol}', '${t.logo}', ${t.mcap}, ${t.liq || 15000}, ${t.vol || 10000}, ${t.priceUSD})">Trade</button>
