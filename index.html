@@ -485,7 +485,7 @@
 
     <!-- --- CINEMATIC INTRO SCREEN --- -->
     <div id="intro-screen">
-        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v10.4</div>
+        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v10.5</div>
         <div class="intro-content">
             <div class="intro-logo-moon">🐱</div>
             <div style="font-size: 24px; font-weight: 900; color: #fff; letter-spacing: 0.5px;">GRAM & TOPBLAST MEMES</div>
@@ -1348,36 +1348,31 @@
 
                 let messages = [];
 
-                // 1. Fee Split Messages
+                // 1. Fee Split Messages (Omitted empty payload to prevent TonConnect validation error)
                 if (referrerAddress) {
-                    const referrerFee = totalFeeAmount * 0.30; // 3% of total (30% of 10%)
-                    const treasuryFee = totalFeeAmount * 0.70; // 7% of total (70% of 10%)
+                    const referrerFee = totalFeeAmount * 0.30; 
+                    const treasuryFee = totalFeeAmount * 0.70; 
 
                     messages.push({
                         address: referrerAddress,
-                        amount: Math.floor(referrerFee * 1e9).toString(),
-                        payload: ''
+                        amount: Math.floor(referrerFee * 1e9).toString()
                     });
                     messages.push({
                         address: TREASURY_ADDRESS,
-                        amount: Math.floor(treasuryFee * 1e9).toString(),
-                        payload: ''
+                        amount: Math.floor(treasuryFee * 1e9).toString()
                     });
                 } else {
                     messages.push({
                         address: TREASURY_ADDRESS,
-                        amount: Math.floor(totalFeeAmount * 1e9).toString(),
-                        payload: ''
+                        amount: Math.floor(totalFeeAmount * 1e9).toString()
                     });
                 }
 
-                // 2. DeDust Native Vault Swap Message (Executed directly in-app)
-                // Sending net amount + 0.25 TON gas allowance to DeDust Native Vault
+                // 2. DeDust Native Vault Swap Message
                 const swapTonTotal = netAmount + 0.25;
                 messages.push({
                     address: DEDUST_NATIVE_VAULT,
-                    amount: Math.floor(swapTonTotal * 1e9).toString(),
-                    payload: '' // Direct vault routing payload
+                    amount: Math.floor(swapTonTotal * 1e9).toString()
                 });
 
                 const transaction = {
@@ -1385,7 +1380,6 @@
                     messages: messages
                 };
 
-                // Request user signature & broadcast directly inside the bot interface
                 const result = await tonConnectUI.sendTransaction(transaction);
 
                 alert(`✅ In-App DeDust Swap Confirmed!\n\n• Swapped: ${netAmount} GRAM for $${currentActiveToken.symbol}\n• Fee Split Processed On-Chain\n• Tx Hash: ${result.boc ? result.boc.slice(0, 20) + '...' : 'Success'}`);
@@ -1420,16 +1414,15 @@
 
                 let messages = [];
                 if (referrerAddress) {
-                    messages.push({ address: referrerAddress, amount: Math.floor(totalFee * 0.30 * 1e9).toString(), payload: '' });
-                    messages.push({ address: TREASURY_ADDRESS, amount: Math.floor(totalFee * 0.70 * 1e9).toString(), payload: '' });
+                    messages.push({ address: referrerAddress, amount: Math.floor(totalFee * 0.30 * 1e9).toString() });
+                    messages.push({ address: TREASURY_ADDRESS, amount: Math.floor(totalFee * 0.70 * 1e9).toString() });
                 } else {
-                    messages.push({ address: TREASURY_ADDRESS, amount: Math.floor(totalFee * 1e9).toString(), payload: '' });
+                    messages.push({ address: TREASURY_ADDRESS, amount: Math.floor(totalFee * 1e9).toString() });
                 }
 
                 messages.push({
                     address: DEDUST_NATIVE_VAULT,
-                    amount: Math.floor((netAmount + 0.25) * 1e9).toString(),
-                    payload: ''
+                    amount: Math.floor((netAmount + 0.25) * 1e9).toString()
                 });
 
                 const transaction = {
