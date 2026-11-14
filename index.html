@@ -493,7 +493,7 @@
 
     <!-- --- CINEMATIC INTRO SCREEN --- -->
     <div id="intro-screen">
-        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v8.2</div>
+        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v8.3</div>
         <div class="intro-content">
             <div class="intro-logo-moon">🐱</div>
             <div style="font-size: 25px; font-weight: 900; color: #fff; letter-spacing: 0.5px;">KOTE TRADE/SNIPER BOT</div>
@@ -512,7 +512,7 @@
                 <div class="brand-logo-box">🐱</div>
                 <div class="brand-text">
                     <h1>Kote Pro Terminal</h1>
-                    <span>● Topblast v2 API Sync Active</span>
+                    <span>● Topblast v2 Live Indexing</span>
                 </div>
             </div>
             <div id="ton-connect"></div>
@@ -585,7 +585,7 @@
                     </div>
 
                     <button class="btn-action" id="executeTradeBtn" style="margin-bottom: 14px;" onclick="executeOnChainTrade()">
-                        ⚡ Execute On-Chain Buy Swap
+                        ⚡ Execute TopBlast v2 Buy Swap
                     </button>
 
                     <div class="card-header" style="margin-top: 8px; margin-bottom: 6px;">
@@ -642,23 +642,23 @@
                 </div>
             </section>
 
-            <!-- 3. TOPBLAST BONDED LAUNCHPAD FEED (10 PER PAGE + PAGINATION) -->
+            <!-- 3. TOPBLAST v2 LIVE TOKENS & MARKET FEED (10 PER PAGE + PAGINATION) -->
             <section id="page-launches" class="page">
                 <div class="card" style="max-width: 650px; margin: 0 auto; width: 100%;">
                     <div class="card-header">
                         <div>
-                            <span class="card-title" style="color: var(--accent-green);">🟢 Topblast v2 Bonded Tokens</span>
-                            <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Real-Time Price Stream • 10 Per Page • Verified Logos</div>
+                            <span class="card-title" style="color: var(--accent-green);">🟢 Topblast v2 Live Tokens & Data</span>
+                            <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">All Bonded Tokens • Live API Stream • 10 Per Page</div>
                         </div>
-                        <button onclick="loadTopblastTokens()" style="background: rgba(16,185,129,0.15); border: 1px solid var(--accent-green); color: var(--accent-green); padding: 6px 10px; border-radius: 8px; font-size: 11px; cursor: pointer; font-weight: 800;">↻ Sync All</button>
+                        <button onclick="loadTopblastTokens()" style="background: rgba(16,185,129,0.15); border: 1px solid var(--accent-green); color: var(--accent-green); padding: 6px 10px; border-radius: 8px; font-size: 11px; cursor: pointer; font-weight: 800;">↻ Sync API</button>
                     </div>
 
                     <div class="input-group" style="padding: 8px 12px; margin-bottom: 12px;">
-                        <input type="text" id="topblastSearchInput" class="pro-input" style="width: 100%; font-size: 13px;" placeholder="🔍 Search Bonded tokens..." oninput="filterTopblastList()">
+                        <input type="text" id="topblastSearchInput" class="pro-input" style="width: 100%; font-size: 13px;" placeholder="🔍 Search all Topblast tokens and data..." oninput="filterTopblastList()">
                     </div>
 
                     <div id="topblastList">
-                        <div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 12px;">Loading Topblast v2 tokens from API...</div>
+                        <div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 12px;">Loading Topblast v2 tokens and data...</div>
                     </div>
 
                     <div class="pagination-bar">
@@ -783,7 +783,6 @@
             buttonRootId: 'ton-connect'
         });
 
-        // Topblast v2 Dynamic Configuration & Master Factory
         let topBlastConfig = null;
         let TOPBLAST_MASTER = "EQBLLYmuwZUpNKiNx8hwfTRo1LeLHx7jYYSkGOuNip2Sslzu";
         const TREASURY_WALLET = "UQAC-pXNqjUJ0u1wBkLPiDkLVMZkWYXWvNQuH5Mtx_tPdsGV";
@@ -826,7 +825,6 @@
             priceUSD: 0.042
         };
 
-        // Fetch official TopBlast v2 configuration on boot
         async function initTopBlastConfig() {
             try {
                 const res = await fetch('https://topblastv2.lol/api/public/config');
