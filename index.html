@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kote Crimson Trading Terminal</title>
+    <title>Kote Trade Terminal</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
     <style>
@@ -470,15 +470,14 @@
 
     <!-- --- CINEMATIC INTRO SCREEN --- -->
     <div id="intro-screen">
-        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE CRIMSON TERMINAL v7.4</div>
+        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v7.5</div>
         <div class="intro-content">
             <div class="intro-logo-moon">🐱</div>
-            <div style="font-size: 25px; font-weight: 900; color: #fff; letter-spacing: 0.5px;">KOTE SNIPER & TOPBLAST HUB</div>
-            <div style="font-size: 13px; color: var(--text-muted); max-width: 290px; line-height: 1.5;">Real-time live price streaming, official TonViewer/TonAPI logos, and custom background theme.</div>
+            <div style="font-size: 25px; font-weight: 900; color: #fff; letter-spacing: 0.5px;">KOTE TRADE/SNIPER BOT</div>
         </div>
         <div style="padding-bottom: 20px;">
             <button class="btn-action btn-red" style="max-width: 300px; margin: 0 auto;" onclick="enterTerminal()">
-                ⚡ Enter Crimson Terminal
+                ⚡ Enter Kote Terminal
             </button>
         </div>
     </div>
@@ -580,7 +579,7 @@
             <section id="page-sniper" class="page">
                 <div class="card" style="max-width: 520px; margin: 0 auto; width: 100%;">
                     <div class="card-header">
-                        <span class="card-title">🎯 Crimson Pro Sniper & Anti-Scam Guard</span>
+                        <span class="card-title">🎯 Kote Sniper & Anti-Scam Guard</span>
                         <span style="font-size: 11px; color: var(--accent-red); font-weight: 800;">● Shielded</span>
                     </div>
 
@@ -620,7 +619,7 @@
                 </div>
             </section>
 
-            <!-- 3. TOPBLAST LAUNCHPAD FEED WITH REAL-TIME PRICES & TONVIEWER LOGOS -->
+            <!-- 3. TOPBLAST LAUNCHPAD FEED -->
             <section id="page-launches" class="page">
                 <div class="card" style="max-width: 650px; margin: 0 auto; width: 100%;">
                     <div class="card-header">
@@ -1226,7 +1225,6 @@
                         const liveLiq = p.liquidity?.usd || 18200;
                         const liveVol = p.volume?.h24 || 12400;
                         const livePriceUSD = p.priceUsd ? parseFloat(p.priceUsd) : 0.01;
-                        // Guaranteed official TonViewer / TonAPI image proxy fallback
                         const liveLogo = (p.info && p.info.imageUrl) || `https://cache.tonapi.io/imgproxy/${p.baseToken.address}/rs:fill:200:200:1/g:no`;
                         
                         const existingIdx = topblastRegistry.findIndex(t => t.address === p.baseToken.address || t.symbol === p.baseToken.symbol);
@@ -1247,7 +1245,6 @@
             renderTopblastList(allTopblastTokens);
         }
 
-        // Real-Time Polling Interval (Updates every 8 seconds)
         setInterval(loadTopblastOnlyTokens, 8000);
 
         function filterTopblastList() {
