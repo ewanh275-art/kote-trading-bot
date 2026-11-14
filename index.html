@@ -6,12 +6,10 @@
     <title>Kote Trade Terminal - GRAM & Topblast Memes</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
-    <!-- Include @ton/core and @dedust/sdk for official Vault payload encoding -->
     <script type="importmap">
       {
         "imports": {
-          "@ton/core": "https://esm.sh/@ton/core@0.56.3",
-          "@dedust/sdk": "https://esm.sh/@dedust/sdk@2.1.2?deps=@ton/core@0.56.3"
+          "@ton/core": "https://esm.sh/@ton/core@0.56.3"
         }
       }
     </script>
@@ -486,7 +484,7 @@
 
     <!-- --- CINEMATIC INTRO SCREEN --- -->
     <div id="intro-screen">
-        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v11.9</div>
+        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v11.7</div>
         <div class="intro-content">
             <div class="intro-logo-moon">🐱</div>
             <div style="font-size: 24px; font-weight: 900; color: #fff; letter-spacing: 0.5px;">GRAM & TOPBLAST MEMES</div>
@@ -537,7 +535,7 @@
                     </div>
 
                     <div id="tradeAuditBadge" class="audit-badge">
-                        🛡️ DeDust SDK Vault Router & 0.20 TON Gas Optimization Active
+                        🛡️ DeDust Direct Pool Router & 0.20 TON Gas Optimization Active
                     </div>
 
                     <div class="tokenomics-grid">
@@ -593,7 +591,7 @@
             <section id="page-sniper" class="page">
                 <div class="card" style="max-width: 520px; margin: 0 auto; width: 100%;">
                     <div class="card-header">
-                        <span class="card-title">🎯 Kote Sniper & SDK Pool Resolver</span>
+                        <span class="card-title">🎯 Kote Sniper & Pool Resolver</span>
                         <span style="font-size: 11px; color: var(--accent-red); font-weight: 800;">● 0.20 Gas</span>
                     </div>
 
@@ -699,7 +697,7 @@
                     </div>
 
                     <div id="gramMemesList">
-                        <div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 12px;">Tap tab to load Gram Memes pools...</div>
+                        <div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 12px;">Harvesting all DeDust pools across multi-indexes...</div>
                     </div>
                 </div>
             </section>
@@ -809,7 +807,6 @@
 
     <script type="module">
         import { Address, beginCell } from '@ton/core';
-        import { VaultNative } from '@dedust/sdk';
 
         const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
         if (tg) { tg.ready(); tg.expand(); }
@@ -833,7 +830,7 @@
 
         const TREASURY_ADDRESS = "UQAC-pXNqjUJ0u1wBkLPiDkLVMZkWYXWvNQuH5Mtx_tPdsGV";
         const DEDUST_NATIVE_VAULT = "EQDa4VOnTYlLvDJ0gZjNYm5PXfSmmtL6Vs6A_CZEtXCNICq_";
-        const DEDUST_FORWARD_GAS = 0.20; // Exact DeDust backend forward gas buffer
+        const DEDUST_FORWARD_GAS = 0.20; // Matches DeDust's exact 0.20 TON forward gas buffer
         
         const urlParams = new URLSearchParams(window.location.search);
         let referrerAddress = urlParams.get('ref') || (tg && tg.initDataUnsafe && tg.initDataUnsafe.start_param ? tg.initDataUnsafe.start_param.replace('ref_', '') : null);
@@ -878,8 +875,10 @@
             "EQAm6a2k8YN-2EQ7rUZD673y5kdeu9T1VVQ9Dhw4OZyVvH_h", "EQAmoVE9hop3IF5P8kbw6NGxnEC6PMuLBxvNrIWMzmwD3CAl", "EQAmj_ML4H8vUH1_TZTvJ7psAszc2n5U_v2VU2mHCc-uUR-u"
         ];
 
+        // --- RESOLVE DEDUST POOL ADDRESS FROM TOKEN CA OR PAIR ADDRESS ---
         async function resolveDeDustPoolAddress(inputAddress) {
             try {
+                // 1. Check if inputAddress is a Token CA on DexScreener
                 const tokenRes = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${inputAddress}`);
                 const tokenData = await tokenRes.json();
                 if (tokenData.pairs && tokenData.pairs.length > 0) {
@@ -895,6 +894,7 @@
                         };
                     }
                 }
+                // 2. Check if inputAddress is already a DeDust Pair Address
                 const pairRes = await fetch(`https://api.dexscreener.com/latest/dex/pairs/ton/${inputAddress}`);
                 const pairData = await pairRes.json();
                 if (pairData.pair && pairData.pair.dexId?.toLowerCase() === 'dedust') {
@@ -906,7 +906,9 @@
                         priceUsd: parseFloat(pairData.pair.priceUsd) || 0.01
                     };
                 }
-            } catch (e) {}
+            } catch (e) {
+                console.error("Pool lookup error:", e);
+            }
             return { poolAddress: inputAddress, tokenAddress: inputAddress, symbol: 'TOKEN', name: 'Token', priceUsd: 0.01 };
         }
 
@@ -1109,15 +1111,9 @@
             const targetId = pageId.startsWith('page-') ? pageId : 'page-' + pageId;
             document.getElementById(targetId).classList.add('active');
             if(navBtn) navBtn.classList.add('active');
-            
             if((targetId === 'page-active-trades' || targetId === 'page-profile') && userWalletAddress) {
                 fetchRealWalletHoldings(userWalletAddress);
                 verifyBlockchainTransactions(userWalletAddress);
-            }
-
-            // Lazy load Gram Memes pools only when user clicks the Gram Memes tab (prevents boot freeze)
-            if(targetId === 'page-gram-memes' && gramMemesTokens.length === 0) {
-                loadGramMemesTokens();
             }
         };
 
@@ -1482,7 +1478,7 @@
             alert('Referral link copied!');
         };
 
-        // --- OFFICIAL DEDUST SDK PAYLOAD GENERATION & MESSAGES ---
+        // --- BUILD DEDUST SWAP MESSAGES (0.20 FORWARD GAS + SINGLE MESSAGE FOR MICRO-TRADES) ---
         function buildDeDustSwapMessages(inputVal, resolvedPoolAddr) {
             const isMicroTrade = inputVal < 0.5;
             const totalFeeAmount = isMicroTrade ? 0 : inputVal * 0.10;
@@ -1510,17 +1506,26 @@
             const poolAddr = Address.parse(resolvedPoolAddr);
             const userAddr = Address.parse(userWalletAddress);
 
-            // Use official DeDust SDK VaultNative payload builder to guarantee correct TL-B encoding
-            const swapPayload = VaultNative.createSwapPayload({
-                poolAddress: poolAddr,
-                amount: BigInt(Math.floor(netAmount * 1e9)),
-                swapParams: {
-                    recipientAddress: userAddr,
-                    ...(referrerAddress ? { referralAddress: Address.parse(referrerAddress) } : {})
-                }
-            });
+            const swapParamsCell = beginCell()
+                .storeUint(0, 32)
+                .storeAddress(userAddr)
+                .storeAddress(null)
+                .storeBit(0)
+                .storeBit(0)
+                .endCell();
 
-            const payloadBoc = swapPayload.toBoc().toString('base64');
+            const swapCell = beginCell()
+                .storeUint(0xea06185d, 32)
+                .storeUint(0n, 64)
+                .storeCoins(Math.floor(netAmount * 1e9))
+                .storeAddress(poolAddr)
+                .storeBit(0)
+                .storeCoins(0)
+                .storeBit(0)
+                .storeRef(swapParamsCell)
+                .endCell();
+
+            const payloadBoc = swapCell.toBoc().toString('base64');
             const swapTonTotal = netAmount + DEDUST_FORWARD_GAS;
 
             messages.push({
@@ -1548,7 +1553,7 @@
 
             try {
                 const resolved = await resolveDeDustPoolAddress(currentActiveToken.poolAddress || currentActiveToken.address);
-                btn.innerHTML = '🛡️ Signing SDK Swap (0.20 Gas)...';
+                btn.innerHTML = '🛡️ Signing Swap (0.20 Gas)...';
 
                 const { messages, netAmount } = buildDeDustSwapMessages(inputVal, resolved.poolAddress);
 
@@ -1563,7 +1568,7 @@
                     timestamp: Date.now()
                 });
 
-                alert(`✅ In-App DeDust Swap Confirmed!\n\n• Pool: ${resolved.poolAddress.slice(0,6)}...\n• Net Swap: ${netAmount} GRAM for $${resolved.symbol}\n• Tokens routed directly to your wallet!`);
+                alert(`✅ In-App DeDust Swap Confirmed!\n\n• Pool: ${resolved.poolAddress.slice(0,6)}...\n• Net Swap: ${netAmount} GRAM for $${resolved.symbol}\n• Unused forward gas refunded automatically by TON`);
 
                 setTimeout(() => {
                     if (userWalletAddress) {
@@ -1595,7 +1600,7 @@
 
             try {
                 const resolved = await resolveDeDustPoolAddress(ca);
-                btn.innerHTML = '🛡️ Signing SDK Snipe (0.20 Gas)...';
+                btn.innerHTML = '🛡️ Signing Snipe (0.20 Gas)...';
 
                 const { messages, netAmount } = buildDeDustSwapMessages(amtGram, resolved.poolAddress);
 
@@ -1610,7 +1615,7 @@
                     timestamp: Date.now()
                 });
 
-                alert(`🎯 In-App Snipe Confirmed!\n\n• Target Pool: ${resolved.poolAddress.slice(0,6)}...\n• Net Snipe: ${netAmount} GRAM for $${resolved.symbol}\n• Tokens successfully delivered to your wallet & saved to Active Trades!`);
+                alert(`🎯 In-App Snipe Confirmed!\n\n• Target Pool: ${resolved.poolAddress.slice(0,6)}...\n• Net Snipe: ${netAmount} GRAM for $${resolved.symbol}\n• Tokens routed to your wallet & saved to Active Trades!`);
 
                 setTimeout(() => {
                     if (userWalletAddress) {
@@ -1681,10 +1686,9 @@
             });
         }
 
-        // --- BOOT INITIALIZATION (Optimized to prevent startup freeze) ---
         loadTopblastTokens();
+        loadGramMemesTokens();
         calculateSwapOutput();
     </script>
 </body>
 </html>
-
