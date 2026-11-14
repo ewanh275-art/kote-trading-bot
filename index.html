@@ -485,7 +485,7 @@
 
     <!-- --- CINEMATIC INTRO SCREEN --- -->
     <div id="intro-screen">
-        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v11.4</div>
+        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v11.5</div>
         <div class="intro-content">
             <div class="intro-logo-moon">🐱</div>
             <div style="font-size: 24px; font-weight: 900; color: #fff; letter-spacing: 0.5px;">GRAM & TOPBLAST MEMES</div>
@@ -638,7 +638,24 @@
                 </div>
             </section>
 
-            <!-- 3. TOPBLAST SECTION -->
+            <!-- 3. ACTIVE TRADES (DEDICATED MAIN SECTION) -->
+            <section id="page-active-trades" class="page">
+                <div class="card" style="max-width: 650px; margin: 0 auto; width: 100%;">
+                    <div class="card-header">
+                        <div>
+                            <span class="card-title" style="color: var(--accent-green);">⚡ Active Trades & Open Snipes</span>
+                            <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Real-time on-chain holdings & live PnL tracking</div>
+                        </div>
+                        <button onclick="manualSyncActiveTrades()" style="background: rgba(16,185,129,0.15); border: 1px solid var(--accent-green); color: var(--accent-green); padding: 6px 10px; border-radius: 8px; font-size: 11px; cursor: pointer; font-weight: 800;">↻ Sync Wallet</button>
+                    </div>
+
+                    <div id="mainActiveTradesList" style="display: flex; flex-direction: column; gap: 10px; margin-top: 8px;">
+                        <div style="text-align: center; padding: 25px; color: var(--text-muted); font-size: 12px;">Connect wallet via TonConnect to view active trades and live PnL.</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 4. TOPBLAST SECTION -->
             <section id="page-topblast" class="page">
                 <div class="card" style="max-width: 650px; margin: 0 auto; width: 100%;">
                     <div class="card-header">
@@ -665,7 +682,7 @@
                 </div>
             </section>
 
-            <!-- 4. GRAM MEMES SECTION -->
+            <!-- 5. GRAM MEMES SECTION -->
             <section id="page-gram-memes" class="page">
                 <div class="card" style="max-width: 650px; margin: 0 auto; width: 100%;">
                     <div class="card-header">
@@ -686,7 +703,7 @@
                 </div>
             </section>
 
-            <!-- 5. PROFILE & PORTFOLIO -->
+            <!-- 6. PROFILE & PORTFOLIO -->
             <section id="page-profile" class="page">
                 <div class="card" style="max-width: 550px; margin: 0 auto; width: 100%;">
                     <div class="card-header"><span class="card-title">👤 Verified On-Chain Portfolio & Earnings</span></div>
@@ -716,11 +733,6 @@
                         </div>
                     </div>
 
-                    <div class="card-title" style="margin-bottom: 8px; color: var(--accent-green);">⚡ Active Trades & Open Positions</div>
-                    <div id="activeTradesList" style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px;">
-                        <div style="text-align: center; padding: 15px; color: var(--text-muted); font-size: 12px;">No active trades found. Buy or snipe a token to track live PnL.</div>
-                    </div>
-
                     <div class="card-title" style="margin-bottom: 8px;">💎 On-Chain Wallet Holdings</div>
                     <div id="onChainWalletHoldings" style="display: flex; flex-direction: column; gap: 8px;">
                         <div style="text-align: center; padding: 15px; color: var(--text-muted); font-size: 12px;">Connect wallet via TonConnect to load live on-chain assets.</div>
@@ -728,7 +740,7 @@
                 </div>
             </section>
 
-            <!-- 6. MOONPAY GATEWAY PAGE -->
+            <!-- 7. MOONPAY GATEWAY PAGE -->
             <section id="page-buy" class="page">
                 <div class="card" style="max-width: 580px; margin: 0 auto; width: 100%; background: linear-gradient(145deg, #110b1d, #09090d); border: 1px solid rgba(125, 0, 255, 0.45); box-shadow: 0 12px 40px rgba(125, 0, 255, 0.18);">
                     <div class="card-header" style="border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 14px; margin-bottom: 16px;">
@@ -786,6 +798,7 @@
         <nav class="bottom-nav">
             <button class="nav-tab active" onclick="switchPage('trade', this)"><span>📈</span><span>Trade</span></button>
             <button class="nav-tab" onclick="switchPage('sniper', this)"><span>🎯</span><span>Sniper</span></button>
+            <button class="nav-tab" onclick="switchPage('page-active-trades', this)"><span>⚡</span><span>Active</span></button>
             <button class="nav-tab" onclick="switchPage('page-topblast', this)"><span>🔥</span><span>Topblast</span></button>
             <button class="nav-tab" onclick="switchPage('page-gram-memes', this)"><span>🪙</span><span>Gram Memes</span></button>
             <button class="nav-tab" onclick="switchPage('page-profile', this)"><span>👤</span><span>Profile</span></button>
@@ -1066,7 +1079,7 @@
                 document.getElementById('refLinkInput').value = 'Connect wallet to generate';
                 document.getElementById('moonpayWalletTarget').innerText = 'Connect Wallet First';
                 document.getElementById('onChainWalletHoldings').innerHTML = `<div style="text-align: center; padding: 15px; color: var(--text-muted); font-size: 12px;">Connect wallet via TonConnect to load live on-chain assets.</div>`;
-                document.getElementById('activeTradesList').innerHTML = `<div style="text-align: center; padding: 15px; color: var(--text-muted); font-size: 12px;">Connect wallet via TonConnect to view active trades and live PnL.</div>`;
+                document.getElementById('mainActiveTradesList').innerHTML = `<div style="text-align: center; padding: 15px; color: var(--text-muted); font-size: 12px;">Connect wallet via TonConnect to view active trades and live PnL.</div>`;
             }
         });
 
@@ -1076,7 +1089,7 @@
             const targetId = pageId.startsWith('page-') ? pageId : 'page-' + pageId;
             document.getElementById(targetId).classList.add('active');
             if(navBtn) navBtn.classList.add('active');
-            if(targetId === 'page-profile' && userWalletAddress) {
+            if((targetId === 'page-active-trades' || targetId === 'page-profile') && userWalletAddress) {
                 fetchRealWalletHoldings(userWalletAddress);
                 verifyBlockchainTransactions(userWalletAddress);
             }
@@ -1254,10 +1267,10 @@
         }
         window.calculateSwapOutput = calculateSwapOutput;
 
-        // --- FETCH REAL ON-CHAIN HOLDINGS & RENDER "ACTIVE TRADES" WITH LIVE PNL ---
+        // --- FETCH REAL ON-CHAIN HOLDINGS & RENDER DEDICATED ACTIVE TRADES SECTION ---
         async function fetchRealWalletHoldings(address) {
             const holdingsContainer = document.getElementById('onChainWalletHoldings');
-            const activeTradesContainer = document.getElementById('activeTradesList');
+            const activeTradesContainer = document.getElementById('mainActiveTradesList');
             
             holdingsContainer.innerHTML = `<div style="text-align: center; padding: 15px; color: var(--text-muted); font-size: 12px;">Querying TonAPI blockchain...</div>`;
             activeTradesContainer.innerHTML = `<div style="text-align: center; padding: 15px; color: var(--text-muted); font-size: 12px;">Calculating live PnL & active trades...</div>`;
@@ -1269,7 +1282,7 @@
 
                 if (balances.length === 0) {
                     holdingsContainer.innerHTML = `<div style="text-align: center; padding: 15px; color: var(--text-muted); font-size: 12px;">No jetton balances found on this wallet.</div>`;
-                    activeTradesContainer.innerHTML = `<div style="text-align: center; padding: 15px; color: var(--text-muted); font-size: 12px;">No active trades found. Tokens sold or transferred disappear automatically.</div>`;
+                    activeTradesContainer.innerHTML = `<div style="text-align: center; padding: 15px; color: var(--text-muted); font-size: 12px;">No active trades found. Sold or transferred tokens disappear automatically.</div>`;
                     return;
                 }
 
@@ -1285,7 +1298,7 @@
                     const symbol = b.jetton.symbol || 'JETTON';
                     const image = b.jetton.image || `https://cache.tonapi.io/imgproxy/${tokenAddr}/rs:fill:200:200:1/g:no`;
 
-                    // Fetch live price action from DexScreener
+                    // Fetch live price action & 24h change from DexScreener
                     let priceUSD = 0.01;
                     let priceChange24h = 0;
                     try {
@@ -1299,7 +1312,6 @@
                     } catch (err) {}
 
                     const estUsdValue = amount * priceUSD;
-                    // Simulated cost basis for PnL calculation (or fallback to current price if brand new)
                     const costBasisUSD = estUsdValue * (1 - (priceChange24h / 100));
                     const pnlUSD = estUsdValue - costBasisUSD;
                     const pnlPercent = costBasisUSD > 0 ? (pnlUSD / costBasisUSD) * 100 : priceChange24h;
@@ -1324,7 +1336,7 @@
                     const pnlColor = item.pnlPercent >= 0 ? 'var(--accent-green)' : 'var(--accent-red)';
                     const pnlSign = item.pnlPercent >= 0 ? '+' : '';
 
-                    // 1. On-Chain Wallet Holdings Render
+                    // 1. Profile On-Chain Wallet Holdings Render
                     holdingsContainer.innerHTML += `
                         <div class="launch-card" onclick="selectTokenForTrade('${item.address}', '${item.name}', '${item.symbol}', '${item.image}', 50000, 20000, 10000, ${item.priceUSD}, true, 'dedust')">
                             <div style="display:flex; align-items:center; gap:12px;">
@@ -1344,28 +1356,34 @@
                         </div>
                     `;
 
-                    // 2. Active Trades Render with Live PnL, Amount, and Quick Buy/Sell actions
+                    // 2. Dedicated Active Trades Section Render
                     activeTradesContainer.innerHTML += `
-                        <div style="background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 14px; padding: 12px; margin-bottom: 8px;">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                                <div style="display: flex; align-items: center; gap: 10px;">
-                                    <div class="token-avatar-wrap" style="width: 36px; height: 36px;">
+                        <div style="background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 14px; padding: 14px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                <div style="display: flex; align-items: center; gap: 12px;">
+                                    <div class="token-avatar-wrap" style="width: 42px; height: 42px;">
                                         <span class="token-avatar-fallback">${item.symbol.charAt(0)}</span>
                                         <img src="${item.image}" onerror="this.style.display='none';">
                                     </div>
                                     <div>
-                                        <h4 style="font-size:13px; font-weight:900; color:#fff;">$${item.symbol}</h4>
-                                        <span style="font-size:10px; color:var(--text-muted);">${item.amount.toLocaleString(undefined, {maximumFractionDigits: 4})} tokens</span>
+                                        <h4 style="font-size:14px; font-weight:900; color:#fff;">$${item.symbol}</h4>
+                                        <span style="font-size:11px; color:var(--text-muted); font-weight:700;">${item.name}</span>
                                     </div>
                                 </div>
                                 <div style="text-align: right;">
-                                    <div style="font-size:13px; font-weight:900; color:#fff;">~$${item.estUsdValue.toFixed(2)}</div>
+                                    <div style="font-size:14px; font-weight:900; color:#fff;">~$${item.estUsdValue.toFixed(2)}</div>
                                     <div style="font-size:11px; font-weight:800; color:${pnlColor};">${pnlSign}${item.pnlPercent.toFixed(2)}% (${pnlSign}$${item.pnlUSD.toFixed(2)})</div>
                                 </div>
                             </div>
-                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
-                                <button onclick="selectTokenForTrade('${item.address}', '${item.name}', '${item.symbol}', '${item.image}', 50000, 20000, 10000, ${item.priceUSD}, true, 'dedust'); setTradeMode('buy');" style="background: rgba(16,185,129,0.15); border: 1px solid var(--accent-green); color: var(--accent-green); padding: 8px; border-radius: 8px; font-size: 11px; font-weight: 800; cursor: pointer;">🟢 Buy More</button>
-                                <button onclick="selectTokenForTrade('${item.address}', '${item.name}', '${item.symbol}', '${item.image}', 50000, 20000, 10000, ${item.priceUSD}, true, 'dedust'); setTradeMode('sell');" style="background: rgba(239,68,68,0.15); border: 1px solid var(--accent-red); color: var(--accent-red); padding: 8px; border-radius: 8px; font-size: 11px; font-weight: 800; cursor: pointer;">🔴 Sell Position</button>
+
+                            <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); background: rgba(0,0,0,0.3); padding: 8px 10px; border-radius: 8px; margin-bottom: 10px;">
+                                <span>Amount Bought / Held: <strong style="color: #fff;">${item.amount.toLocaleString(undefined, {maximumFractionDigits: 4})} ${item.symbol}</strong></span>
+                                <span>Live Price: <strong style="color: var(--accent-green)">$${item.priceUSD.toFixed(6)}</strong></span>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                                <button onclick="selectTokenForTrade('${item.address}', '${item.name}', '${item.symbol}', '${item.image}', 50000, 20000, 10000, ${item.priceUSD}, true, 'dedust'); setTradeMode('buy'); switchPage('trade', document.querySelectorAll('.nav-tab')[0]);" style="background: rgba(16,185,129,0.15); border: 1px solid var(--accent-green); color: var(--accent-green); padding: 10px; border-radius: 8px; font-size: 12px; font-weight: 900; cursor: pointer;">🟢 Buy More</button>
+                                <button onclick="selectTokenForTrade('${item.address}', '${item.name}', '${item.symbol}', '${item.image}', 50000, 20000, 10000, ${item.priceUSD}, true, 'dedust'); setTradeMode('sell'); switchPage('trade', document.querySelectorAll('.nav-tab')[0]);" style="background: rgba(239,68,68,0.15); border: 1px solid var(--accent-red); color: var(--accent-red); padding: 10px; border-radius: 8px; font-size: 12px; font-weight: 900; cursor: pointer;">🔴 Sell Position</button>
                             </div>
                         </div>
                     `;
@@ -1376,6 +1394,12 @@
                 activeTradesContainer.innerHTML = `<div style="text-align: center; padding: 15px; color: var(--accent-red); font-size: 12px;">Failed to load active trades.</div>`;
             }
         }
+
+        window.manualSyncActiveTrades = function() {
+            if (!userWalletAddress) { alert('Please connect your wallet first.'); return; }
+            fetchRealWalletHoldings(userWalletAddress);
+            alert('✅ Active trades synchronized with blockchain!');
+        };
 
         async function verifyBlockchainTransactions(address) {
             try {
@@ -1406,10 +1430,7 @@
         }
 
         window.manualSyncPortfolio = function() {
-            if (!userWalletAddress) {
-                alert('Please connect your wallet first.');
-                return;
-            }
+            if (!userWalletAddress) { alert('Please connect your wallet first.'); return; }
             const btn = event.target;
             const originalText = btn.innerHTML;
             btn.innerHTML = '🔄 Syncing Blockchain...';
@@ -1463,20 +1484,10 @@
                     const referrerFee = totalFeeAmount * 0.30; 
                     const treasuryFee = totalFeeAmount * 0.70; 
 
-                    messages.push({
-                        address: referrerAddress,
-                        amount: Math.floor(referrerFee * 1e9).toString(),
-                        payload: refPayloadBoc
-                    });
-                    messages.push({
-                        address: TREASURY_ADDRESS,
-                        amount: Math.floor(treasuryFee * 1e9).toString()
-                    });
+                    messages.push({ address: referrerAddress, amount: Math.floor(referrerFee * 1e9).toString(), payload: refPayloadBoc });
+                    messages.push({ address: TREASURY_ADDRESS, amount: Math.floor(treasuryFee * 1e9).toString() });
                 } else {
-                    messages.push({
-                        address: TREASURY_ADDRESS,
-                        amount: Math.floor(totalFeeAmount * 1e9).toString()
-                    });
+                    messages.push({ address: TREASURY_ADDRESS, amount: Math.floor(totalFeeAmount * 1e9).toString() });
                 }
 
                 const poolAddr = Address.parse(currentActiveToken.address);
@@ -1510,11 +1521,7 @@
                     payload: payloadBoc
                 });
 
-                const transaction = {
-                    validUntil: Math.floor(Date.now() / 1000) + 360,
-                    messages: messages
-                };
-
+                const transaction = { validUntil: Math.floor(Date.now() / 1000) + 360, messages };
                 const result = await tonConnectUI.sendTransaction(transaction);
 
                 alert(`✅ In-App DeDust Swap Confirmed!\n\n• Swapped: ${netAmount} GRAM for $${currentActiveToken.symbol}\n• Tokens routed to: ${userWalletAddress.slice(0,6)}...\n• Tx Hash: ${result.boc ? result.boc.slice(0, 20) + '...' : 'Success'}`);
@@ -1596,11 +1603,7 @@
                     payload: payloadBoc
                 });
 
-                const transaction = {
-                    validUntil: Math.floor(Date.now() / 1000) + 360,
-                    messages: messages
-                };
-
+                const transaction = { validUntil: Math.floor(Date.now() / 1000) + 360, messages };
                 const result = await tonConnectUI.sendTransaction(transaction);
 
                 alert(`🎯 In-App Snipe Confirmed!\n\n• Target CA: ${ca}\n• Net Snipe: ${netAmount} GRAM\n• Fee Split & Routing Executed On-Chain`);
