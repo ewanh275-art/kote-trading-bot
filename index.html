@@ -1262,10 +1262,10 @@
         }
         window.calculateSwapOutput = calculateSwapOutput;
 
-        // --- REAL WALLET HOLDINGS WITH BULLETPROOF VALUATION & SORTING ---
+        // --- REAL WALLET HOLDINGS WITH TONAPI RATES & DEXSCREENER VALUATION ---
         async function fetchRealWalletHoldings(address) {
             const container = document.getElementById('onChainWalletHoldings');
-            container.innerHTML = `<div style="text-align: center; padding: 15px; color: var(--text-muted); font-size: 12px;">Querying wallet holdings & calculating valuations...</div>`;
+            container.innerHTML = `<div style="text-align: center; padding: 15px; color: var(--text-muted); font-size: 12px;">Querying wallet holdings & fetching live valuations via TonAPI & DexScreener...</div>`;
             
             try {
                 const res = await fetch(`https://tonapi.io/v2/accounts/${address}/jettons`);
@@ -1281,7 +1281,7 @@
                 let holdingsList = [];
                 let unpricedAddresses = [];
 
-                // Step 1: Parse raw balances and extract initial prices
+                // Step 1: Parse balances and check TonAPI built-in prices
                 for (const b of balances) {
                     const rawBalance = parseFloat(b.balance || 0);
                     const decimals = b.jetton.decimals || 9;
@@ -1313,10 +1313,36 @@
                     }
                 }
 
-                // Step 2: Batch fetch missing prices from DexScreener (up to 30 per call)
+                // Step 2: Batch fetch missing prices from TonAPI /v2/rates endpoint
                 if (unpricedAddresses.length > 0) {
-                    for (let i = 0; i < unpricedAddresses.length; i += 30) {
-                        const chunk = unpricedAddresses.slice(i, i + 30);
+                    try {
+                        const ratesRes = await fetch(`https://tonapi.io/v2/rates?tokens=${unpricedAddresses.join(',')}&currencies=usd`);
+                        const ratesData = await ratesRes.json();
+                        if (ratesData && ratesData.rates) {
+                            for (const addr of unpricedAddresses) {
+                                const rateObj = ratesData.rates[addr] || ratesData.rates[addr.toLowerCase()];
+                                if (rateObj && rateObj.prices && rateObj.prices.USD) {
+                                    const pUSD = parseFloat(rateObj.prices.USD) || 0;
+                                    if (pUSD > 0) {
+                                        const h = holdingsList.find(item => item.tokenAddress === addr);
+                                        if (h) {
+                                            h.priceUSD = pUSD;
+                                            h.estUsdValue = h.amount * pUSD;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } catch (err) {
+                        console.error('TonAPI rates batch error:', err);
+                    }
+                }
+
+                // Step 3: Check remaining unpriced tokens against DexScreener batch endpoint
+                let stillUnpriced = holdingsList.filter(h => h.estUsdValue <= 0).map(h => h.tokenAddress);
+                if (stillUnpriced.length > 0) {
+                    for (let i = 0; i < stillUnpriced.length; i += 30) {
+                        const chunk = stillUnpriced.slice(i, i + 30);
                         try {
                             const dexRes = await fetch(`https://api.dexscreener.com/tokens/v1/ton/${chunk.join(',')}`);
                             const pairs = await dexRes.json();
@@ -1326,7 +1352,7 @@
                                     const pairPriceUSD = parseFloat(p.priceUsd) || 0;
                                     if (pairPriceUSD > 0) {
                                         const holding = holdingsList.find(h => h.tokenAddress === tokenAddr);
-                                        if (holding && holding.priceUSD <= 0) {
+                                        if (holding && holding.estUsdValue <= 0) {
                                             holding.priceUSD = pairPriceUSD;
                                             holding.estUsdValue = holding.amount * pairPriceUSD;
                                         }
@@ -1339,15 +1365,6 @@
                     }
                 }
 
-                // Step 3: Apply fallback pricing for any remaining unpriced tokens so they show worth
-                for (const h of holdingsList) {
-                    if (h.estUsdValue <= 0) {
-                        // Estimated baseline valuation fallback for unlisted/bonding curve tokens
-                        h.priceUSD = 0.001; 
-                        h.estUsdValue = h.amount * h.priceUSD;
-                    }
-                }
-
                 // Step 4: Sort holdings strictly from highest to lowest USD value
                 holdingsList.sort((a, b) => b.estUsdValue - a.estUsdValue);
 
@@ -1357,7 +1374,7 @@
                     return;
                 }
 
-                // Step 5: Render sorted holdings with token balance and verified USD worth
+                // Step 5: Render sorted holdings with exact amounts and true USD valuations
                 for (const h of holdingsList) {
                     container.innerHTML += `
                         <div class="launch-card" onclick="selectTokenForTrade('${h.tokenAddress}', '${h.name.replace(/'/g, "\\'")}', '${h.symbol}', '${h.image}', 50000, 20000, 10000, ${h.priceUSD}, true, 'dedust')">
@@ -1373,8 +1390,8 @@
                             </div>
                             <div style="text-align:right;">
                                 <div style="font-size:11px; color:var(--text-main); font-weight:800;">${h.amount.toLocaleString(undefined, {maximumFractionDigits: 4})} ${h.symbol}</div>
-                                <div style="font-size:12px; font-weight:900; color:var(--accent-green);">
-                                    ~$${h.estUsdValue.toFixed(2)}
+                                <div style="font-size:12px; font-weight:900; color:${h.estUsdValue > 0 ? 'var(--accent-green)' : 'var(--text-muted)'};">
+                                    ${h.estUsdValue > 0 ? `~$${h.estUsdValue.toFixed(2)}` : 'Unpriced Token'}
                                 </div>
                             </div>
                         </div>
