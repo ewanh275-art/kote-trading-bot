@@ -722,7 +722,7 @@
                         <div style="text-align: center; padding: 15px; color: var(--text-muted); font-size: 12px;">No active bot trades executed yet.</div>
                     </div>
 
-                    <!-- CONNECTED WALLET ACTUAL HOLDINGS (Sorted Highest to Lowest Value) -->
+                    <!-- CONNECTED WALLET ACTUAL HOLDINGS (Sorted Highest to Lowest USD Value) -->
                     <div class="card-title" style="margin-bottom: 8px;">💎 Connected Wallet Actual Holdings <span style="font-size: 9px; color: var(--text-muted);">(Highest to Lowest)</span></div>
                     <div id="onChainWalletHoldings" style="display: flex; flex-direction: column; gap: 8px;">
                         <div style="text-align: center; padding: 15px; color: var(--text-muted); font-size: 12px;">Connect wallet via TonConnect to load live wallet assets.</div>
@@ -1262,10 +1262,10 @@
         }
         window.calculateSwapOutput = calculateSwapOutput;
 
-        // --- REAL WALLET HOLDINGS (DUAL-PRICING & SORTED HIGHEST TO LOWEST USD) ---
+        // --- REAL WALLET HOLDINGS WITH BATCH DEXSCREENER VALUATION & SORTING ---
         async function fetchRealWalletHoldings(address) {
             const container = document.getElementById('onChainWalletHoldings');
-            container.innerHTML = `<div style="text-align: center; padding: 15px; color: var(--text-muted); font-size: 12px;">Querying wallet holdings & sorting by highest value...</div>`;
+            container.innerHTML = `<div style="text-align: center; padding: 15px; color: var(--text-muted); font-size: 12px;">Querying wallet holdings & fetching live valuations...</div>`;
             
             try {
                 const res = await fetch(`https://tonapi.io/v2/accounts/${address}/jettons`);
@@ -1279,7 +1279,9 @@
                 }
 
                 let holdingsList = [];
+                let unpricedAddresses = [];
 
+                // Step 1: Parse balances and check TonAPI prices
                 for (const b of balances) {
                     const rawBalance = parseFloat(b.balance || 0);
                     const decimals = b.jetton.decimals || 9;
@@ -1291,27 +1293,10 @@
                     const symbol = b.jetton.symbol || 'JETTON';
                     const image = b.jetton.image || `https://cache.tonapi.io/imgproxy/${tokenAddress}/rs:fill:200:200:1/g:no`;
 
-                    // 1. Check TonAPI built-in price first
                     let priceUSD = 0;
                     if (b.price && b.price.prices && b.price.prices.USD) {
                         priceUSD = parseFloat(b.price.prices.USD) || 0;
                     }
-
-                    // 2. Fallback: Fetch live price from DexScreener using the contract address if TonAPI price is 0
-                    if (priceUSD <= 0) {
-                        try {
-                            const dexRes = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${tokenAddress}`);
-                            const dexData = await dexRes.json();
-                            if (dexData.pairs && dexData.pairs.length > 0) {
-                                const bestPair = dexData.pairs.reduce((prev, curr) => (curr.liquidity?.usd || 0) > (prev.liquidity?.usd || 0) ? curr : prev);
-                                priceUSD = parseFloat(bestPair.priceUsd) || 0;
-                            }
-                        } catch (err) {
-                            console.error(`DexScreener price fetch failed for ${symbol}:`, err);
-                        }
-                    }
-
-                    const estUsdValue = amount * priceUSD;
 
                     holdingsList.push({
                         tokenAddress,
@@ -1320,11 +1305,41 @@
                         image,
                         amount,
                         priceUSD,
-                        estUsdValue
+                        estUsdValue: amount * priceUSD
                     });
+
+                    if (priceUSD <= 0) {
+                        unpricedAddresses.push(tokenAddress);
+                    }
                 }
 
-                // Sort holdings from highest to lowest USD value
+                // Step 2: Batch fetch missing prices from DexScreener (up to 30 addresses per call)
+                if (unpricedAddresses.length > 0) {
+                    for (let i = 0; i < unpricedAddresses.length; i += 30) {
+                        const chunk = unpricedAddresses.slice(i, i + 30);
+                        try {
+                            const dexRes = await fetch(`https://api.dexscreener.com/tokens/v1/ton/${chunk.join(',')}`);
+                            const pairs = await dexRes.json();
+                            if (Array.isArray(pairs)) {
+                                pairs.forEach(p => {
+                                    const tokenAddr = p.baseToken?.address || p.pairAddress;
+                                    const pairPriceUSD = parseFloat(p.priceUsd) || 0;
+                                    if (pairPriceUSD > 0) {
+                                        const holding = holdingsList.find(h => h.tokenAddress === tokenAddr);
+                                        if (holding && holding.priceUSD <= 0) {
+                                            holding.priceUSD = pairPriceUSD;
+                                            holding.estUsdValue = holding.amount * pairPriceUSD;
+                                        }
+                                    }
+                                });
+                            }
+                        } catch (err) {
+                            console.error('DexScreener batch fetch error:', err);
+                        }
+                    }
+                }
+
+                // Step 3: Sort holdings strictly from highest to lowest USD value
                 holdingsList.sort((a, b) => b.estUsdValue - a.estUsdValue);
 
                 container.innerHTML = '';
@@ -1333,6 +1348,7 @@
                     return;
                 }
 
+                // Step 4: Render sorted holdings with token balance and USD worth
                 for (const h of holdingsList) {
                     container.innerHTML += `
                         <div class="launch-card" onclick="selectTokenForTrade('${h.tokenAddress}', '${h.name.replace(/'/g, "\\'")}', '${h.symbol}', '${h.image}', 50000, 20000, 10000, ${h.priceUSD}, true, 'dedust')">
