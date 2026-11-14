@@ -485,7 +485,7 @@
 
     <!-- --- CINEMATIC INTRO SCREEN --- -->
     <div id="intro-screen">
-        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v11.1</div>
+        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v11.2</div>
         <div class="intro-content">
             <div class="intro-logo-moon">🐱</div>
             <div style="font-size: 24px; font-weight: 900; color: #fff; letter-spacing: 0.5px;">GRAM & TOPBLAST MEMES</div>
@@ -697,7 +697,7 @@
                             <strong id="referralEarnings" style="font-size: 15px; color: var(--accent-green);">0.00 GRAM</strong>
                         </div>
                         <div style="background: var(--bg-input); border: 1px solid var(--border-color); padding: 12px; border-radius: 12px; text-align: center;">
-                            <span style="font-size: 10px; color: var(--text-muted); font-weight: 800;">Referred Traders</span>
+                            <span style="font-size: 10px; color: var(--text-muted); font-weight: 800;">Referred New Users</span>
                             <strong id="referredCount" style="font-size: 15px; color: var(--accent-green);">0 Users</strong>
                         </div>
                     </div>
@@ -709,7 +709,7 @@
                     </div>
 
                     <div style="background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 14px; padding: 14px; margin-bottom: 14px;">
-                        <div style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px;">🔗 Your Referral Link (@KoteTrade_bot)</div>
+                        <div style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px;">🔗 Your Official @KoteTrade_bot Referral Link</div>
                         <div style="display: flex; gap: 8px;">
                             <input type="text" id="refLinkInput" class="pro-input" style="font-size: 11px; width: 100%; background: #07070a; padding: 8px; border-radius: 8px;" readonly value="Connect wallet to generate">
                             <button class="btn-action btn-red" style="padding: 8px 14px; width: auto; font-size: 12px;" onclick="copyReferralLink()">Copy</button>
@@ -803,7 +803,7 @@
             document.getElementById('intro-screen').classList.add('hidden');
         };
 
-        // --- CONFIGURE YOUR EXACT TELEGRAM BOT USERNAME HERE ---
+        // --- OFFICIAL TELEGRAM BOT USERNAME ---
         const TELEGRAM_BOT_USERNAME = "KoteTrade_bot";
 
         const dynamicManifestUrl = new URL('tonconnect-manifest.json', window.location.href).href;
@@ -823,6 +823,15 @@
         // Parse Referral from Telegram start_param or URL
         const urlParams = new URLSearchParams(window.location.search);
         let referrerAddress = urlParams.get('ref') || (tg && tg.initDataUnsafe && tg.initDataUnsafe.start_param ? tg.initDataUnsafe.start_param.replace('ref_', '') : null);
+
+        // Track new user opening via referral link (Persistent locally per device/browser)
+        if (referrerAddress) {
+            const hasOpenedBefore = localStorage.getItem('kote_opened_before');
+            if (!hasOpenedBefore) {
+                localStorage.setItem('kote_opened_before', 'true');
+                console.log('Registered new referee under referrer:', referrerAddress);
+            }
+        }
 
         // Topblast Pagination State
         let topblastTokens = [];
@@ -1051,7 +1060,7 @@
                 userWalletAddress = wallet.account.address;
                 const shortAddr = userWalletAddress.slice(0, 4) + '...' + userWalletAddress.slice(-4);
                 
-                // Generated using TELEGRAM_BOT_USERNAME (@KoteTrade_bot)
+                // Formatted with official Telegram Bot link structure: https://t.me/KoteTrade_bot/app?startapp=ref_[address]
                 document.getElementById('refLinkInput').value = `https://t.me/${TELEGRAM_BOT_USERNAME}/app?startapp=ref_${shortAddr}`;
                 document.getElementById('moonpayWalletTarget').innerText = shortAddr;
                 fetchRealWalletHoldings(userWalletAddress);
@@ -1306,7 +1315,7 @@
                 referredTradersSet.clear();
 
                 txs.forEach(tx => {
-                    // Check incoming transactions for referral fee splits (sent to referrer)
+                    // Check incoming transactions for referral fee splits (sent by referees)
                     if (tx.in_msg && tx.in_msg.destination && tx.in_msg.destination.address === address) {
                         const valTon = parseFloat(tx.in_msg.value || 0) / 1e9;
                         if (valTon > 0 && tx.in_msg.source && tx.in_msg.source.address) {
@@ -1318,7 +1327,7 @@
 
                 referralEarnings = confirmedReferralTotal;
 
-                document.getElementById('referralEarnings').innerText = referralEarnings.toFixed(2) + ' GRAM';
+                document.getElementById('referralEarnings').innerText = referralEarnings.toFixed(4) + ' GRAM';
                 document.getElementById('referredCount').innerText = referredTradersSet.size + ' Users';
 
                 if (txs.length === 0) {
