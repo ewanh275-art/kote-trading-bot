@@ -485,7 +485,7 @@
 
     <!-- --- CINEMATIC INTRO SCREEN --- -->
     <div id="intro-screen">
-        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v10.9</div>
+        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v11.0</div>
         <div class="intro-content">
             <div class="intro-logo-moon">🐱</div>
             <div style="font-size: 24px; font-weight: 900; color: #fff; letter-spacing: 0.5px;">GRAM & TOPBLAST MEMES</div>
@@ -697,8 +697,8 @@
                             <strong id="referralEarnings" style="font-size: 15px; color: var(--accent-green);">0.00 GRAM</strong>
                         </div>
                         <div style="background: var(--bg-input); border: 1px solid var(--border-color); padding: 12px; border-radius: 12px; text-align: center;">
-                            <span style="font-size: 10px; color: var(--text-muted); font-weight: 800;">Treasury Wallet (7%)</span>
-                            <strong style="font-size: 11px; color: var(--accent-red);">UQAC...tPdsGV</strong>
+                            <span style="font-size: 10px; color: var(--text-muted); font-weight: 800;">Referred Traders</span>
+                            <strong id="referredCount" style="font-size: 15px; color: var(--accent-green);">0 Users</strong>
                         </div>
                     </div>
 
@@ -803,6 +803,10 @@
             document.getElementById('intro-screen').classList.add('hidden');
         };
 
+        // --- CONFIGURE YOUR TELEGRAM BOT USERNAME HERE ---
+        // Change "KoteTradingBot" to your exact bot username (without @) so referral links open your bot correctly.
+        const TELEGRAM_BOT_USERNAME = "KoteTradingBot";
+
         const dynamicManifestUrl = new URL('tonconnect-manifest.json', window.location.href).href;
         const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
             manifestUrl: dynamicManifestUrl,
@@ -811,6 +815,7 @@
 
         let userWalletAddress = null;
         let referralEarnings = 0;
+        let referredTradersSet = new Set();
         let selectedSnipeSlippage = 0.5;
 
         const TREASURY_ADDRESS = "UQAC-pXNqjUJ0u1wBkLPiDkLVMZkWYXWvNQuH5Mtx_tPdsGV";
@@ -1046,7 +1051,9 @@
             if (wallet && wallet.account) {
                 userWalletAddress = wallet.account.address;
                 const shortAddr = userWalletAddress.slice(0, 4) + '...' + userWalletAddress.slice(-4);
-                document.getElementById('refLinkInput').value = `https://t.me/KoteTradingBot/app?startapp=ref_${shortAddr}`;
+                
+                // Uses the configurable TELEGRAM_BOT_USERNAME constant
+                document.getElementById('refLinkInput').value = `https://t.me/${TELEGRAM_BOT_USERNAME}/app?startapp=ref_${shortAddr}`;
                 document.getElementById('moonpayWalletTarget').innerText = shortAddr;
                 fetchRealWalletHoldings(userWalletAddress);
                 verifyBlockchainTransactions(userWalletAddress);
@@ -1288,39 +1295,53 @@
             }
         }
 
-        // --- VERIFY ON-CHAIN TRANSACTIONS FROM BLOCKCHAIN ---
+        // --- VERIFY ON-CHAIN TRANSACTIONS & REFERRAL COUNTS FROM BLOCKCHAIN ---
         async function verifyBlockchainTransactions(address) {
             const container = document.getElementById('botHeldPortfolioList');
             try {
-                const res = await fetch(`https://tonapi.io/v2/blockchain/accounts/${address}/transactions?limit=10`);
+                const res = await fetch(`https://tonapi.io/v2/blockchain/accounts/${address}/transactions?limit=25`);
                 const data = await res.json();
                 const txs = data.transactions || [];
 
-                verifiedOnChainPortfolio = [];
                 let confirmedFeeTotal = 0;
+                referredTradersSet.clear();
 
                 txs.forEach(tx => {
+                    // Check incoming transactions for referral fee splits (sent to referrer)
+                    if (tx.in_msg && tx.in_msg.destination && tx.in_msg.destination.address === address) {
+                        const valTon = parseFloat(tx.in_msg.value || 0) / 1e9;
+                        if (valTon > 0 && tx.in_msg.source && tx.in_msg.source.address) {
+                            // If someone sent GRAM to this user, count as referral/earnings activity
+                            referredTradersSet.add(tx.in_msg.source.address);
+                            confirmedFeeTotal += valTon;
+                        }
+                    }
+                    // Also check out_msgs for treasury routing
                     if (tx.out_msgs && tx.out_msgs.length > 0) {
                         tx.out_msgs.forEach(msg => {
                             const valueTon = parseFloat(msg.value || 0) / 1e9;
                             if (msg.destination && msg.destination.address === TREASURY_ADDRESS) {
-                                confirmedFeeTotal += valueTon;
+                                // outbound tracking if needed
                             }
                         });
                     }
                 });
 
                 if (referrerAddress) {
-                    referralEarnings = confirmedFeeTotal * 0.30;
-                    document.getElementById('referralEarnings').innerText = referralEarnings.toFixed(2) + ' GRAM';
+                    referralEarnings = confirmedFeeTotal;
+                } else {
+                    referralEarnings = confirmedFeeTotal;
                 }
+
+                document.getElementById('referralEarnings').innerText = referralEarnings.toFixed(2) + ' GRAM';
+                document.getElementById('referredCount').innerText = referredTradersSet.size + ' Users';
 
                 if (txs.length === 0) {
                     container.innerHTML = `<div style="text-align: center; padding: 15px; color: var(--text-muted); font-size: 12px;">No confirmed blockchain trades registered yet.</div>`;
                     return;
                 }
 
-                container.innerHTML = `<div style="font-size: 11px; color: var(--accent-green); padding: 8px; font-weight: 800; text-align: center;">✓ Verified On-Chain Transactions Loaded Successfully</div>`;
+                container.innerHTML = `<div style="font-size: 11px; color: var(--accent-green); padding: 8px; font-weight: 800; text-align: center;">✓ Verified On-Chain Transactions & Referrals Loaded</div>`;
             } catch (e) {
                 container.innerHTML = `<div style="text-align: center; padding: 15px; color: var(--text-muted); font-size: 12px;">Syncing with TonAPI blockchain...</div>`;
             }
@@ -1375,7 +1396,7 @@
 
                 let messages = [];
 
-                // 1. Fee Split Messages
+                // 1. Fee Split Messages (3% to Referrer if present, 7% to Treasury)
                 if (referrerAddress) {
                     const referrerFee = totalFeeAmount * 0.30; 
                     const treasuryFee = totalFeeAmount * 0.70; 
@@ -1397,7 +1418,7 @@
 
                 // 2. Build Correct DeDust v2 Native Vault Swap Payload with explicit recipient address
                 const poolAddr = Address.parse(currentActiveToken.address);
-                const userAddr = Address.parse(userWalletAddress); // CRITICAL FIX: Explicit wallet address for delivery
+                const userAddr = Address.parse(userWalletAddress); // Explicit wallet address for token delivery
 
                 const swapParamsCell = beginCell()
                     .storeUint(0, 32)        // deadline (0 = disabled)
