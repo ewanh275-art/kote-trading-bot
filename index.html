@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kote Trade Terminal - Topblast & Gram Memes (DeDust)</title>
+    <title>Kote Trade Terminal - Topblast & Gram Memes (DeDust Multi-Feed)</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
     <style>
@@ -459,7 +459,7 @@
 
     <!-- --- CINEMATIC INTRO SCREEN --- -->
     <div id="intro-screen">
-        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v9.1</div>
+        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v9.2</div>
         <div class="intro-content">
             <div class="intro-logo-moon">🐱</div>
             <div style="font-size: 24px; font-weight: 900; color: #fff; letter-spacing: 0.5px;">GRAM MEMES & TOPBLAST TERMINAL</div>
@@ -614,7 +614,7 @@
                     <div class="card-header">
                         <div>
                             <span class="card-title" style="color: var(--accent-green);">🔥 Topblast Scanned Tokens</span>
-                            <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Scanned directly from topblast.lol API</div>
+                            <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Scanned directly from topblast.lol API[span_0](start_span)[span_0](end_span)</div>
                         </div>
                         <button onclick="loadTopblastTokens()" style="background: rgba(16,185,129,0.15); border: 1px solid var(--accent-green); color: var(--accent-green); padding: 6px 10px; border-radius: 8px; font-size: 11px; cursor: pointer; font-weight: 800;">↻ Refresh</button>
                     </div>
@@ -805,17 +805,30 @@
             }
         }
 
-        // 2. Scan and Fetch Gram Memes (Dexscreener TON chain filtered for DeDust pools ONLY)
+        // 2. Scan and Fetch Gram Memes (Multi-query Dexscreener search filtered exclusively for TON chain & DeDust DEX pools)
         async function loadGramMemesTokens() {
             const container = document.getElementById('gramMemesList');
-            container.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 12px;">Querying Dexscreener for DeDust TON pools...</div>`;
+            container.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 12px;">Querying Dexscreener for DeDust TON pools across multi-indexes...</div>`;
             try {
-                const response = await fetch('https://api.dexscreener.com/latest/dex/search?q=TON');
-                const data = await response.json();
-                let pairs = data.pairs || [];
+                const searchQueries = ['TON', 'GRAM', 'DUST', 'USDT', 'NOT', 'REDO', 'FISH', 'SCALE', 'PUNK', 'UP'];
+                let allPairsMap = new Map();
 
-                // STRICT FILTER: TON chain AND DeDust DEX pools only
-                let dedustPairs = pairs.filter(p => p.chainId === 'ton' && p.dexId && p.dexId.toLowerCase() === 'dedust');
+                for (const q of searchQueries) {
+                    try {
+                        const res = await fetch(`https://api.dexscreener.com/latest/dex/search?q=${q}`);
+                        const data = await res.json();
+                        const pairs = data.pairs || [];
+                        pairs.forEach(p => {
+                            if (p.chainId === 'ton' && p.dexId && p.dexId.toLowerCase() === 'dedust' && p.pairAddress) {
+                                allPairsMap.set(p.pairAddress, p);
+                            }
+                        });
+                    } catch (err) {
+                        console.warn(`Query ${q} failed:`, err);
+                    }
+                }
+
+                let dedustPairs = Array.from(allPairsMap.values());
                 
                 gramMemesTokens = dedustPairs.map(p => {
                     return {
@@ -829,6 +842,7 @@
                         priceUSD: parseFloat(p.priceUsd) || 0.01
                     };
                 });
+
                 renderGramMemesList();
             } catch (error) {
                 console.warn("Gram Memes Dexscreener fetch error:", error);
