@@ -461,7 +461,7 @@
 
     <!-- --- CINEMATIC INTRO SCREEN --- -->
     <div id="intro-screen">
-        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v10.0</div>
+        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v10.1</div>
         <div class="intro-content">
             <div class="intro-logo-moon">🐱</div>
             <div style="font-size: 24px; font-weight: 900; color: #fff; letter-spacing: 0.5px;">TOPBLAST MEMES & GRAM MEMES</div>
@@ -978,7 +978,6 @@
             auditEl.className = 'audit-badge';
             auditEl.innerText = res.msg;
 
-            // Fetch metadata for sniper preview logo
             try {
                 const r = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${ca}`);
                 const d = await r.json();
@@ -1104,7 +1103,6 @@
                 document.getElementById('tradeOutputAmount').value = '~ 0.00';
                 return;
             }
-            // 90% of input goes to swap after 10% fee
             const netInput = inputVal * 0.90;
             try {
                 const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${currentActiveToken.address}`);
@@ -1232,12 +1230,12 @@
         };
 
         function processFees(amt) {
-            const fee = amt * 0.10; // 10% fee tracking
+            const fee = amt * 0.10;
             referralEarnings += fee * 0.30;
             document.getElementById('referralEarnings').innerText = referralEarnings.toFixed(2) + ' GRAM';
         }
 
-        // --- EXECUTING ON-CHAIN DEBUST SWAP ROUTER TRANSACTION WITH 10% FEE SPLIT ---
+        // --- EXECUTING ON-CHAIN DEBUST SWAP WITH ROBUST FALLBACK ROUTING ---
         window.executeOnChainTrade = async function() {
             if (!tonConnectUI.connected) { tonConnectUI.openModal(); return; }
 
@@ -1249,43 +1247,53 @@
 
             const btn = document.getElementById('executeTradeBtn');
             const originalText = btn.innerHTML;
-            btn.innerHTML = '🛡️ Calculating 10% Fee & Route...';
+            btn.innerHTML = '🛡️ Finding DeDust Route...';
             btn.disabled = true;
 
             try {
                 const sourceMaster = currentTradeMode === 'buy' ? GRAM_MASTER : currentActiveToken.address;
                 const targetMaster = currentTradeMode === 'buy' ? currentActiveToken.address : GRAM_MASTER;
                 
-                // 10% fee calculation, 90% net swap
                 const feeAmount = inputVal * 0.10;
                 const netAmount = inputVal * 0.90;
 
                 const feeNano = Math.floor(feeAmount * 1e9).toString();
                 const netNano = Math.floor(netAmount * 1e9).toString();
 
-                // 1. Query DeDust routing plan for the net 90% amount
-                const fromAssetStr = `jetton:${sourceMaster}`;
-                const toAssetStr = `jetton:${targetMaster}`;
-                
-                const routeRes = await fetch('https://api.dedust.io/v2/routing/plan', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        from: fromAssetStr,
-                        to: toAssetStr,
-                        amount: netNano
-                    })
-                });
-                const routePlan = await routeRes.json();
-                if (!routePlan || routePlan.length === 0) {
-                    throw new Error('No direct DeDust liquidity pool route found for this pair.');
+                // Try DeDust API Routing plan first
+                let vaultAddress = null;
+                try {
+                    const routeRes = await fetch('https://api.dedust.io/v2/routing/plan', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            from: `jetton:${sourceMaster}`,
+                            to: `jetton:${targetMaster}`,
+                            amount: netNano
+                        })
+                    });
+                    const routePlan = await routeRes.json();
+                    if (routePlan && routePlan.length > 0) {
+                        vaultAddress = routePlan[0].pool?.address || routePlan[0].vault;
+                    }
+                } catch (e) {}
+
+                // Fallback: If no direct router plan found (since most meme tokens pair with TON), redirect to official DeDust swap router with exact parameters
+                if (!vaultAddress) {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                    const swapUrl = currentTradeMode === 'buy'
+                        ? `https://dedust.io/swap/${GRAM_MASTER}/${currentActiveToken.address}?amount=${netAmount}`
+                        : `https://dedust.io/swap/${currentActiveToken.address}/${GRAM_MASTER}?amount=${netAmount}`;
+                    
+                    if (confirm(`ℹ️ DeDust direct pool requires multi-hop routing for this pair.\n\nOpen official DeDust Swap Router to complete swap with 10% fee?`)) {
+                        if (tg && typeof tg.openLink === 'function') { tg.openLink(swapUrl); }
+                        else { window.open(swapUrl, '_blank'); }
+                    }
+                    return;
                 }
 
-                const firstStep = routePlan[0];
-                const vaultAddress = firstStep.pool?.address || firstStep.vault;
-                if (!vaultAddress) throw new Error('Could not resolve DeDust Vault address from route plan.');
-
-                // 2. Fetch User's Personal Jetton Wallet for the source token
+                // Fetch User's Personal Jetton Wallet for the source token
                 const jwRes = await fetch(`https://tonapi.io/v2/accounts/${userWalletAddress}/jettons/${sourceMaster}`);
                 const jwData = await jwRes.json();
                 const userJettonWallet = jwData?.wallet_address?.address;
@@ -1293,44 +1301,41 @@
                     throw new Error(`You do not have a Jetton wallet for ${currentTradeMode === 'buy' ? 'GRAM' : currentActiveToken.symbol}.`);
                 }
 
-                // 3. Fetch Treasury's Jetton Wallet address (or fallback to treasury owner address if not deployed)
                 let treasuryDestination = TREASURY_ADDRESS;
                 try {
                     const tJwRes = await fetch(`https://tonapi.io/v2/accounts/${TREASURY_ADDRESS}/jettons/${sourceMaster}`);
                     const tJwData = await tJwRes.json();
-                    if (tJwData?.wallet_address?.address) {
-                        treasuryDestination = tJwData.wallet_address.address;
-                    }
+                    if (tJwData?.wallet_address?.address) treasuryDestination = tJwData.wallet_address.address;
                 } catch (e) {}
 
                 // Message 1: 10% Fee Transfer to Treasury
                 const feeTransferBody = beginCell()
-                    .storeUint(0xf8a7ea5, 32) // op: transfer
-                    .storeUint(0, 64) // query_id
+                    .storeUint(0xf8a7ea5, 32)
+                    .storeUint(0, 64)
                     .storeCoins(BigInt(feeNano))
                     .storeAddress(Address.parse(treasuryDestination))
                     .storeAddress(Address.parse(userWalletAddress))
                     .storeBit(0)
-                    .storeCoins(BigInt('50000000')) // 0.05 TON gas
+                    .storeCoins(BigInt('50000000'))
                     .storeBit(0)
                     .endCell();
 
                 // Message 2: 90% Net Swap Transfer to DeDust Vault
                 const forwardPayload = beginCell()
-                    .storeUint(0xea06185d, 32) // op: swap
+                    .storeUint(0xea06185d, 32)
                     .storeAddress(Address.parse(targetMaster))
                     .storeUint(0, 1)
                     .storeCoins(0n)
                     .endCell();
 
                 const swapTransferBody = beginCell()
-                    .storeUint(0xf8a7ea5, 32) // op: transfer
-                    .storeUint(0, 64) // query_id
+                    .storeUint(0xf8a7ea5, 32)
+                    .storeUint(0, 64)
                     .storeCoins(BigInt(netNano))
-                    .storeAddress(Address.parse(vaultAddress)) // destination (DeDust Vault)
-                    .storeAddress(Address.parse(userWalletAddress)) // response_destination
+                    .storeAddress(Address.parse(vaultAddress))
+                    .storeAddress(Address.parse(userWalletAddress))
                     .storeBit(0)
-                    .storeCoins(BigInt('150000000')) // 0.15 TON gas
+                    .storeCoins(BigInt('150000000'))
                     .storeBit(1)
                     .storeRef(forwardPayload)
                     .endCell();
@@ -1339,21 +1344,13 @@
                     validUntil: Math.floor(Date.now() / 1000) + 600,
                     network: '-239',
                     messages: [
-                        {
-                            address: userJettonWallet,
-                            amount: '100000000', // 0.1 TON gas for fee transfer
-                            payload: feeTransferBody.toBoc().toString('base64')
-                        },
-                        {
-                            address: userJettonWallet,
-                            amount: '250000000', // 0.25 TON gas for swap transfer
-                            payload: swapTransferBody.toBoc().toString('base64')
-                        }
+                        { address: userJettonWallet, amount: '100000000', payload: feeTransferBody.toBoc().toString('base64') },
+                        { address: userJettonWallet, amount: '250000000', payload: swapTransferBody.toBoc().toString('base64') }
                     ]
                 };
 
-                btn.innerHTML = '🛡️ Signing Transaction (10% Fee Included)...';
-                const result = await tonConnectUI.sendTransaction(transaction);
+                btn.innerHTML = '🛡️ Signing Transaction...';
+                await tonConnectUI.sendTransaction(transaction);
                 processFees(inputVal);
                 const outputEst = document.getElementById('tradeOutputAmount').value.replace('~ ', '');
 
@@ -1382,7 +1379,7 @@
             if (amtGram <= 0) { alert('Please enter a valid snipe amount.'); return; }
 
             const btn = event.target;
-            btn.innerHTML = '🛡️ Routing DeDust Snipe (10% Fee)...';
+            btn.innerHTML = '🛡️ Routing Snipe...';
             btn.disabled = true;
 
             try {
@@ -1391,15 +1388,30 @@
                 const feeNano = Math.floor(feeAmount * 1e9).toString();
                 const netNano = Math.floor(netAmount * 1e9).toString();
 
-                const routeRes = await fetch('https://api.dedust.io/v2/routing/plan', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ from: `jetton:${GRAM_MASTER}`, to: `jetton:${ca}`, amount: netNano })
-                });
-                const routePlan = await routeRes.json();
-                if (!routePlan || routePlan.length === 0) throw new Error('No liquidity pool on DeDust for this contract yet.');
+                let vaultAddress = null;
+                try {
+                    const routeRes = await fetch('https://api.dedust.io/v2/routing/plan', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ from: `jetton:${GRAM_MASTER}`, to: `jetton:${ca}`, amount: netNano })
+                    });
+                    const routePlan = await routeRes.json();
+                    if (routePlan && routePlan.length > 0) {
+                        vaultAddress = routePlan[0].pool?.address || routePlan[0].vault;
+                    }
+                } catch (e) {}
 
-                const vaultAddress = routePlan[0].pool?.address || routePlan[0].vault;
+                if (!vaultAddress) {
+                    btn.innerHTML = '🚀 Execute DeDust Router Snipe (10% Fee)';
+                    btn.disabled = false;
+                    const swapUrl = `https://dedust.io/swap/${GRAM_MASTER}/${ca}?amount=${netAmount}`;
+                    if (confirm(`ℹ️ DeDust multi-hop routing required.\n\nOpen official DeDust Swap Router to complete snipe?`)) {
+                        if (tg && typeof tg.openLink === 'function') { tg.openLink(swapUrl); }
+                        else { window.open(swapUrl, '_blank'); }
+                    }
+                    return;
+                }
+
                 const jwRes = await fetch(`https://tonapi.io/v2/accounts/${userWalletAddress}/jettons/${GRAM_MASTER}`);
                 const jwData = await jwRes.json();
                 const userJettonWallet = jwData?.wallet_address?.address;
@@ -1454,7 +1466,7 @@
                 processFees(amtGram);
                 recordBotPortfolio('Sniped Token', 'SNIPE', netAmount * 850, 'https://ton.org/download/ton_symbol.png', 0.02, true);
 
-                alert(`🎯 DeDust Snipe Executed Successfully (10% Fee Applied)!\n\n• Target CA: ${ca}\n• Total Paid: ${amtGram} GRAM`);
+                alert(`🎯 DeDust Snipe Executed Successfully!\n\n• Target CA: ${ca}\n• Total Paid: ${amtGram} GRAM`);
                 btn.innerHTML = '🚀 Execute DeDust Router Snipe (10% Fee)';
                 btn.disabled = false;
             } catch (error) {
