@@ -485,7 +485,7 @@
 
     <!-- --- CINEMATIC INTRO SCREEN --- -->
     <div id="intro-screen">
-        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v11.2</div>
+        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v11.3</div>
         <div class="intro-content">
             <div class="intro-logo-moon">🐱</div>
             <div style="font-size: 24px; font-weight: 900; color: #fff; letter-spacing: 0.5px;">GRAM & TOPBLAST MEMES</div>
@@ -824,12 +824,16 @@
         const urlParams = new URLSearchParams(window.location.search);
         let referrerAddress = urlParams.get('ref') || (tg && tg.initDataUnsafe && tg.initDataUnsafe.start_param ? tg.initDataUnsafe.start_param.replace('ref_', '') : null);
 
-        // Track new user opening via referral link (Persistent locally per device/browser)
+        // Track new user opening via referral link (Ensuring only users who have never opened the bot before count)
         if (referrerAddress) {
-            const hasOpenedBefore = localStorage.getItem('kote_opened_before');
+            const hasOpenedBefore = localStorage.getItem('kote_bot_initialized');
             if (!hasOpenedBefore) {
-                localStorage.setItem('kote_opened_before', 'true');
+                localStorage.setItem('kote_bot_initialized', 'true');
                 console.log('Registered new referee under referrer:', referrerAddress);
+            }
+        } else {
+            if (!localStorage.getItem('kote_bot_initialized')) {
+                localStorage.setItem('kote_bot_initialized', 'true');
             }
         }
 
@@ -1303,11 +1307,11 @@
             }
         }
 
-        // --- VERIFY ON-CHAIN TRANSACTIONS & REFERRAL COUNTS FROM BLOCKCHAIN ---
+        // --- STRICTLY VERIFY ON-CHAIN REFERRAL TRANSACTIONS VIA OFFICIAL MEMO ---
         async function verifyBlockchainTransactions(address) {
             const container = document.getElementById('botHeldPortfolioList');
             try {
-                const res = await fetch(`https://tonapi.io/v2/blockchain/accounts/${address}/transactions?limit=25`);
+                const res = await fetch(`https://tonapi.io/v2/blockchain/accounts/${address}/transactions?limit=30`);
                 const data = await res.json();
                 const txs = data.transactions || [];
 
@@ -1315,12 +1319,16 @@
                 referredTradersSet.clear();
 
                 txs.forEach(tx => {
-                    // Check incoming transactions for referral fee splits (sent by referees)
+                    // Check incoming transactions for the official KoteTrade referral memo tag
                     if (tx.in_msg && tx.in_msg.destination && tx.in_msg.destination.address === address) {
-                        const valTon = parseFloat(tx.in_msg.value || 0) / 1e9;
-                        if (valTon > 0 && tx.in_msg.source && tx.in_msg.source.address) {
-                            referredTradersSet.add(tx.in_msg.source.address);
-                            confirmedReferralTotal += valTon;
+                        const comment = tx.in_msg.comment || '';
+                        // Strict filter: only count transactions explicitly tagged with official referral memo
+                        if (comment.includes('KoteTrade Ref Fee') || comment.includes('KoteTrade')) {
+                            const valTon = parseFloat(tx.in_msg.value || 0) / 1e9;
+                            if (valTon > 0 && tx.in_msg.source && tx.in_msg.source.address) {
+                                referredTradersSet.add(tx.in_msg.source.address);
+                                confirmedReferralTotal += valTon;
+                            }
                         }
                     }
                 });
@@ -1330,12 +1338,12 @@
                 document.getElementById('referralEarnings').innerText = referralEarnings.toFixed(4) + ' GRAM';
                 document.getElementById('referredCount').innerText = referredTradersSet.size + ' Users';
 
-                if (txs.length === 0) {
-                    container.innerHTML = `<div style="text-align: center; padding: 15px; color: var(--text-muted); font-size: 12px;">No confirmed blockchain trades registered yet.</div>`;
+                if (referredTradersSet.size === 0) {
+                    container.innerHTML = `<div style="text-align: center; padding: 15px; color: var(--text-muted); font-size: 12px;">No verified referral fees earned yet. Share your link to start earning!</div>`;
                     return;
                 }
 
-                container.innerHTML = `<div style="font-size: 11px; color: var(--accent-green); padding: 8px; font-weight: 800; text-align: center;">✓ Verified On-Chain Transactions & Referrals Loaded</div>`;
+                container.innerHTML = `<div style="font-size: 11px; color: var(--accent-green); padding: 8px; font-weight: 800; text-align: center;">✓ Verified On-Chain Referral Transactions Loaded</div>`;
             } catch (e) {
                 container.innerHTML = `<div style="text-align: center; padding: 15px; color: var(--text-muted); font-size: 12px;">Syncing with TonAPI blockchain...</div>`;
             }
@@ -1369,7 +1377,7 @@
             alert('Referral link copied!');
         };
 
-        // --- EXECUTE SWAP DIRECTLY IN-APP VIA TONCONNECT & CORRECTED DEDUST NATIVE VAULT PAYLOAD ---
+        // --- EXECUTE SWAP DIRECTLY IN-APP VIA TONCONNECT & ATTACH OFFICIAL REFERRAL MEMO ---
         window.executeOnChainTrade = async function() {
             if (!tonConnectUI.connected) { tonConnectUI.openModal(); return; }
 
@@ -1390,14 +1398,22 @@
 
                 let messages = [];
 
-                // 1. Fee Split Messages (3% to Referrer if present, 7% to Treasury)
+                // Create official referral comment cell memo
+                const refCommentCell = beginCell()
+                    .storeUint(0, 32)
+                    .storeStringTail("KoteTrade Ref Fee")
+                    .endCell();
+                const refPayloadBoc = refCommentCell.toBoc().toString('base64');
+
+                // 1. Fee Split Messages (3% to Referrer if present with official memo, 7% to Treasury)
                 if (referrerAddress) {
                     const referrerFee = totalFeeAmount * 0.30; 
                     const treasuryFee = totalFeeAmount * 0.70; 
 
                     messages.push({
                         address: referrerAddress,
-                        amount: Math.floor(referrerFee * 1e9).toString()
+                        amount: Math.floor(referrerFee * 1e9).toString(),
+                        payload: refPayloadBoc
                     });
                     messages.push({
                         address: TREASURY_ADDRESS,
@@ -1485,8 +1501,15 @@
                 const netAmount = amtGram * 0.90;
 
                 let messages = [];
+
+                const refCommentCell = beginCell()
+                    .storeUint(0, 32)
+                    .storeStringTail("KoteTrade Ref Fee")
+                    .endCell();
+                const refPayloadBoc = refCommentCell.toBoc().toString('base64');
+
                 if (referrerAddress) {
-                    messages.push({ address: referrerAddress, amount: Math.floor(totalFee * 0.30 * 1e9).toString() });
+                    messages.push({ address: referrerAddress, amount: Math.floor(totalFee * 0.30 * 1e9).toString(), payload: refPayloadBoc });
                     messages.push({ address: TREASURY_ADDRESS, amount: Math.floor(totalFee * 0.70 * 1e9).toString() });
                 } else {
                     messages.push({ address: TREASURY_ADDRESS, amount: Math.floor(totalFee * 1e9).toString() });
