@@ -493,7 +493,7 @@
 
     <!-- --- CINEMATIC INTRO SCREEN --- -->
     <div id="intro-screen">
-        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v8.0</div>
+        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v8.2</div>
         <div class="intro-content">
             <div class="intro-logo-moon">🐱</div>
             <div style="font-size: 25px; font-weight: 900; color: #fff; letter-spacing: 0.5px;">KOTE TRADE/SNIPER BOT</div>
@@ -512,7 +512,7 @@
                 <div class="brand-logo-box">🐱</div>
                 <div class="brand-text">
                     <h1>Kote Pro Terminal</h1>
-                    <span>● Topblast v2 Live Sync</span>
+                    <span>● Topblast v2 API Sync Active</span>
                 </div>
             </div>
             <div id="ton-connect"></div>
@@ -658,7 +658,7 @@
                     </div>
 
                     <div id="topblastList">
-                        <div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 12px;">Loading Topblast v2 tokens...</div>
+                        <div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 12px;">Loading Topblast v2 tokens from API...</div>
                     </div>
 
                     <div class="pagination-bar">
@@ -783,13 +783,15 @@
             buttonRootId: 'ton-connect'
         });
 
-        const TOPBLAST_MASTER = "EQBLLYmuwZUpNKiNx8hwfTRo1LeLHx7jYYSkGOuNip2Sslzu";
+        // Topblast v2 Dynamic Configuration & Master Factory
+        let topBlastConfig = null;
+        let TOPBLAST_MASTER = "EQBLLYmuwZUpNKiNx8hwfTRo1LeLHx7jYYSkGOuNip2Sslzu";
         const TREASURY_WALLET = "UQAC-pXNqjUJ0u1wBkLPiDkLVMZkWYXWvNQuH5Mtx_tPdsGV";
+        
         let userWalletAddress = null;
         let referralEarnings = 0;
         let selectedSnipeSlippage = 0.5;
 
-        // Topblast v2 Bonded Registry & Live API Sync
         let allTopblastTokens = [
             { name: 'Long Capital', symbol: 'LNG', address: 'EQC_LongCapital_Topblast_TON', logo: 'https://cache.tonapi.io/imgproxy/EQC_LongCapital_Topblast_TON/rs:fill:200:200:1/g:no', mcap: 157500, liq: 52000, vol: 34000, priceUSD: 0.12 },
             { name: 'PYONYA', symbol: 'PYONYA', address: 'EQB_Pyonya_Topblast_TON', logo: 'https://cache.tonapi.io/imgproxy/EQB_Pyonya_Topblast_TON/rs:fill:200:200:1/g:no', mcap: 87600, liq: 31000, vol: 19000, priceUSD: 0.09 },
@@ -823,6 +825,20 @@
             priceNative: 0.0012,
             priceUSD: 0.042
         };
+
+        // Fetch official TopBlast v2 configuration on boot
+        async function initTopBlastConfig() {
+            try {
+                const res = await fetch('https://topblastv2.lol/api/public/config');
+                topBlastConfig = await res.json();
+                if (topBlastConfig && topBlastConfig.master) {
+                    TOPBLAST_MASTER = topBlastConfig.master;
+                }
+            } catch (e) {
+                console.warn("TopBlast config fetch fallback active:", e);
+            }
+        }
+        initTopBlastConfig();
 
         tonConnectUI.onStatusChange(wallet => {
             if (wallet && wallet.account) {
@@ -887,7 +903,7 @@
                 receiveTokenSymbol.innerText = currentActiveToken.symbol;
                 receiveBadgeToken.innerText = currentActiveToken.symbol;
                 executeBtn.className = 'btn-action btn-red';
-                executeBtn.innerHTML = `⚡ Execute On-Chain Buy Swap ($${currentActiveToken.symbol})`;
+                executeBtn.innerHTML = `⚡ Execute TopBlast v2 Buy Swap ($${currentActiveToken.symbol})`;
                 quickContainer.innerHTML = `
                     <button class="quick-btn" onclick="setTradeAmount(10)">10</button>
                     <button class="quick-btn" onclick="setTradeAmount(50)">50</button>
@@ -904,7 +920,7 @@
                 receiveTokenSymbol.innerText = 'GRAM';
                 receiveBadgeToken.innerText = '💎 GRAM';
                 executeBtn.className = 'btn-action btn-green-action';
-                executeBtn.innerHTML = `🔴 Execute On-Chain Sell Swap ($${currentActiveToken.symbol})`;
+                executeBtn.innerHTML = `🔴 Execute TopBlast v2 Sell Swap ($${currentActiveToken.symbol})`;
                 quickContainer.innerHTML = `
                     <button class="quick-btn" onclick="setTradeAmount(1000)">1K</button>
                     <button class="quick-btn" onclick="setTradeAmount(10000)">10K</button>
@@ -1129,7 +1145,7 @@
             try {
                 const btn = document.getElementById('executeTradeBtn');
                 const originalText = btn.innerHTML;
-                btn.innerHTML = '🛡️ Broadcasting Transaction...';
+                btn.innerHTML = '🛡️ Broadcasting TopBlast Transaction...';
                 btn.disabled = true;
 
                 const result = await tonConnectUI.sendTransaction(transaction);
@@ -1151,7 +1167,7 @@
                 console.error('Trade failed:', error);
                 alert('Transaction was cancelled or failed.');
                 const btn = document.getElementById('executeTradeBtn');
-                btn.innerHTML = currentTradeMode === 'buy' ? `⚡ Execute On-Chain Buy Swap ($${currentActiveToken.symbol})` : `🔴 Execute On-Chain Sell Swap ($${currentActiveToken.symbol})`;
+                btn.innerHTML = currentTradeMode === 'buy' ? `⚡ Execute TopBlast v2 Buy Swap ($${currentActiveToken.symbol})` : `🔴 Execute TopBlast v2 Sell Swap ($${currentActiveToken.symbol})`;
                 btn.disabled = false;
             }
         }
@@ -1176,7 +1192,7 @@
             try {
                 const btn = event.target;
                 const originalText = btn.innerHTML;
-                btn.innerHTML = '🛡️ Sniping...';
+                btn.innerHTML = '🛡️ Sniping Curve...';
                 btn.disabled = true;
 
                 const result = await tonConnectUI.sendTransaction(transaction);
