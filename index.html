@@ -1,653 +1,701 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kote Trade & Sniper</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Telegram WebApp SDK -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kote Crash Game</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <!-- TON Connect UI SDK -->
-    <script src="https://cdn.jsdelivr.net/npm/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
-    <!-- FontAwesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- TonConnect UI CDN -->
+    <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
     <style>
         body {
-            background-color: #0b0f19;
-            color: #f3f4f6;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            user-select: none;
-            -webkit-user-select: none;
+            margin: 0;
+            padding: 0;
+            background-color: #05070e;
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            height: 100vh;
+            overflow: hidden;
         }
-        .glass-card {
-            background: rgba(17, 24, 39, 0.75);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 1px solid rgba(249, 115, 22, 0.2);
+        .header {
+            width: 100%;
+            padding: 10px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-sizing: border-box;
+            background: rgba(15, 23, 42, 0.95);
+            border-bottom: 1px solid #1e293b;
+            z-index: 30;
+            gap: 8px;
+            flex-wrap: wrap;
         }
-        .glow-orange {
-            box-shadow: 0 0 20px rgba(249, 115, 22, 0.25);
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
-        .tab-active {
-            border-bottom: 2px solid #f97316;
-            color: #f97316;
+        .balance-box {
+            font-size: 14px;
+            font-weight: bold;
+            color: #38bdf8;
+            background: rgba(56, 189, 248, 0.1);
+            padding: 5px 10px;
+            border-radius: 20px;
+            border: 1px solid rgba(56, 189, 248, 0.3);
         }
-        #ton-connect-button {
-            display: inline-flex;
+        .tab-btns {
+            display: flex;
+            gap: 6px;
+        }
+        .tab-btn {
+            background: #1e293b;
+            border: none;
+            color: #94a3b8;
+            padding: 5px 10px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .tab-btn.active {
+            background: #38bdf8;
+            color: #0f172a;
+        }
+        #ton-connect {
+            transform: scale(0.85);
+            transform-origin: right center;
+        }
+        
+        .game-screen {
+            flex-grow: 1;
+            width: 100%;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        
+        /* Clean Space Background */
+        .space-bg {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            background: 
+                radial-gradient(circle at 25% 25%, rgba(147, 51, 234, 0.22) 0%, transparent 40%),
+                radial-gradient(circle at 75% 75%, rgba(56, 189, 248, 0.18) 0%, transparent 45%),
+                #05070e;
+            z-index: 1;
+        }
+
+        /* Isolated Glowing Stars */
+        .star {
+            position: absolute;
+            background: #ffffff;
+            border-radius: 50%;
+            z-index: 2;
+            opacity: 0.85;
+            pointer-events: none;
+        }
+        .star-1 { width: 3px; height: 3px; top: 18%; left: 20%; box-shadow: 0 0 6px #fff; }
+        .star-2 { width: 2px; height: 2px; top: 65%; left: 82%; box-shadow: 0 0 4px #fff; }
+        .star-3 { width: 4px; height: 4px; top: 30%; left: 78%; box-shadow: 0 0 8px #fff; }
+
+        /* Floating Planets */
+        .planet {
+            position: absolute;
+            border-radius: 50%;
+            z-index: 2;
+            opacity: 0.65;
+            pointer-events: none;
+        }
+        .planet-1 {
+            width: 75px;
+            height: 75px;
+            background: radial-gradient(circle at 30% 30%, #f97316, #7c2d12);
+            top: 12%;
+            right: 12%;
+            box-shadow: inset -10px -10px 20px rgba(0,0,0,0.8), 0 0 15px rgba(249, 115, 22, 0.4);
+        }
+        .planet-2 {
+            width: 45px;
+            height: 45px;
+            background: radial-gradient(circle at 30% 30%, #38bdf8, #0369a1);
+            bottom: 25%;
+            left: 10%;
+            box-shadow: inset -8px -8px 15px rgba(0,0,0,0.8), 0 0 10px rgba(56, 189, 248, 0.3);
+        }
+
+        .multiplier-display {
+            font-size: 52px;
+            font-weight: 900;
+            color: #22c55e;
+            z-index: 10;
+            text-shadow: 0 0 25px rgba(34, 197, 94, 0.6);
+            position: absolute;
+            top: 70px;
+        }
+        .status-text {
+            font-size: 14px;
+            color: #38bdf8;
+            z-index: 10;
+            position: absolute;
+            top: 135px;
+            font-weight: bold;
+            text-align: center;
+            width: 90%;
+            cursor: pointer;
+        }
+
+        .players-lobby {
+            position: absolute;
+            top: 15px;
+            width: 90%;
+            max-width: 350px;
+            background: rgba(15, 23, 42, 0.85);
+            border: 1px solid #1e293b;
+            border-radius: 12px;
+            padding: 8px 12px;
+            z-index: 25;
+            box-sizing: border-box;
+            max-height: 90px;
+            overflow-y: auto;
+        }
+        .lobby-title {
+            font-size: 11px;
+            color: #94a3b8;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+        }
+        .lobby-player {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            padding: 2px 0;
+            border-bottom: 1px solid rgba(30, 41, 59, 0.5);
+        }
+        .lobby-player span:last-child {
+            color: #22c55e;
+            font-weight: bold;
+        }
+
+        /* Rocket Flight Zone starting at Bottom-Left */
+        .rocket-flight-zone {
+            position: absolute;
+            bottom: 25px;
+            left: 25px;
+            width: 130px;
+            height: 130px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            will-change: transform;
+        }
+        .rocket-svg-container {
+            width: 100%;
+            height: 100%;
+            filter: drop-shadow(0 0 20px rgba(56, 189, 248, 0.6));
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        /* Perfectly Positioned Cockpit Cat Inside Rocket Window */
+        .rocket-cat-container {
+            position: absolute;
+            top: 42px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid #38bdf8;
+            z-index: 15;
+            background: #0f172a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            box-shadow: 0 0 8px rgba(56, 189, 248, 0.8);
+        }
+        .rocket-cat-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .leaderboard-panel {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(5, 7, 14, 0.96);
+            z-index: 40;
+            display: none;
+            flex-direction: column;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .leaderboard-panel.open {
+            display: flex;
+        }
+        .lb-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #f8fafc;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        .lb-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            overflow-y: auto;
+        }
+        .lb-item {
+            background: #1e293b;
+            padding: 12px 16px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid #334155;
+        }
+        .lb-rank {
+            font-weight: bold;
+            color: #38bdf8;
+            width: 30px;
+        }
+        .lb-name {
+            flex-grow: 1;
+            color: #f8fafc;
+            font-weight: 500;
+        }
+        .lb-score {
+            color: #22c55e;
+            font-weight: bold;
+        }
+
+        .controls {
+            width: 100%;
+            padding: 16px 20px 24px 20px;
+            background: rgba(15, 23, 42, 0.95);
+            border-top: 1px solid #1e293b;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 30;
+        }
+        .bet-row {
+            display: flex;
+            justify-content: space-between;
             align-items: center;
         }
-        #ton-connect-button > button {
-            background: linear-gradient(to right, #f97316, #f59e0b) !important;
-            color: #000 !important;
-            font-weight: 800 !important;
-            font-size: 12px !important;
-            border-radius: 0.75rem !important;
-            padding: 6px 12px !important;
-            height: auto !important;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3) !important;
+        .bet-row label {
+            font-size: 14px;
+            color: #94a3b8;
         }
-        ::-webkit-scrollbar {
-            width: 4px;
+        .bet-input {
+            background: #1e293b;
+            border: 1px solid #334155;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 16px;
+            width: 110px;
+            text-align: right;
+            font-weight: bold;
         }
-        ::-webkit-scrollbar-track {
-            background: #0b0f19;
+        .action-btn {
+            background: #22c55e;
+            color: white;
+            border: none;
+            padding: 14px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 12px;
+            width: 100%;
+            cursor: pointer;
+            box-shadow: 0 4px 14px rgba(34, 197, 94, 0.4);
         }
-        ::-webkit-scrollbar-thumb {
-            background: #374151;
-            border-radius: 2px;
+        .action-btn.cashout {
+            background: #eab308;
+            color: #000;
+            box-shadow: 0 4px 14px rgba(234, 179, 8, 0.4);
+        }
+        .action-btn.share-btn {
+            background: #0ea5e9;
+            color: white;
+            box-shadow: 0 4px 14px rgba(14, 165, 233, 0.4);
+            display: none;
+        }
+        .action-btn:disabled {
+            background: #475569;
+            color: #94a3b8;
+            box-shadow: none;
+            cursor: not-allowed;
         }
     </style>
 </head>
-<body class="pb-20">
+<body>
 
-    <!-- SECURITY GUARANTEE BANNER -->
-    <div class="bg-gradient-to-r from-emerald-950 via-slate-900 to-emerald-950 text-emerald-400 px-3 py-1.5 text-[10px] font-bold text-center border-b border-emerald-500/30 flex items-center justify-center space-x-1.5">
-        <i class="fa-solid fa-shield-halved text-xs animate-pulse"></i>
-        <span>Anti-Drain Shield Active: Non-Custodial • TON Connect Secure • No Key Access</span>
+    <div class="header">
+        <div class="header-left">
+            <div style="font-weight: bold; color: #f8fafc; font-size: 14px;">🐱 Kote Crash</div>
+            <div class="tab-btns">
+                <button class="tab-btn active" id="gameTabBtn" onclick="switchTab('game')">Game</button>
+                <button class="tab-btn" id="lbTabBtn" onclick="switchTab('leaderboard')">🏆 Leaderboard</button>
+            </div>
+            <div class="balance-box">💰 <span id="balance">10000</span></div>
+        </div>
+        <!-- TonConnect Wallet Button Container -->
+        <div id="ton-connect"></div>
     </div>
 
-    <!-- HEADER NAVIGATION -->
-    <header class="sticky top-0 z-40 glass-card px-4 py-3 flex items-center justify-between border-b border-gray-800">
-        <div class="flex items-center space-x-3">
-            <img src="https://ewanh275-art.github.io/kote-trading-bot/logo.png.jpeg" alt="Kote Logo" class="w-10 h-10 rounded-full border-2 border-orange-500 object-cover shadow-md">
-            <div>
-                <h1 class="font-extrabold text-base text-white tracking-wide flex items-center">
-                    Kote Trade & Sniper
-                    <i class="fa-solid fa-circle-check text-green-400 text-xs ml-1.5" title="Verified Bot"></i>
-                </h1>
-                <p class="text-[10px] text-orange-400 font-semibold uppercase tracking-wider flex items-center">
-                    <span class="w-2 h-2 rounded-full bg-green-500 mr-1.5 animate-pulse"></span>
-                    TON Ecosystem Live
-                </p>
-            </div>
-        </div>
-        <!-- Official TON Connect Widget Mount Point -->
-        <div id="ton-connect-button"></div>
-    </header>
-
-    <!-- MAIN APP CONTAINER -->
-    <main class="p-4 space-y-4 max-w-md mx-auto">
-        <!-- LIVE KOTE PRICE HEADER CARD -->
-        <div class="glass-card p-4 rounded-2xl glow-orange flex items-center justify-between">
-            <div class="flex items-center space-x-3">
-                <img src="https://ewanh275-art.github.io/kote-trading-bot/logo.png.jpeg" alt="KOTE Logo" class="w-12 h-12 rounded-full border-2 border-orange-500/50 object-cover">
-                <div>
-                    <div class="flex items-center space-x-1.5">
-                        <span class="font-black text-lg text-white">$KOTE</span>
-                        <span class="text-[10px] bg-green-500/20 text-green-400 border border-green-500/30 px-1.5 py-0.5 rounded font-bold flex items-center">
-                            <i class="fa-solid fa-lock text-[8px] mr-1"></i>Verified CA
-                        </span>
-                    </div>
-                    <p id="kote-price-display" class="text-xl font-black text-orange-400 mt-0.5">Fetching Price...</p>
-                </div>
-            </div>
-            <div class="text-right">
-                <span id="kote-change-display" class="text-xs font-bold px-2 py-1 rounded-lg bg-gray-800 text-gray-400">--%</span>
-                <button onclick="copyContractAddress()" class="mt-2 block text-[11px] text-gray-400 hover:text-orange-400 underline transition-colors">
-                    <i class="fa-regular fa-copy mr-1"></i>Copy CA
-                </button>
+    <div class="game-screen" id="gameScreen">
+        <div class="space-bg"></div>
+        <div class="star star-1"></div>
+        <div class="star star-2"></div>
+        <div class="star star-3"></div>
+        <div class="planet planet-1"></div>
+        <div class="planet planet-2"></div>
+        
+        <div class="players-lobby">
+            <div class="lobby-title">👥 Active Players in Round:</div>
+            <div id="lobbyList">
+                <div class="lobby-player"><span>No bets placed yet</span><span>-</span></div>
             </div>
         </div>
 
-        <!-- NAVIGATION TAB BAR -->
-        <div class="flex justify-around border-b border-gray-800 text-xs font-bold text-gray-400 mb-2">
-            <button id="tab-btn-topblast" onclick="switchTab('topblast')" class="py-2.5 px-3 tab-active flex items-center space-x-1">
-                <span>🔥 Topblast.lol</span>
-            </button>
-            <button id="tab-btn-trade" onclick="switchTab('trade')" class="py-2.5 px-3 flex items-center space-x-1">
-                <span>⚡ Trade</span>
-            </button>
-            <button id="tab-btn-sniper" onclick="switchTab('sniper')" class="py-2.5 px-3 flex items-center space-x-1">
-                <span>🎯 Sniper</span>
-            </button>
-            <button id="tab-btn-chart" onclick="switchTab('chart')" class="py-2.5 px-3 flex items-center space-x-1">
-                <span>📊 Chart</span>
-            </button>
-        </div>
+        <div class="multiplier-display" id="multDisplay">1.00x</div>
+        <div class="status-text" id="statusText" onclick="forceLaunchNow()">Next round starting... (Tap to start)</div>
 
-        <!-- TAB 1: TOPBLAST.LOL LAUNCHPAD & SEARCH -->
-        <section id="tab-topblast" class="space-y-3">
-            <div class="glass-card p-4 rounded-2xl space-y-3">
-                <div class="flex items-center justify-between">
-                    <h3 class="font-bold text-sm text-white flex items-center">
-                        <span class="mr-1.5">🚀</span> Topblast.lol Complete Directory
-                    </h3>
-                    <a href="https://topblast.lol" target="_blank" class="text-[11px] text-orange-400 font-semibold hover:underline flex items-center">
-                        topblast.lol ↗
-                    </a>
-                </div>
-
-                <!-- LIVE SEARCH INPUT FOR ALL TOPBLAST TOKENS -->
-                <div class="relative">
-                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-gray-400">
-                        <i class="fa-solid fa-magnifying-glass text-xs"></i>
-                    </span>
-                    <input 
-                        id="topblast-search-input" 
-                        type="text" 
-                        oninput="filterTopblastTokens()" 
-                        placeholder="Search all Topblast tokens by name, ticker, or CA..." 
-                        class="w-full pl-9 pr-3 py-2 bg-gray-900 border border-gray-800 rounded-xl text-xs text-white outline-none focus:border-orange-500 transition-all"
-                    >
-                </div>
-
-                <p class="text-[11px] text-gray-400">
-                    Live indexing every token launched on Topblast.lol with official names, logos, and live charts.
-                </p>
-
-                <!-- Dynamic Container for Topblast Tokens -->
-                <div id="topblast-launch-list" class="space-y-2.5 max-h-[420px] overflow-y-auto pr-1">
-                    <div class="text-center py-8 text-xs text-gray-500">
-                        <i class="fa-solid fa-circle-notch fa-spin text-orange-500 text-lg mb-2"></i>
-                        <p>Loading full Topblast.lol database...</p>
-                    </div>
-                </div>
+        <!-- Rocket Container starting bottom-left -->
+        <div class="rocket-flight-zone" id="rocketZone">
+            <div class="rocket-cat-container">
+                <img src="https://ewanh275-art.github.io/Kote-crash/cat.png" alt="Kote Cat" class="rocket-cat-img" onerror="this.style.display='none'; this.parentNode.innerHTML='🐱';">
             </div>
-        </section>
-
-        <!-- TAB 2: INLINE TRADE ENGINE & APPLE PAY -->
-        <section id="tab-trade" class="hidden space-y-3">
-            <!-- APPLE PAY BUY GRAM BANNER -->
-            <div class="glass-card p-3.5 rounded-2xl bg-gradient-to-r from-slate-900 via-orange-950/30 to-slate-900 border border-orange-500/40 flex items-center justify-between">
-                <div class="flex items-center space-x-3">
-                    <img id="gram-banner-logo" src="https://ewanh275-art.github.io/kote-trading-bot/logo.png.jpeg" alt="GRAM Logo" class="w-9 h-9 rounded-full border border-orange-400/50">
-                    <div>
-                        <h4 class="font-extrabold text-xs text-white">Need GRAM?</h4>
-                        <p class="text-[10px] text-gray-400">Buy instantly with Apple Pay / Card</p>
-                    </div>
-                </div>
-                <button onclick="openApplePayModal()" class="px-3 py-1.5 bg-white text-black hover:bg-gray-200 font-black text-xs rounded-xl flex items-center space-x-1.5 shadow-md">
-                    <i class="fa-brands fa-apple text-sm"></i>
-                    <span>Apple Pay</span>
-                </button>
-            </div>
-
-            <!-- INLINE SWAP MODULE -->
-            <div class="glass-card p-4 rounded-2xl space-y-3">
-                <div class="flex items-center justify-between">
-                    <h3 class="font-bold text-sm text-white">Swap Terminal</h3>
-                    <span class="text-[10px] bg-slate-800 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full font-mono flex items-center">
-                        <i class="fa-solid fa-shield text-[9px] mr-1"></i>Verified Route
-                    </span>
-                </div>
-
-                <!-- PAY TOKEN CONTAINER -->
-                <div class="bg-gray-900/90 p-3 rounded-xl border border-gray-800">
-                    <div class="flex justify-between text-xs text-gray-400 mb-1">
-                        <span>You Pay</span>
-                        <span>Balance: <strong id="user-pay-balance" class="text-gray-200">0.00 GRAM</strong></span>
-                    </div>
-                    <div class="flex items-center justify-between">
-                        <input id="pay-amount-input" type="number" value="1.0" oninput="calculateSwapQuote()" class="bg-transparent text-xl font-extrabold text-white outline-none w-1/2" placeholder="0.0">
-                        <div class="flex items-center space-x-2 bg-gray-800 px-3 py-1.5 rounded-xl border border-gray-700">
-                            <img id="pay-token-logo" src="https://ewanh275-art.github.io/kote-trading-bot/logo.png.jpeg" class="w-5 h-5 rounded-full object-cover" alt="GRAM">
-                            <span id="pay-token-symbol" class="font-bold text-xs text-white">GRAM</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- SWAP INVERT BUTTON -->
-                <div class="flex justify-center -my-2 z-10 relative">
-                    <button onclick="invertSwapTokens()" class="w-8 h-8 rounded-full bg-orange-500 text-black hover:bg-orange-400 flex items-center justify-center shadow-lg transition-transform active:scale-95">
-                        <i class="fa-solid fa-arrow-down-up-lock text-xs"></i>
-                    </button>
-                </div>
-
-                <!-- RECEIVE TOKEN CONTAINER -->
-                <div class="bg-gray-900/90 p-3 rounded-xl border border-gray-800">
-                    <div class="flex justify-between text-xs text-gray-400 mb-1">
-                        <span>You Receive</span>
-                        <span>Est. Output</span>
-                    </div>
-                    <div class="flex items-center justify-between">
-                        <input id="receive-amount-input" type="text" readonly class="bg-transparent text-xl font-extrabold text-orange-400 outline-none w-1/2" placeholder="0.0">
-                        <div class="flex items-center space-x-2 bg-gray-800 px-3 py-1.5 rounded-xl border border-gray-700">
-                            <img id="receive-token-logo" src="https://ewanh275-art.github.io/kote-trading-bot/logo.png.jpeg" class="w-5 h-5 rounded-full object-cover" alt="KOTE">
-                            <span id="receive-token-symbol" class="font-bold text-xs text-white">$KOTE</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- QUICK GRAM PRESET BUTTONS -->
-                <div class="grid grid-cols-4 gap-2 pt-1">
-                    <button onclick="setSwapAmount(0.5)" class="py-1.5 bg-gray-800 hover:bg-gray-700 text-xs font-bold rounded-lg text-gray-300">0.5 GRAM</button>
-                    <button onclick="setSwapAmount(1.0)" class="py-1.5 bg-gray-800 hover:bg-gray-700 text-xs font-bold rounded-lg text-gray-300">1 GRAM</button>
-                    <button onclick="setSwapAmount(5.0)" class="py-1.5 bg-gray-800 hover:bg-gray-700 text-xs font-bold rounded-lg text-gray-300">5 GRAM</button>
-                    <button onclick="setSwapAmount(10.0)" class="py-1.5 bg-gray-800 hover:bg-gray-700 text-xs font-bold rounded-lg text-gray-300">10 GRAM</button>
-                </div>
-
-                <!-- EXECUTE SWAP BUTTON -->
-                <button onclick="executeSwapTransaction()" class="w-full py-3 mt-2 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-black font-extrabold text-sm rounded-xl shadow-lg transition-transform active:scale-98 flex items-center justify-center space-x-2">
-                    <i class="fa-solid fa-bolt"></i>
-                    <span>Execute Safe Swap</span>
-                </button>
-            </div>
-        </section>
-
-        <!-- TAB 3: SNIPER CONFIGURATION -->
-        <section id="tab-sniper" class="hidden space-y-3">
-            <div class="glass-card p-4 rounded-2xl space-y-3">
-                <h3 class="font-bold text-sm text-white flex items-center">
-                    <span class="mr-1.5">🎯</span> Kote Auto-Sniper Engine
-                </h3>
-                <p class="text-xs text-gray-400">
-                    Snipe liquidity additions or topblast.lol bonding launches automatically upon deployment.
-                </p>
-
-                <div class="space-y-2">
-                    <label class="text-xs text-gray-400 font-bold block">Target Contract Address</label>
-                    <input id="snipe-address-input" type="text" class="w-full p-2.5 bg-gray-900 border border-gray-800 rounded-xl text-xs font-mono text-white outline-none focus:border-orange-500" placeholder="Paste TON Token Contract Address">
-                </div>
-
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="text-xs text-gray-400 font-bold block mb-1">Buy Amount (GRAM)</label>
-                        <input id="snipe-gram-amount" type="number" value="1.0" class="w-full p-2.5 bg-gray-900 border border-gray-800 rounded-xl text-xs text-white outline-none">
-                    </div>
-                    <div>
-                        <label class="text-xs text-gray-400 font-bold block mb-1">Max Slippage (%)</label>
-                        <input type="number" value="15" class="w-full p-2.5 bg-gray-900 border border-gray-800 rounded-xl text-xs text-white outline-none">
-                    </div>
-                </div>
-
-                <button onclick="activateSniper()" class="w-full py-3 bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white font-extrabold text-sm rounded-xl shadow-lg mt-2">
-                    🎯 Arm Auto-Sniper
-                </button>
-            </div>
-        </section>
-
-        <!-- TAB 4: DYNAMIC CHART EMBED -->
-        <section id="tab-chart" class="hidden space-y-3">
-            <div class="glass-card p-3 rounded-2xl">
-                <div class="flex items-center justify-between mb-2 px-1">
-                    <h3 id="chart-title-text" class="font-bold text-xs text-white">$KOTE Live DexScreener Chart</h3>
-                    <a id="chart-external-link" href="https://dexscreener.com/ton/EQAmvp1Vrr0zY2--STdH-0X_mP5iCD61p2vNVJYwHlgBni2C" target="_blank" class="text-[10px] text-orange-400 hover:underline">
-                        Fullscreen ↗
-                    </a>
-                </div>
-                <div class="w-full h-[380px] rounded-xl overflow-hidden border border-gray-800 bg-gray-900 relative">
-                    <iframe 
-                        id="dexscreener-iframe"
-                        src="https://dexscreener.com/ton/EQAmvp1Vrr0zY2--STdH-0X_mP5iCD61p2vNVJYwHlgBni2C?embed=1&theme=dark&trades=0" 
-                        width="100%" 
-                        height="100%" 
-                        style="border:0;">
-                    </iframe>
-                </div>
-            </div>
-        </section>
-    </main>
-
-    <!-- APPLE PAY MOONPAY MODAL -->
-    <div id="apple-pay-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
-        <div class="glass-card w-full max-w-md rounded-2xl p-4 border border-orange-500/40 relative space-y-3">
-            <button onclick="closeApplePayModal()" class="absolute top-3 right-3 text-gray-400 hover:text-white text-lg">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-            <div class="flex items-center space-x-2">
-                <i class="fa-brands fa-apple text-2xl text-white"></i>
-                <h3 class="font-extrabold text-base text-white">Buy GRAM with Apple Pay</h3>
-            </div>
-            <p class="text-xs text-gray-400">
-                Purchase GRAM directly via MoonPay using Apple Pay or Credit Card. Purchased funds arrive directly into your connected wallet.
-            </p>
-
-            <div class="w-full h-[400px] rounded-xl overflow-hidden bg-gray-900 border border-gray-800">
-                <iframe id="moonpay-iframe" src="" width="100%" height="100%" style="border:0;"></iframe>
-            </div>
+            <svg class="svg-container" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg" style="width:100%; height:100%; position:absolute; top:0; left:0; filter:drop-shadow(0 0 20px rgba(56, 189, 248, 0.6));">
+                <g id="flames" style="display: none;">
+                    <path d="M120,230 L150,300 L180,230 Z" fill="#ef4444"/>
+                    <path d="M130,235 L150,280 L170,235 Z" fill="#f97316"/>
+                    <path d="M140,240 L150,260 L160,240 Z" fill="#facc15"/>
+                </g>
+                <path d="M150,40 C190,90 190,180 170,220 L130,220 C110,180 110,90 150,40 Z" fill="#cbd5e1" stroke="#94a3b8" stroke-width="3"/>
+                <ellipse cx="150" cy="45" rx="15" ry="10" fill="#e2e8f0"/>
+                <path d="M115,180 L80,210 L115,220 Z" fill="#64748b"/>
+                <path d="M185,180 L220,210 L185,220 Z" fill="#64748b"/>
+                <rect x="125" y="110" width="50" height="30" rx="6" fill="#0f172a" stroke="#38bdf8" stroke-width="2"/>
+                <text x="150" y="131" font-size="16" font-weight="900" fill="#38bdf8" text-anchor="middle">0x0</text>
+                <text x="150" y="85" font-size="9" font-weight="bold" fill="#475569" text-anchor="middle" transform="rotate(90, 150, 85)">KOTE ROCKET</text>
+            </svg>
         </div>
     </div>
 
-    <!-- JAVASCRIPT LOGIC -->
+    <div class="leaderboard-panel" id="lbPanel">
+        <div class="lb-title">🏆 Global Chat Leaderboard</div>
+        <div class="lb-list" id="lbList">Loading global scores...</div>
+    </div>
+
+    <div class="controls">
+        <div class="bet-row">
+            <label>Bet Amount (Tokens):</label>
+            <input type="number" id="betInput" class="bet-input" value="100" min="10" max="10000">
+        </div>
+        <button id="actionBtn" class="action-btn" onclick="handleButtonClick()">PLACE BET FOR NEXT ROUND 🚀</button>
+        <button id="shareBtn" class="action-btn share-btn" onclick="shareResultToChat()">📢 SHARE RESULT TO CHAT</button>
+    </div>
+
     <script>
-        const KOTE_CONTRACT = "EQAmvp1Vrr0zY2--STdH-0X_mP5iCD61p2vNVJYwHlgBni2C";
-        const GRAM_LOGO = "https://ewanh275-art.github.io/kote-trading-bot/logo.png.jpeg";
+        // BACKEND URL CONNECTED TO RENDER
+        const BACKEND_URL = "https://kote-crash.onrender.com";
 
-        let userWalletAddress = null;
-        let activePayToken = { symbol: "GRAM", logo: GRAM_LOGO, address: "native" };
-        let activeReceiveToken = { symbol: "$KOTE", logo: GRAM_LOGO, address: KOTE_CONTRACT };
-        let allTopblastTokens = [];
-
-        // Inline Manifest Data Stream
-        const manifestData = {
-            url: "https://ewanh275-art.github.io/kote-trading-bot",
-            name: "Kote Trade & Sniper",
-            iconUrl: "https://ewanh275-art.github.io/kote-trading-bot/logo.png.jpeg"
-        };
-        const encodedManifest = "data:application/json;charset=utf-8," + encodeURIComponent(JSON.stringify(manifestData));
-
-        // Initialize TON Connect UI with native modal fallback enabled
+        // Initialize TonConnect UI to resolve the manifest error
         const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
-            manifestUrl: encodedManifest,
-            buttonRootId: 'ton-connect-button',
-            uiPreferences: {
-                theme: 'DARK'
-            }
+            manifestUrl: 'https://ewanh275-art.github.io/Kote-crash/tonconnect-manifest.json',
+            buttonRootId: 'ton-connect'
         });
 
-        // Listen to Wallet Connection Status Changes
-        tonConnectUI.onStatusChange(wallet => {
-            if (wallet) {
-                userWalletAddress = wallet.account.address;
-                document.getElementById('user-pay-balance').innerText = "15.00 GRAM";
-                if (window.Telegram && window.Telegram.WebApp) {
-                    window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
-                }
-            } else {
-                userWalletAddress = null;
-                document.getElementById('user-pay-balance').innerText = "0.00 GRAM";
-            }
-        });
+        let gameState = 'WAITING';
+        let balance = 10000;
+        let currentBet = 100;
+        let multiplier = 1.00;
+        let crashAt = 1.00;
+        let hasPlacedBet = false;
+        let lastResultText = "";
+        let activePlayers = [];
 
-        // Initialize Telegram WebApp
-        if (window.Telegram && window.Telegram.WebApp) {
-            window.Telegram.WebApp.ready();
-            window.Telegram.WebApp.expand();
+        let lastTime = 0;
+        let countdownTimer = 10.0;
+        let flightProgress = 0;
+
+        const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+        if (tg && typeof tg.expand === 'function') {
+            tg.expand();
         }
 
-        // Fetch Live $KOTE Price via GeckoTerminal API
-        async function fetchKotePrice() {
+        const telegramUser = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) 
+            ? (tg.initDataUnsafe.user.username ? `@${tg.initDataUnsafe.user.username}` : tg.initDataUnsafe.user.first_name) 
+            : "KoteCadet";
+
+        const balanceEl = document.getElementById('balance');
+        const betInput = document.getElementById('betInput');
+        const multDisplay = document.getElementById('multDisplay');
+        const statusText = document.getElementById('statusText');
+        const actionBtn = document.getElementById('actionBtn');
+        const shareBtn = document.getElementById('shareBtn');
+        const rocketZone = document.getElementById('rocketZone');
+        const flames = document.getElementById('flames');
+        const gameScreen = document.getElementById('gameScreen');
+        const lbPanel = document.getElementById('lbPanel');
+        const lbList = document.getElementById('lbList');
+        const lobbyList = document.getElementById('lobbyList');
+
+        async function fetchGlobalLeaderboard() {
             try {
-                const response = await fetch(`https://api.geckoterminal.com/api/v2/networks/ton/tokens/${KOTE_CONTRACT}/pools`);
+                const response = await fetch(`${BACKEND_URL}/api/leaderboard`);
                 const data = await response.json();
-
-                if (data && data.data && data.data.length > 0) {
-                    const primaryPool = data.data[0];
-                    const priceUsd = primaryPool.attributes.base_token_price_usd;
-                    const change24h = primaryPool.attributes.price_change_percentage.h24;
-
-                    document.getElementById("kote-price-display").innerText = `$${parseFloat(priceUsd).toFixed(6)}`;
-                    
-                    const changeEl = document.getElementById("kote-change-display");
-                    changeEl.innerText = `${parseFloat(change24h).toFixed(2)}%`;
-                    changeEl.className = change24h >= 0 
-                        ? "text-xs font-bold px-2 py-1 rounded-lg bg-green-500/20 text-green-400" 
-                        : "text-xs font-bold px-2 py-1 rounded-lg bg-red-500/20 text-red-400";
-                }
-            } catch (err) {
-                console.error("Error fetching $KOTE price:", err);
-            }
-        }
-
-        // Fetch ALL Topblast.lol launches across GeckoTerminal, TonApi, and DexScreener
-        async function fetchTopblastLaunches() {
-            try {
-                const [resCat, resD1, resD2, resTonApi] = await Promise.all([
-                    fetch('https://api.geckoterminal.com/api/v2/networks/ton/categories/topblastlol-launchpad/pools?page=1').catch(() => null),
-                    fetch('https://api.dexscreener.com/latest/dex/search?q=topblast.lol').catch(() => null),
-                    fetch('https://api.dexscreener.com/latest/dex/search?q=topblast').catch(() => null),
-                    fetch('https://tonapi.io/v2/jettons?limit=100').catch(() => null)
-                ]);
-
-                const uniqueMap = new Map();
-
-                // 1. GeckoTerminal Topblast.lol Category Pools
-                if (resCat && resCat.ok) {
-                    const catData = await resCat.json();
-                    if (catData && catData.data) {
-                        catData.data.forEach(pool => {
-                            const addr = pool.id.replace('ton_', '');
-                            const nameParts = (pool.attributes.name || "").split('/');
-                            uniqueMap.set(addr, {
-                                symbol: nameParts[0] ? nameParts[0].trim() : "TOPBLAST",
-                                name: pool.attributes.name || "Topblast Token",
-                                address: addr,
-                                logo: GRAM_LOGO,
-                                price: pool.attributes.base_token_price_usd || "0.00001",
-                                isBonded: true
-                            });
-                        });
-                    }
-                }
-
-                // 2. DexScreener Indexed Pairs
-                const rawPairs = [];
-                if (resD1 && resD1.ok) {
-                    const d1 = await resD1.json();
-                    if (d1 && d1.pairs) rawPairs.push(...d1.pairs);
-                }
-                if (resD2 && resD2.ok) {
-                    const d2 = await resD2.json();
-                    if (d2 && d2.pairs) rawPairs.push(...d2.pairs);
-                }
-
-                rawPairs.forEach(pair => {
-                    if (pair && pair.baseToken && pair.baseToken.address) {
-                        const addr = pair.baseToken.address;
-                        uniqueMap.set(addr, {
-                            symbol: pair.baseToken.symbol || "TOKEN",
-                            name: pair.baseToken.name || "Topblast Token",
-                            address: addr,
-                            logo: (pair.info && pair.info.imageUrl) ? pair.info.imageUrl : GRAM_LOGO,
-                            price: parseFloat(pair.priceUsd || 0).toFixed(6),
-                            isBonded: pair.dexId && pair.dexId !== 'topblast' && pair.dexId !== 'topblast.lol'
-                        });
-                    }
-                });
-
-                // 3. TonApi Jetton Fallback
-                if (resTonApi && resTonApi.ok) {
-                    const tonData = await resTonApi.json();
-                    if (tonData && tonData.jettons) {
-                        tonData.jettons.forEach(j => {
-                            if (j.address && !uniqueMap.has(j.address)) {
-                                uniqueMap.set(j.address, {
-                                    symbol: j.symbol || "JETTON",
-                                    name: j.name || "TON Jetton",
-                                    address: j.address,
-                                    logo: j.image || GRAM_LOGO,
-                                    price: "0.00001",
-                                    isBonded: true
-                                });
-                            }
-                        });
-                    }
-                }
-
-                allTopblastTokens = Array.from(uniqueMap.values());
-                renderTopblastList(allTopblastTokens);
-            } catch (err) {
-                console.error("Error loading topblast tokens:", err);
-                document.getElementById('topblast-launch-list').innerHTML = `
-                    <div class="text-center py-6 text-xs text-red-400">
-                        <p>Error syncing topblast directory. Retrying...</p>
-                    </div>
-                `;
-            }
-        }
-
-        // Render List of Topblast Tokens
-        function renderTopblastList(tokens) {
-            const container = document.getElementById('topblast-launch-list');
-            if (!container) return;
-
-            if (tokens.length === 0) {
-                container.innerHTML = `
-                    <div class="text-center py-6 text-xs text-gray-500">
-                        <p>No tokens found matching topblast registry.</p>
-                    </div>
-                `;
-                return;
-            }
-
-            container.innerHTML = tokens.map(token => `
-                <div class="flex items-center justify-between p-3 bg-gray-900/90 rounded-xl border border-gray-800 hover:border-orange-500/50 transition-all">
-                    <div class="flex items-center space-x-3">
-                        <img src="${token.logo}" onerror="this.src='${GRAM_LOGO}'" class="w-9 h-9 rounded-full object-cover border border-orange-500/30" />
-                        <div>
-                            <p class="font-extrabold text-white text-xs">${token.name} (${token.symbol})</p>
-                            <p class="text-[10px] text-gray-400">Price: $${token.price} <span class="text-orange-400">• ${token.isBonded ? 'Bonded' : 'Fresh'}</span></p>
+                lbList.innerHTML = '';
+                data.forEach((item, index) => {
+                    lbList.innerHTML += `
+                        <div class="lb-item">
+                            <div class="lb-rank">#${index + 1}</div>
+                            <div class="lb-name">${item.name}</div>
+                            <div class="lb-score">${item.score}</div>
                         </div>
-                    </div>
-                    <div class="flex items-center space-x-1">
-                        <button onclick="loadChartForToken('${token.address}', '${token.symbol}', ${token.isBonded})" class="px-2 py-1.5 bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold text-[10px] rounded-lg">
-                            📊 Chart
-                        </button>
-                        <button onclick="quickTradeToken('${token.symbol}', '${token.logo}', '${token.address}')" class="px-2.5 py-1.5 bg-orange-500 hover:bg-orange-400 text-black font-black text-[11px] rounded-lg shadow transition-transform active:scale-95">
-                            ⚡ Trade
-                        </button>
-                    </div>
-                </div>
-            `).join('');
+                    `;
+                });
+            } catch (e) {
+                lbList.innerHTML = `<div style="text-align: center; color: #94a3b8; padding: 20px;">Unable to load global leaderboard</div>`;
+            }
         }
 
-        // Search Filter for Topblast Tokens
-        function filterTopblastTokens() {
-            const query = document.getElementById('topblast-search-input').value.toLowerCase();
-            const filtered = allTopblastTokens.filter(t => 
-                t.name.toLowerCase().includes(query) || t.symbol.toLowerCase().includes(query) || t.address.toLowerCase().includes(query)
-            );
-            renderTopblastList(filtered);
+        async function submitScoreToBackend(name, scoreStr) {
+            try {
+                await fetch(`${BACKEND_URL}/api/submit`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: name, score: scoreStr })
+                });
+            } catch (e) {
+                console.error("Failed to sync score", e);
+            }
         }
 
-        // Smart Chart Router
-        function loadChartForToken(contractAddress, tokenSymbol, isBonded) {
-            const iframe = document.getElementById('dexscreener-iframe');
-            const titleEl = document.getElementById('chart-title-text');
-            const linkEl = document.getElementById('chart-external-link');
-
-            if (isBonded) {
-                iframe.src = `https://dexscreener.com/ton/${contractAddress}?embed=1&theme=dark&trades=0`;
-                titleEl.innerText = `${tokenSymbol} Live DexScreener Chart`;
-                linkEl.href = `https://dexscreener.com/ton/${contractAddress}`;
+        function switchTab(tab) {
+            if (tab === 'game') {
+                gameScreen.style.display = 'flex';
+                lbPanel.classList.remove('open');
+                document.getElementById('gameTabBtn').classList.add('active');
+                document.getElementById('lbTabBtn').classList.remove('active');
             } else {
-                iframe.src = `https://dexscreener.com/ton/${contractAddress}?embed=1&theme=dark&trades=0`;
-                titleEl.innerText = `${tokenSymbol} Topblast Live Chart`;
-                linkEl.href = `https://topblast.lol`;
+                gameScreen.style.display = 'none';
+                lbPanel.classList.add('open');
+                document.getElementById('lbTabBtn').classList.add('active');
+                document.getElementById('gameTabBtn').classList.remove('active');
+                fetchGlobalLeaderboard();
             }
+        }
+        window.switchTab = switchTab;
 
-            switchTab('chart');
+        function startLobby() {
+            gameState = 'WAITING';
+            countdownTimer = 10.0;
+            hasPlacedBet = false;
+            multiplier = 1.00;
+            multDisplay.innerText = "1.00x";
+            multDisplay.style.color = "#22c55e";
+            
+            actionBtn.style.display = "block";
+            actionBtn.innerText = "PLACE BET FOR NEXT ROUND 🚀";
+            actionBtn.className = "action-btn";
+            shareBtn.style.display = "none";
+            betInput.disabled = false;
+
+            flightProgress = 0;
+            rocketZone.style.transform = `translate(0px, 0px) rotate(0deg)`;
+            flames.style.display = 'none';
+
+            activePlayers = [];
+            updateLobbyUI();
         }
 
-        // Tab Switcher
-        function switchTab(tabName) {
-            ['topblast', 'trade', 'sniper', 'chart'].forEach(t => {
-                document.getElementById(`tab-${t}`).classList.add('hidden');
-                document.getElementById(`tab-btn-${t}`).classList.remove('tab-active');
+        window.forceLaunchNow = function() {
+            if (gameState === 'WAITING') {
+                launchFlight();
+            }
+        };
+
+        function updateLobbyUI() {
+            lobbyList.innerHTML = '';
+            activePlayers.forEach(p => {
+                lobbyList.innerHTML += `<div class="lobby-player"><span>${p.name}</span><span>${p.bet} tokens</span></div>`;
             });
-            document.getElementById(`tab-${tabName}`).classList.remove('hidden');
-            document.getElementById(`tab-btn-${tabName}`).classList.add('tab-active');
-
-            if (window.Telegram && window.Telegram.WebApp) {
-                window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
+            if (activePlayers.length === 0) {
+                lobbyList.innerHTML = `<div class="lobby-player"><span>No bets placed yet</span><span>-</span></div>`;
             }
         }
 
-        // Quick Trade Selected Token
-        function quickTradeToken(symbol, logo, address) {
-            activeReceiveToken = { symbol: `$${symbol}`, logo: logo, address: address };
+        function handleButtonClick() {
+            if (gameState === 'WAITING') {
+                if (hasPlacedBet) return;
+                currentBet = parseInt(betInput.value);
+                if (isNaN(currentBet) || currentBet <= 0) {
+                    alert("Please enter a valid bet amount!");
+                    return;
+                }
+                if (currentBet > balance) {
+                    alert("Not enough tokens!");
+                    return;
+                }
+
+                balance -= currentBet;
+                balanceEl.innerText = balance;
+                hasPlacedBet = true;
+
+                activePlayers.push({ name: telegramUser + " 🐱", bet: currentBet });
+                updateLobbyUI();
+
+                actionBtn.innerText = "BET LOCKED ✅ (Waiting for Launch)";
+                actionBtn.disabled = true;
+                betInput.disabled = true;
+            } else if (gameState === 'FLYING') {
+                cashOut();
+            }
+        }
+        window.handleButtonClick = handleButtonClick;
+
+        function launchFlight() {
+            gameState = 'FLYING';
+            crashAt = parseFloat((Math.random() * 6 + 1.3).toFixed(2));
+            multiplier = 1.00;
+            flightProgress = 0;
+
+            if (hasPlacedBet) {
+                actionBtn.innerText = "CLAIM / CASH OUT 💰";
+                actionBtn.className = "action-btn cashout";
+                actionBtn.disabled = false;
+            } else {
+                actionBtn.innerText = "WATCHING ROUND 🚀";
+                actionBtn.disabled = true;
+            }
+
+            statusText.innerText = "Rocket launching towards top-right!";
+            flames.style.display = 'block';
+        }
+
+        function cashOut() {
+            gameState = 'CASHED_OUT';
+            flames.style.display = 'none';
+
+            let winnings = Math.floor(currentBet * multiplier);
+            balance += winnings;
+            balanceEl.innerText = balance;
+
+            multDisplay.style.color = "#38bdf8";
+            statusText.innerHTML = `<b style="color: #38bdf8;">🎉 Cashed out! Won +${winnings} tokens!</b>`;
             
-            document.getElementById('receive-token-symbol').innerText = activeReceiveToken.symbol;
-            document.getElementById('receive-token-logo').src = activeReceiveToken.logo;
-            document.getElementById('snipe-address-input').value = address;
+            let finalScoreStr = multiplier.toFixed(2) + "x";
+            lastResultText = `🏆 ${telegramUser} WON ${winnings} tokens at ${finalScoreStr} on Kote Crash! 🚀🐱`;
+            actionBtn.style.display = "none";
+            shareBtn.style.display = "block";
 
-            switchTab('trade');
+            submitScoreToBackend(telegramUser + " 🐱", finalScoreStr);
+
+            if (tg && tg.HapticFeedback && typeof tg.HapticFeedback.notificationOccurred === 'function') {
+                tg.HapticFeedback.notificationOccurred('success');
+            }
+
+            setTimeout(startLobby, 5000);
         }
 
-        // Swap Input Inverter
-        function invertSwapTokens() {
-            const temp = { ...activePayToken };
-            activePayToken = { ...activeReceiveToken };
-            activeReceiveToken = temp;
+        function crashGame() {
+            gameState = 'CRASHED';
+            flames.style.display = 'none';
 
-            document.getElementById('pay-token-symbol').innerText = activePayToken.symbol;
-            document.getElementById('pay-token-logo').src = activePayToken.logo;
-
-            document.getElementById('receive-token-symbol').innerText = activeReceiveToken.symbol;
-            document.getElementById('receive-token-logo').src = activeReceiveToken.logo;
-
-            calculateSwapQuote();
-        }
-
-        function setSwapAmount(amount) {
-            document.getElementById('pay-amount-input').value = amount;
-            calculateSwapQuote();
-        }
-
-        function calculateSwapQuote() {
-            const payVal = parseFloat(document.getElementById('pay-amount-input').value || 0);
-            document.getElementById('receive-amount-input').value = (payVal * 12500).toLocaleString();
-        }
-
-        // Apple Pay MoonPay On-Ramp Modal
-        function openApplePayModal() {
-            const walletParam = userWalletAddress ? `&walletAddress=${userWalletAddress}` : '';
-            const moonpayUrl = `https://buy.moonpay.com?apiKey=pk_test_123&currencyCode=ton&paymentMethod=apple_pay${moonpayUrl}`;
+            multDisplay.style.color = "#ef4444";
+            multDisplay.innerText = multiplier.toFixed(2) + 'x';
             
-            document.getElementById('moonpay-iframe').src = moonpayUrl;
-            document.getElementById('apple-pay-modal').classList.remove('hidden');
-        }
-
-        function closeApplePayModal() {
-            document.getElementById('apple-pay-modal').classList.add('hidden');
-            document.getElementById('moonpay-iframe').src = '';
-        }
-
-        function copyContractAddress() {
-            navigator.clipboard.writeText(KOTE_CONTRACT);
-            if (window.Telegram && window.Telegram.WebApp) {
-                window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+            let finalScoreStr = multiplier.toFixed(2) + "x";
+            if (hasPlacedBet) {
+                statusText.innerHTML = `<b style="color: #ef4444;">💥 CRASHED! Lost ${currentBet} tokens.</b>`;
+                lastResultText = `💀 ${telegramUser} LOST ${currentBet} tokens when the rocket crashed at ${finalScoreStr}! 🚀💥`;
+            } else {
+                statusText.innerHTML = `<b style="color: #ef4444;">💥 ROCKET CRASHED at ${finalScoreStr}!</b>`;
+                lastResultText = `👀 ${telegramUser} watched the rocket crash at ${finalScoreStr} on Kote Crash!`;
             }
-            alert("$KOTE Contract Address Copied!");
-        }
+            
+            actionBtn.style.display = "none";
+            shareBtn.style.display = "block";
 
-        async function executeSwapTransaction() {
-            if (!tonConnectUI.connected) {
-                alert("Please connect your TON wallet first using the Connect Wallet button.");
-                tonConnectUI.openModal();
-                return;
+            submitScoreToBackend(telegramUser + " 🐱", finalScoreStr);
+            
+            if (tg && tg.HapticFeedback && typeof tg.HapticFeedback.notificationOccurred === 'function') {
+                tg.HapticFeedback.notificationOccurred('error');
             }
 
-            if (window.Telegram && window.Telegram.WebApp) {
-                window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
-            }
-            alert(`Executing Safe Swap via TON Connect: ${document.getElementById('pay-amount-input').value} ${activePayToken.symbol} -> ${activeReceiveToken.symbol}`);
+            setTimeout(startLobby, 5000);
         }
 
-        function activateSniper() {
-            if (!tonConnectUI.connected) {
-                alert("Please connect your TON wallet first.");
-                tonConnectUI.openModal();
-                return;
+        window.shareResultToChat = function() {
+            if (tg && typeof tg.openTelegramLink === 'function') {
+                const shareUrl = `https://t.me/share/url?url=https://t.me/KoteCrashBot&text=${encodeURIComponent(lastResultText)}`;
+                tg.openTelegramLink(shareUrl);
+            } else {
+                alert(lastResultText);
             }
-            const ca = document.getElementById('snipe-address-input').value;
-            if (!ca) {
-                alert("Please enter or select a target contract address.");
-                return;
+        };
+
+        function gameLoop(timestamp) {
+            if (!lastTime) lastTime = timestamp;
+            let deltaTime = (timestamp - lastTime) / 1000;
+            lastTime = timestamp;
+
+            if (deltaTime > 0.5) deltaTime = 0.016;
+
+            if (gameState === 'WAITING') {
+                countdownTimer -= deltaTime;
+                if (countdownTimer <= 0) {
+                    launchFlight();
+                } else {
+                    statusText.innerText = `Next round in ${Math.ceil(countdownTimer)}s... (Tap to start)`;
+                }
+            } else if (gameState === 'FLYING') {
+                multiplier += deltaTime * 0.45;
+                multDisplay.innerText = multiplier.toFixed(2) + 'x';
+
+                if (flightProgress < 1) {
+                    flightProgress += deltaTime * 0.25;
+                    if (flightProgress > 1) flightProgress = 1;
+                }
+
+                let currentX = flightProgress * 200;
+                let currentY = flightProgress * 220;
+                let randomShake = (Math.random() - 0.5) * 4;
+
+                rocketZone.style.transform = `translate(${currentX + randomShake}px, ${-currentY + randomShake}px) rotate(38deg)`;
+
+                if (multiplier >= crashAt) {
+                    crashGame();
+                }
             }
-            alert(`Sniper Armed securely for Contract: ${ca}`);
+
+            requestAnimationFrame(gameLoop);
         }
 
-        // Initialize App
-        window.addEventListener('DOMContentLoaded', () => {
-            fetchKotePrice();
-            fetchTopblastLaunches();
-            calculateSwapQuote();
-
-            setInterval(fetchKotePrice, 15000);
-            setInterval(fetchTopblastLaunches, 45000);
-        });
+        startLobby();
+        requestAnimationFrame(gameLoop);
     </script>
 </body>
 </html>
