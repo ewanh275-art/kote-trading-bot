@@ -485,7 +485,7 @@
 
     <!-- --- CINEMATIC INTRO SCREEN --- -->
     <div id="intro-screen">
-        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v10.5</div>
+        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v10.6</div>
         <div class="intro-content">
             <div class="intro-logo-moon">🐱</div>
             <div style="font-size: 24px; font-weight: 900; color: #fff; letter-spacing: 0.5px;">GRAM & TOPBLAST MEMES</div>
@@ -1327,7 +1327,7 @@
             alert('Referral link copied!');
         };
 
-        // --- EXECUTE SWAP DIRECTLY IN-APP VIA TONCONNECT & DEDUST NATIVE VAULT ---
+        // --- EXECUTE SWAP DIRECTLY IN-APP VIA TONCONNECT & DEDUST NATIVE VAULT PAYLOAD ---
         window.executeOnChainTrade = async function() {
             if (!tonConnectUI.connected) { tonConnectUI.openModal(); return; }
 
@@ -1348,7 +1348,7 @@
 
                 let messages = [];
 
-                // 1. Fee Split Messages (Omitted empty payload to prevent TonConnect validation error)
+                // 1. Fee Split Messages
                 if (referrerAddress) {
                     const referrerFee = totalFeeAmount * 0.30; 
                     const treasuryFee = totalFeeAmount * 0.70; 
@@ -1368,11 +1368,27 @@
                     });
                 }
 
-                // 2. DeDust Native Vault Swap Message
+                // 2. Build DeDust Vault Swap Payload using @ton/core Cell Builder
+                const poolAddr = Address.parse(currentActiveToken.address);
+                const swapCell = beginCell()
+                    .storeUint(0xea06185d, 32) // DeDust swap opcode
+                    .storeCoins(Math.floor(netAmount * 1e9))
+                    .storeBit(0) // no next step
+                    .storeAddress(poolAddr)
+                    .storeCoins(0) // min output / slippage
+                    .storeBit(0) // no referral
+                    .storeBit(0) // no fulfill payload
+                    .storeBit(0) // no reject payload
+                    .endCell();
+
+                const payloadBoc = swapCell.toBoc().toString('base64');
+
+                // 3. DeDust Native Vault Swap Message with Encoded Payload & Gas
                 const swapTonTotal = netAmount + 0.25;
                 messages.push({
                     address: DEDUST_NATIVE_VAULT,
-                    amount: Math.floor(swapTonTotal * 1e9).toString()
+                    amount: Math.floor(swapTonTotal * 1e9).toString(),
+                    payload: payloadBoc
                 });
 
                 const transaction = {
@@ -1420,9 +1436,24 @@
                     messages.push({ address: TREASURY_ADDRESS, amount: Math.floor(totalFee * 1e9).toString() });
                 }
 
+                const poolAddr = Address.parse(ca);
+                const swapCell = beginCell()
+                    .storeUint(0xea06185d, 32)
+                    .storeCoins(Math.floor(netAmount * 1e9))
+                    .storeBit(0)
+                    .storeAddress(poolAddr)
+                    .storeCoins(0)
+                    .storeBit(0)
+                    .storeBit(0)
+                    .storeBit(0)
+                    .endCell();
+
+                const payloadBoc = swapCell.toBoc().toString('base64');
+
                 messages.push({
                     address: DEDUST_NATIVE_VAULT,
-                    amount: Math.floor((netAmount + 0.25) * 1e9).toString()
+                    amount: Math.floor((netAmount + 0.25) * 1e9).toString(),
+                    payload: payloadBoc
                 });
 
                 const transaction = {
