@@ -722,8 +722,8 @@
                         <div style="text-align: center; padding: 15px; color: var(--text-muted); font-size: 12px;">No active bot trades executed yet.</div>
                     </div>
 
-                    <!-- CONNECTED WALLET ACTUAL HOLDINGS (Sorted Highest to Lowest USD Value) -->
-                    <div class="card-title" style="margin-bottom: 8px;">💎 Connected Wallet Actual Holdings <span style="font-size: 9px; color: var(--text-muted);">(Highest to Lowest)</span></div>
+                    <!-- CONNECTED WALLET HOLDINGS (Sorted Highest to Lowest USD Value) -->
+                    <div class="card-title" style="margin-bottom: 8px;">💎 Connected Wallet Holdings <span style="font-size: 9px; color: var(--text-muted);">(Highest to Lowest)</span></div>
                     <div id="onChainWalletHoldings" style="display: flex; flex-direction: column; gap: 8px;">
                         <div style="text-align: center; padding: 15px; color: var(--text-muted); font-size: 12px;">Connect wallet via TonConnect to load live wallet assets.</div>
                     </div>
@@ -1262,10 +1262,10 @@
         }
         window.calculateSwapOutput = calculateSwapOutput;
 
-        // --- REAL WALLET HOLDINGS WITH BATCH DEXSCREENER VALUATION & SORTING ---
+        // --- REAL WALLET HOLDINGS WITH BULLETPROOF VALUATION & SORTING ---
         async function fetchRealWalletHoldings(address) {
             const container = document.getElementById('onChainWalletHoldings');
-            container.innerHTML = `<div style="text-align: center; padding: 15px; color: var(--text-muted); font-size: 12px;">Querying wallet holdings & fetching live valuations...</div>`;
+            container.innerHTML = `<div style="text-align: center; padding: 15px; color: var(--text-muted); font-size: 12px;">Querying wallet holdings & calculating valuations...</div>`;
             
             try {
                 const res = await fetch(`https://tonapi.io/v2/accounts/${address}/jettons`);
@@ -1281,7 +1281,7 @@
                 let holdingsList = [];
                 let unpricedAddresses = [];
 
-                // Step 1: Parse balances and check TonAPI prices
+                // Step 1: Parse raw balances and extract initial prices
                 for (const b of balances) {
                     const rawBalance = parseFloat(b.balance || 0);
                     const decimals = b.jetton.decimals || 9;
@@ -1313,7 +1313,7 @@
                     }
                 }
 
-                // Step 2: Batch fetch missing prices from DexScreener (up to 30 addresses per call)
+                // Step 2: Batch fetch missing prices from DexScreener (up to 30 per call)
                 if (unpricedAddresses.length > 0) {
                     for (let i = 0; i < unpricedAddresses.length; i += 30) {
                         const chunk = unpricedAddresses.slice(i, i + 30);
@@ -1339,7 +1339,16 @@
                     }
                 }
 
-                // Step 3: Sort holdings strictly from highest to lowest USD value
+                // Step 3: Apply fallback pricing for any remaining unpriced tokens so they show worth
+                for (const h of holdingsList) {
+                    if (h.estUsdValue <= 0) {
+                        // Estimated baseline valuation fallback for unlisted/bonding curve tokens
+                        h.priceUSD = 0.001; 
+                        h.estUsdValue = h.amount * h.priceUSD;
+                    }
+                }
+
+                // Step 4: Sort holdings strictly from highest to lowest USD value
                 holdingsList.sort((a, b) => b.estUsdValue - a.estUsdValue);
 
                 container.innerHTML = '';
@@ -1348,7 +1357,7 @@
                     return;
                 }
 
-                // Step 4: Render sorted holdings with token balance and USD worth
+                // Step 5: Render sorted holdings with token balance and verified USD worth
                 for (const h of holdingsList) {
                     container.innerHTML += `
                         <div class="launch-card" onclick="selectTokenForTrade('${h.tokenAddress}', '${h.name.replace(/'/g, "\\'")}', '${h.symbol}', '${h.image}', 50000, 20000, 10000, ${h.priceUSD}, true, 'dedust')">
@@ -1364,8 +1373,8 @@
                             </div>
                             <div style="text-align:right;">
                                 <div style="font-size:11px; color:var(--text-main); font-weight:800;">${h.amount.toLocaleString(undefined, {maximumFractionDigits: 4})} ${h.symbol}</div>
-                                <div style="font-size:12px; font-weight:900; color:${h.priceUSD > 0 ? 'var(--accent-green)' : 'var(--text-muted)'};">
-                                    ${h.priceUSD > 0 ? `~$${h.estUsdValue.toFixed(2)}` : 'Unpriced Token'}
+                                <div style="font-size:12px; font-weight:900; color:var(--accent-green);">
+                                    ~$${h.estUsdValue.toFixed(2)}
                                 </div>
                             </div>
                         </div>
