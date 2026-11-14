@@ -10,7 +10,7 @@
         :root {
             --bg-base: #050507;
             --bg-sidebar: #09090d;
-            --bg-card: rgba(14, 14, 20, 0.82);
+            --bg-card: rgba(14, 14, 20, 0.85);
             --bg-input: #15151e;
             --border-color: #27151a;
             --accent-red: #ef4444;
@@ -379,13 +379,13 @@
             color: var(--accent-red);
         }
 
-        /* Bulletproof Token Avatar Container */
+        /* Rounded Square Token Avatar Container (Matching Screenshot) */
         .token-avatar-wrap {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
             background: #1a1014;
-            border: 1px solid rgba(239, 68, 68, 0.4);
+            border: 1px solid rgba(239, 68, 68, 0.35);
             position: relative;
             overflow: hidden;
             display: flex;
@@ -402,36 +402,27 @@
             z-index: 2;
         }
         .token-avatar-fallback {
-            font-size: 15px;
+            font-size: 16px;
             font-weight: 900;
             color: var(--accent-red);
             z-index: 1;
         }
 
+        /* Topblast Launch Card Layout Matching Screenshot */
         .launch-card {
-            background: var(--bg-input);
+            background: #0b0b0f;
             border: 1px solid var(--border-color);
-            padding: 12px 14px;
-            border-radius: 14px;
-            margin-bottom: 8px;
+            padding: 12px 16px;
+            border-radius: 16px;
+            margin-bottom: 10px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            transition: border-color 0.2s;
+            transition: border-color 0.2s, background 0.2s;
         }
         .launch-card:hover {
             border-color: var(--accent-red);
-        }
-
-        .badge-topblast {
-            font-size: 9px;
-            background: rgba(239, 68, 68, 0.15);
-            color: var(--accent-red);
-            border: 1px solid rgba(239, 68, 68, 0.35);
-            padding: 2px 6px;
-            border-radius: 6px;
-            font-weight: 800;
-            text-transform: uppercase;
+            background: #111118;
         }
 
         /* Bottom Navigation Bar */
@@ -470,7 +461,7 @@
 
     <!-- --- CINEMATIC INTRO SCREEN --- -->
     <div id="intro-screen">
-        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v7.5</div>
+        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v7.6</div>
         <div class="intro-content">
             <div class="intro-logo-moon">🐱</div>
             <div style="font-size: 25px; font-weight: 900; color: #fff; letter-spacing: 0.5px;">KOTE TRADE/SNIPER BOT</div>
@@ -510,7 +501,7 @@
                             <div>
                                 <div style="display:flex; align-items:center; gap:6px;">
                                     <h2 style="font-size: 17px; font-weight: 900;" id="heroTokenName">Kote Official ($KOTE)</h2>
-                                    <span class="badge-topblast">Topblast</span>
+                                    <span style="font-size: 9px; background: rgba(239,68,68,0.15); color: var(--accent-red); border: 1px solid rgba(239,68,68,0.35); padding: 2px 6px; border-radius: 6px; font-weight: 800; text-transform: uppercase;">Topblast</span>
                                 </div>
                                 <span style="font-size: 10px; color: var(--text-muted); font-family: monospace;" id="heroTokenCA">EQAmvp1Vrr0zY2--STdH-0X_mP5iCD61p2vNVJYwHlgBni2C</span>
                             </div>
@@ -619,13 +610,13 @@
                 </div>
             </section>
 
-            <!-- 3. TOPBLAST LAUNCHPAD FEED -->
+            <!-- 3. TOPBLAST LAUNCHPAD FEED (EXACT SCREENSHOT LAYOUT) -->
             <section id="page-launches" class="page">
                 <div class="card" style="max-width: 650px; margin: 0 auto; width: 100%;">
                     <div class="card-header">
                         <div>
                             <span class="card-title" style="color: var(--accent-red);">🔥 Official Topblast.lol Launches</span>
-                            <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Real-Time Price Feed • TonViewer Proxies • Audited</div>
+                            <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Real-Time Price Stream • TonViewer Proxies • Audited</div>
                         </div>
                         <button onclick="loadTopblastOnlyTokens()" style="background: rgba(239,68,68,0.15); border: 1px solid var(--accent-red); color: var(--accent-red); padding: 6px 10px; border-radius: 8px; font-size: 11px; cursor: pointer; font-weight: 800;">↻ Sync All</button>
                     </div>
@@ -994,20 +985,20 @@
                 container.innerHTML = '';
                 parsedBalances.forEach(item => {
                     container.innerHTML += `
-                        <div class="launch-card">
+                        <div class="launch-card" onclick="selectTokenForTrade('', '${item.name}', '${item.symbol}', '${item.image}', 50000, 20000, 10000, 0.05)" style="cursor:pointer;">
                             <div style="display:flex; align-items:center; gap:12px;">
                                 <div class="token-avatar-wrap">
                                     <span class="token-avatar-fallback">${item.symbol.charAt(0)}</span>
                                     <img src="${item.image}" onerror="this.style.display='none';">
                                 </div>
                                 <div>
-                                    <h4 style="font-size:13px; font-weight:800;">${item.name} ($${item.symbol})</h4>
-                                    <span style="font-size:11px; color:var(--text-muted);">Supply Held: ${item.amount.toLocaleString(undefined, {maximumFractionDigits: 2})}</span>
+                                    <h4 style="font-size:13px; font-weight:800;">$${item.symbol}</h4>
+                                    <span style="font-size:11px; color:var(--text-muted);">${item.name}</span>
                                 </div>
                             </div>
                             <div style="text-align:right;">
-                                <div style="font-size:12px; font-weight:900; color:var(--accent-green);">~$${item.estUsdValue.toFixed(2)}</div>
-                                <span style="font-size:9px; color:var(--accent-cyan);">On-Chain</span>
+                                <div style="font-size:10px; color:var(--text-muted); text-transform:uppercase; font-weight:700;">Holdings</div>
+                                <div style="font-size:13px; font-weight:900; color:var(--accent-green);">~$${item.estUsdValue.toFixed(2)}</div>
                             </div>
                         </div>
                     `;
@@ -1042,20 +1033,20 @@
             sortedPortfolio.forEach(item => {
                 const usdVal = item.amount * (item.priceUSD || 0.042);
                 container.innerHTML += `
-                    <div class="launch-card">
+                    <div class="launch-card" onclick="selectTokenForTrade('', '${item.name}', '${item.symbol}', '${item.logo}', 50000, 20000, 10000, ${item.priceUSD || 0.042})" style="cursor:pointer;">
                         <div style="display:flex; align-items:center; gap:12px;">
                             <div class="token-avatar-wrap">
                                 <span class="token-avatar-fallback">${item.symbol.charAt(0)}</span>
                                 <img src="${item.logo}" onerror="this.style.display='none';">
                             </div>
                             <div>
-                                <h4 style="font-size:13px; font-weight:800;">${item.name} ($${item.symbol})</h4>
-                                <span style="font-size:11px; color:var(--accent-red);">Supply Held: ${item.amount.toLocaleString(undefined, {maximumFractionDigits: 2})}</span>
+                                <h4 style="font-size:13px; font-weight:800;">$${item.symbol}</h4>
+                                <span style="font-size:11px; color:var(--text-muted);">${item.name}</span>
                             </div>
                         </div>
                         <div style="text-align:right;">
-                            <div style="font-size:12px; font-weight:900; color:var(--accent-green);">~$${usdVal.toFixed(2)}</div>
-                            <span style="font-size:9px; color:var(--accent-cyan);">Bot Synced</span>
+                            <div style="font-size:10px; color:var(--text-muted); text-transform:uppercase; font-weight:700;">Value</div>
+                            <div style="font-size:13px; font-weight:900; color:var(--accent-green);">~$${usdVal.toFixed(2)}</div>
                         </div>
                     </div>
                 `;
@@ -1210,10 +1201,13 @@
 
         async function loadTopblastOnlyTokens() {
             const topblastRegistry = [
-                { name: 'Kote Official', symbol: 'KOTE', address: 'EQAmvp1Vrr0zY2--STdH-0X_mP5iCD61p2vNVJYwHlgBni2C', logo: 'https://ewanh275-art.github.io/kote-trading-bot/cat.png', mcap: 36000, liq: 18200, vol: 12400, priceUSD: 0.042 },
-                { name: 'Long Capital', symbol: 'LNG', address: 'EQC_LongCapital_Topblast_TON', logo: 'https://cache.tonapi.io/imgproxy/EQC_LongCapital_Topblast_TON/rs:fill:200:200:1/g:no', mcap: 142000, liq: 52000, vol: 34000, priceUSD: 0.12 },
-                { name: 'Pepe Grinch', symbol: 'GRINCH', address: 'EQB_PepeGrinch_Topblast_TON', logo: 'https://cache.tonapi.io/imgproxy/EQB_PepeGrinch_Topblast_TON/rs:fill:200:200:1/g:no', mcap: 89000, liq: 31000, vol: 19000, priceUSD: 0.08 },
-                { name: 'Honk Honkler', symbol: 'HONK', address: 'EQD_HonkHonkler_Topblast_TON', logo: 'https://cache.tonapi.io/imgproxy/EQD_HonkHonkler_Topblast_TON/rs:fill:200:200:1/g:no', mcap: 64500, liq: 22000, vol: 15500, priceUSD: 0.05 }
+                { name: 'Honk Honkler', symbol: 'HONK', address: 'EQD_HonkHonkler_Topblast_TON', logo: 'https://cache.tonapi.io/imgproxy/EQD_HonkHonkler_Topblast_TON/rs:fill:200:200:1/g:no', mcap: 68400, liq: 22000, vol: 15500, priceUSD: 0.05 },
+                { name: 'Pepe Grinch', symbol: 'GRINCH', address: 'EQB_PepeGrinch_Topblast_TON', logo: 'https://cache.tonapi.io/imgproxy/EQB_PepeGrinch_Topblast_TON/rs:fill:200:200:1/g:no', mcap: 60500, liq: 31000, vol: 19000, priceUSD: 0.08 },
+                { name: 'PeepoPepe', symbol: 'PEEPO', address: 'EQC_PeepoPepe_Topblast_TON', logo: 'https://cache.tonapi.io/imgproxy/EQC_PeepoPepe_Topblast_TON/rs:fill:200:200:1/g:no', mcap: 49800, liq: 25000, vol: 14000, priceUSD: 0.04 },
+                { name: 'Gramming', symbol: 'GRAMMING', address: 'EQD_Gramming_Topblast_TON', logo: 'https://cache.tonapi.io/imgproxy/EQD_Gramming_Topblast_TON/rs:fill:200:200:1/g:no', mcap: 43500, liq: 19000, vol: 11000, priceUSD: 0.035 },
+                { name: 'Fast', symbol: 'FAST', address: 'EQB_Fast_Topblast_TON', logo: 'https://cache.tonapi.io/imgproxy/EQB_Fast_Topblast_TON/rs:fill:200:200:1/g:no', mcap: 38700, liq: 16000, vol: 9500, priceUSD: 0.03 },
+                { name: 'Kote Official', symbol: 'KOTÉ', address: 'EQAmvp1Vrr0zY2--STdH-0X_mP5iCD61p2vNVJYwHlgBni2C', logo: 'https://ewanh275-art.github.io/kote-trading-bot/cat.png', mcap: 37500, liq: 18200, vol: 12400, priceUSD: 0.042 },
+                { name: 'Long Capital', symbol: 'LNG', address: 'EQC_LongCapital_Topblast_TON', logo: 'https://cache.tonapi.io/imgproxy/EQC_LongCapital_Topblast_TON/rs:fill:200:200:1/g:no', mcap: 142000, liq: 52000, vol: 34000, priceUSD: 0.12 }
             ];
 
             try {
@@ -1227,7 +1221,7 @@
                         const livePriceUSD = p.priceUsd ? parseFloat(p.priceUsd) : 0.01;
                         const liveLogo = (p.info && p.info.imageUrl) || `https://cache.tonapi.io/imgproxy/${p.baseToken.address}/rs:fill:200:200:1/g:no`;
                         
-                        const existingIdx = topblastRegistry.findIndex(t => t.address === p.baseToken.address || t.symbol === p.baseToken.symbol);
+                        const existingIdx = topblastRegistry.findIndex(t => t.address === p.baseToken.address || t.symbol.toLowerCase() === p.baseToken.symbol.toLowerCase());
                         if (existingIdx !== -1) {
                             topblastRegistry[existingIdx].mcap = liveMcap;
                             topblastRegistry[existingIdx].liq = liveLiq;
@@ -1245,6 +1239,7 @@
             renderTopblastList(allTopblastTokens);
         }
 
+        // Real-Time Polling Interval (Updates every 8 seconds)
         setInterval(loadTopblastOnlyTokens, 8000);
 
         function filterTopblastList() {
@@ -1263,25 +1258,22 @@
             container.innerHTML = '';
             list.forEach(t => {
                 const formattedMcap = t.mcap >= 1e6 ? '$' + (t.mcap/1e6).toFixed(2) + 'M' : '$' + (t.mcap/1e3).toFixed(1) + 'K';
-                const formattedPrice = t.priceUSD < 0.001 ? '$' + t.priceUSD.toFixed(6) : '$' + t.priceUSD.toFixed(4);
                 container.innerHTML += `
-                    <div class="launch-card">
+                    <div class="launch-card" onclick="selectTokenForTrade('${t.address}', '${t.name.replace(/'/g, "\\'")}', '${t.symbol}', '${t.logo}', ${t.mcap}, ${t.liq || 15000}, ${t.vol || 10000}, ${t.priceUSD})" style="cursor:pointer;">
                         <div style="display:flex; align-items:center; gap:12px;">
                             <div class="token-avatar-wrap">
                                 <span class="token-avatar-fallback">${t.symbol.charAt(0)}</span>
                                 <img src="${t.logo}" onerror="this.style.display='none';">
                             </div>
                             <div>
-                                <div style="display:flex; align-items:center; gap:6px;">
-                                    <h4 style="font-size:13px; font-weight:800;">${t.name} ($${t.symbol})</h4>
-                                    <span class="badge-topblast">Topblast</span>
-                                </div>
-                                <div style="font-size:11px; color:var(--accent-green); font-weight:700; margin-top:2px;">
-                                    Price: ${formattedPrice} • MCap: ${formattedMcap}
-                                </div>
+                                <h4 style="font-size:14px; font-weight:900; color:#fff;">$${t.symbol}</h4>
+                                <span style="font-size:11px; color:var(--text-muted); font-weight:700;">${t.name}</span>
                             </div>
                         </div>
-                        <button class="btn-action btn-red" style="width:auto; padding:7px 14px; font-size:11px;" onclick="selectTokenForTrade('${t.address}', '${t.name.replace(/'/g, "\\'")}', '${t.symbol}', '${t.logo}', ${t.mcap}, ${t.liq || 15000}, ${t.vol || 10000}, ${t.priceUSD})">Trade</button>
+                        <div style="text-align:right;">
+                            <div style="font-size:9px; color:var(--text-muted); text-transform:uppercase; font-weight:800; letter-spacing:0.5px;">Market Cap</div>
+                            <div style="font-size:15px; font-weight:900; color:var(--accent-green);">${formattedMcap}</div>
+                        </div>
                     </div>
                 `;
             });
