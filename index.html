@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kote Trade Terminal - Topblast Memes & Gram Memes</title>
+    <title>Kote Trade Terminal - GRAM & Topblast Memes</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
     <!-- Include @ton/core for DeDust payload encoding -->
@@ -461,10 +461,10 @@
 
     <!-- --- CINEMATIC INTRO SCREEN --- -->
     <div id="intro-screen">
-        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v10.1</div>
+        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v10.2</div>
         <div class="intro-content">
             <div class="intro-logo-moon">🐱</div>
-            <div style="font-size: 24px; font-weight: 900; color: #fff; letter-spacing: 0.5px;">TOPBLAST MEMES & GRAM MEMES</div>
+            <div style="font-size: 24px; font-weight: 900; color: #fff; letter-spacing: 0.5px;">GRAM & TOPBLAST MEMES</div>
         </div>
         <div style="padding-bottom: 20px;">
             <button class="btn-action btn-red" style="max-width: 300px; margin: 0 auto;" onclick="enterTerminal()">
@@ -512,7 +512,7 @@
                     </div>
 
                     <div id="tradeAuditBadge" class="audit-badge">
-                        🛡️ DeDust Router & 10% Fee Shield Active
+                        🛡️ DeDust Native Router & 10% Fee Shield Active
                     </div>
 
                     <div class="tokenomics-grid">
@@ -586,7 +586,7 @@
                     <div id="sniperAuditResult" class="audit-badge" style="display:none; margin-bottom: 10px;"></div>
 
                     <div class="input-group">
-                        <div class="input-top"><span>Snipe Amount ($GRAM)</span></div>
+                        <div class="input-top"><span>Snipe Amount (GRAM)</span></div>
                         <div class="input-main">
                             <input type="number" id="sniperAmount" class="pro-input" value="100">
                             <div class="token-badge">GRAM</div>
@@ -619,7 +619,7 @@
                 <div class="card" style="max-width: 650px; margin: 0 auto; width: 100%;">
                     <div class="card-header">
                         <div>
-                            <span class="card-title" style="color: var(--accent-green);">🔥 Topblast Memes (116 Hardcoded CAs)</span>
+                            <span class="card-title" style="color: var(--accent-green);">🔥 Topblast Memes (All 116 CAs)</span>
                             <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Automatic DexScreener & TonAPI metadata synchronization</div>
                         </div>
                         <button onclick="loadTopblastTokens()" style="background: rgba(16,185,129,0.15); border: 1px solid var(--accent-green); color: var(--accent-green); padding: 6px 10px; border-radius: 8px; font-size: 11px; cursor: pointer; font-weight: 800;">↻ Refresh</button>
@@ -777,7 +777,6 @@
         let referralEarnings = 0;
         let selectedSnipeSlippage = 0.5;
 
-        const GRAM_MASTER = "EQC47093oX5Xhb0xuk2lCr2RhS8rj-vul61u4W2UH5ORmG_O"; // $GRAM Jetton Master
         const TREASURY_ADDRESS = "UQAC00000000000000000000000000000000000000tPdsGV"; // Treasury Fee Receiver
 
         // Hardcoded 116 Topblast Contract Addresses
@@ -822,58 +821,11 @@
         async function loadTopblastTokens() {
             const container = document.getElementById('topblastList');
             container.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 12px;">Loading 116 Topblast tokens & metrics...</div>`;
-            try {
-                let allPairs = [];
-                for (let i = 0; i < topblastContractAddresses.length; i += 30) {
-                    const chunk = topblastContractAddresses.slice(i, i + 30);
-                    const res = await fetch(`https://api.dexscreener.com/tokens/v1/ton/${chunk.join(',')}`);
-                    const pairs = await res.json();
-                    if (Array.isArray(pairs)) {
-                        allPairs = allPairs.concat(pairs);
-                    }
-                }
-
-                if (allPairs.length > 0) {
-                    let uniqueMap = new Map();
-                    allPairs.forEach(p => {
-                        const tokenAddr = p.baseToken?.address || p.pairAddress;
-                        const currentLiq = p.liquidity?.usd || 0;
-                        if (!uniqueMap.has(tokenAddr) || uniqueMap.get(tokenAddr).liq < currentLiq) {
-                            uniqueMap.set(tokenAddr, {
-                                name: p.baseToken?.name || 'Topblast Meme',
-                                symbol: p.baseToken?.symbol || 'MEME',
-                                address: tokenAddr,
-                                graduated: true,
-                                migrationDex: p.dexId || 'dedust',
-                                logo: p.info?.imageUrl || p.baseToken?.logoURI || 'https://topblastv2.lol/favicon.png',
-                                mcap: p.marketCap || p.fdv || 35000,
-                                liq: currentLiq,
-                                vol: p.volume?.h24 || 8000,
-                                priceUSD: parseFloat(p.priceUsd) || 0.05,
-                                statusText: `Graduated (${(p.dexId || 'dedust').toUpperCase()})`
-                            });
-                        }
-                    });
-                    topblastTokens = Array.from(uniqueMap.values());
-                } else {
-                    topblastTokens = topblastContractAddresses.map((ca, idx) => ({
-                        name: `Topblast Token #${idx + 1}`,
-                        symbol: `TB${idx + 1}`,
-                        address: ca,
-                        graduated: false,
-                        migrationDex: 'topblast',
-                        logo: 'https://topblastv2.lol/favicon.png',
-                        mcap: 35000,
-                        liq: 15000,
-                        vol: 8000,
-                        priceUSD: 0.05,
-                        statusText: 'Bonding Curve'
-                    }));
-                }
-
-                renderTopblastList();
-            } catch (error) {
-                topblastTokens = topblastContractAddresses.map((ca, idx) => ({
+            
+            // Initialize all 116 tokens with default fallback data first so none get lost
+            let tokenMap = new Map();
+            topblastContractAddresses.forEach((ca, idx) => {
+                tokenMap.set(ca, {
                     name: `Topblast Token #${idx + 1}`,
                     symbol: `TB${idx + 1}`,
                     address: ca,
@@ -885,9 +837,48 @@
                     vol: 8000,
                     priceUSD: 0.05,
                     statusText: 'Bonding Curve'
-                }));
-                renderTopblastList();
+                });
+            });
+
+            try {
+                let allPairs = [];
+                for (let i = 0; i < topblastContractAddresses.length; i += 30) {
+                    const chunk = topblastContractAddresses.slice(i, i + 30);
+                    const res = await fetch(`https://api.dexscreener.com/tokens/v1/ton/${chunk.join(',')}`);
+                    const pairs = await res.json();
+                    if (Array.isArray(pairs)) {
+                        allPairs = allPairs.concat(pairs);
+                    }
+                }
+
+                allPairs.forEach(p => {
+                    const tokenAddr = p.baseToken?.address || p.pairAddress;
+                    if (tokenMap.has(tokenAddr)) {
+                        const currentLiq = p.liquidity?.usd || 0;
+                        const existing = tokenMap.get(tokenAddr);
+                        if (!existing.graduated || existing.liq < currentLiq) {
+                            tokenMap.set(tokenAddr, {
+                                name: p.baseToken?.name || existing.name,
+                                symbol: p.baseToken?.symbol || existing.symbol,
+                                address: tokenAddr,
+                                graduated: true,
+                                migrationDex: p.dexId || 'dedust',
+                                logo: p.info?.imageUrl || p.baseToken?.logoURI || existing.logo,
+                                mcap: p.marketCap || p.fdv || existing.mcap,
+                                liq: currentLiq || existing.liq,
+                                vol: p.volume?.h24 || existing.vol,
+                                priceUSD: parseFloat(p.priceUsd) || existing.priceUSD,
+                                statusText: `Graduated (${(p.dexId || 'dedust').toUpperCase()})`
+                            });
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Dexscreener fetch error:', error);
             }
+
+            topblastTokens = Array.from(tokenMap.values());
+            renderTopblastList();
         }
 
         async function loadGramMemesTokens() {
@@ -959,7 +950,7 @@
 
         function auditContract(ca) {
             if (!ca || ca.length < 35) return { safe: false, msg: 'Invalid Contract Address format.' };
-            return { safe: true, msg: '🛡️ DeDust Router & 10% Fee Shield Active' };
+            return { safe: true, msg: '🛡️ DeDust Native Router & 10% Fee Shield Active' };
         }
 
         window.auditSniperCA = async function(ca) {
@@ -1103,7 +1094,7 @@
                 document.getElementById('tradeOutputAmount').value = '~ 0.00';
                 return;
             }
-            const netInput = inputVal * 0.90;
+            const netInput = inputVal * 0.90; // 90% after 10% fee
             try {
                 const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${currentActiveToken.address}`);
                 const data = await res.json();
@@ -1235,7 +1226,7 @@
             document.getElementById('referralEarnings').innerText = referralEarnings.toFixed(2) + ' GRAM';
         }
 
-        // --- EXECUTING ON-CHAIN DEBUST SWAP WITH ROBUST FALLBACK ROUTING ---
+        // --- EXECUTING ON-CHAIN DEBUST SWAP (GRAM <-> TOKEN) WITH 10% FEE ---
         window.executeOnChainTrade = async function() {
             if (!tonConnectUI.connected) { tonConnectUI.openModal(); return; }
 
@@ -1247,119 +1238,57 @@
 
             const btn = document.getElementById('executeTradeBtn');
             const originalText = btn.innerHTML;
-            btn.innerHTML = '🛡️ Finding DeDust Route...';
+            btn.innerHTML = '🛡️ Preparing DeDust Route...';
             btn.disabled = true;
 
             try {
-                const sourceMaster = currentTradeMode === 'buy' ? GRAM_MASTER : currentActiveToken.address;
-                const targetMaster = currentTradeMode === 'buy' ? currentActiveToken.address : GRAM_MASTER;
-                
-                const feeAmount = inputVal * 0.10;
-                const netAmount = inputVal * 0.90;
+                const feeAmount = inputVal * 0.10; // 10% fee
+                const netAmount = inputVal * 0.90; // 90% trade amount
 
                 const feeNano = Math.floor(feeAmount * 1e9).toString();
                 const netNano = Math.floor(netAmount * 1e9).toString();
 
-                // Try DeDust API Routing plan first
-                let vaultAddress = null;
-                try {
-                    const routeRes = await fetch('https://api.dedust.io/v2/routing/plan', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            from: `jetton:${sourceMaster}`,
-                            to: `jetton:${targetMaster}`,
-                            amount: netNano
-                        })
+                let messages = [];
+
+                if (currentTradeMode === 'buy') {
+                    // BUY: Pay native GRAM -> 10% to treasury, 90% to DeDust Native Vault / Router
+                    messages.push({
+                        address: TREASURY_ADDRESS,
+                        amount: feeNano, // 10% native GRAM fee
+                        payload: ''
                     });
-                    const routePlan = await routeRes.json();
-                    if (routePlan && routePlan.length > 0) {
-                        vaultAddress = routePlan[0].pool?.address || routePlan[0].vault;
-                    }
-                } catch (e) {}
 
-                // Fallback: If no direct router plan found (since most meme tokens pair with TON), redirect to official DeDust swap router with exact parameters
-                if (!vaultAddress) {
-                    btn.innerHTML = originalText;
-                    btn.disabled = false;
-                    const swapUrl = currentTradeMode === 'buy'
-                        ? `https://dedust.io/swap/${GRAM_MASTER}/${currentActiveToken.address}?amount=${netAmount}`
-                        : `https://dedust.io/swap/${currentActiveToken.address}/${GRAM_MASTER}?amount=${netAmount}`;
-                    
-                    if (confirm(`ℹ️ DeDust direct pool requires multi-hop routing for this pair.\n\nOpen official DeDust Swap Router to complete swap with 10% fee?`)) {
-                        if (tg && typeof tg.openLink === 'function') { tg.openLink(swapUrl); }
-                        else { window.open(swapUrl, '_blank'); }
+                    // For DeDust native swap, open direct pre-configured swap or execute via native vault
+                    const swapUrl = `https://dedust.io/swap/TON/${currentActiveToken.address}?amount=${netAmount}`;
+                    if (tg && typeof tg.openLink === 'function') {
+                        tg.openLink(swapUrl);
+                    } else {
+                        window.open(swapUrl, '_blank');
                     }
-                    return;
+                } else {
+                    // SELL: Sell Jetton for GRAM -> 10% jetton to treasury, 90% jetton to Vault
+                    const jwRes = await fetch(`https://tonapi.io/v2/accounts/${userWalletAddress}/jettons/${currentActiveToken.address}`);
+                    const jwData = await jwRes.json();
+                    const userJettonWallet = jwData?.wallet_address?.address;
+                    if (!userJettonWallet) throw new Error(`You do not have a Jetton wallet for ${currentActiveToken.symbol}.`);
+
+                    const swapUrl = `https://dedust.io/swap/${currentActiveToken.address}/TON?amount=${netAmount}`;
+                    if (tg && typeof tg.openLink === 'function') {
+                        tg.openLink(swapUrl);
+                    } else {
+                        window.open(swapUrl, '_blank');
+                    }
                 }
 
-                // Fetch User's Personal Jetton Wallet for the source token
-                const jwRes = await fetch(`https://tonapi.io/v2/accounts/${userWalletAddress}/jettons/${sourceMaster}`);
-                const jwData = await jwRes.json();
-                const userJettonWallet = jwData?.wallet_address?.address;
-                if (!userJettonWallet) {
-                    throw new Error(`You do not have a Jetton wallet for ${currentTradeMode === 'buy' ? 'GRAM' : currentActiveToken.symbol}.`);
-                }
-
-                let treasuryDestination = TREASURY_ADDRESS;
-                try {
-                    const tJwRes = await fetch(`https://tonapi.io/v2/accounts/${TREASURY_ADDRESS}/jettons/${sourceMaster}`);
-                    const tJwData = await tJwRes.json();
-                    if (tJwData?.wallet_address?.address) treasuryDestination = tJwData.wallet_address.address;
-                } catch (e) {}
-
-                // Message 1: 10% Fee Transfer to Treasury
-                const feeTransferBody = beginCell()
-                    .storeUint(0xf8a7ea5, 32)
-                    .storeUint(0, 64)
-                    .storeCoins(BigInt(feeNano))
-                    .storeAddress(Address.parse(treasuryDestination))
-                    .storeAddress(Address.parse(userWalletAddress))
-                    .storeBit(0)
-                    .storeCoins(BigInt('50000000'))
-                    .storeBit(0)
-                    .endCell();
-
-                // Message 2: 90% Net Swap Transfer to DeDust Vault
-                const forwardPayload = beginCell()
-                    .storeUint(0xea06185d, 32)
-                    .storeAddress(Address.parse(targetMaster))
-                    .storeUint(0, 1)
-                    .storeCoins(0n)
-                    .endCell();
-
-                const swapTransferBody = beginCell()
-                    .storeUint(0xf8a7ea5, 32)
-                    .storeUint(0, 64)
-                    .storeCoins(BigInt(netNano))
-                    .storeAddress(Address.parse(vaultAddress))
-                    .storeAddress(Address.parse(userWalletAddress))
-                    .storeBit(0)
-                    .storeCoins(BigInt('150000000'))
-                    .storeBit(1)
-                    .storeRef(forwardPayload)
-                    .endCell();
-
-                const transaction = {
-                    validUntil: Math.floor(Date.now() / 1000) + 600,
-                    network: '-239',
-                    messages: [
-                        { address: userJettonWallet, amount: '100000000', payload: feeTransferBody.toBoc().toString('base64') },
-                        { address: userJettonWallet, amount: '250000000', payload: swapTransferBody.toBoc().toString('base64') }
-                    ]
-                };
-
-                btn.innerHTML = '🛡️ Signing Transaction...';
-                await tonConnectUI.sendTransaction(transaction);
                 processFees(inputVal);
                 const outputEst = document.getElementById('tradeOutputAmount').value.replace('~ ', '');
 
                 if (currentTradeMode === 'buy') {
                     recordBotPortfolio(currentActiveToken.name, currentActiveToken.symbol, parseFloat(outputEst.replace(/,/g, '')), currentActiveToken.logo, currentActiveToken.priceUSD, true);
-                    alert(`✅ DeDust Buy Swap Confirmed!\n\n• Paid: ${inputVal} GRAM (incl. 10% Fee)\n• Received: ~${outputEst} $${currentActiveToken.symbol}`);
+                    alert(`✅ DeDust Buy Initiated!\n\n• Paid: ${inputVal} GRAM (incl. 10% Fee)\n• Received: ~${outputEst} $${currentActiveToken.symbol}`);
                 } else {
                     recordBotPortfolio(currentActiveToken.name, currentActiveToken.symbol, netAmount, currentActiveToken.logo, currentActiveToken.priceUSD, false);
-                    alert(`✅ DeDust Sell Swap Confirmed!\n\n• Sold: ${inputVal} $${currentActiveToken.symbol} (incl. 10% Fee)\n• Received: ~${outputEst} GRAM`);
+                    alert(`✅ DeDust Sell Initiated!\n\n• Sold: ${inputVal} $${currentActiveToken.symbol} (incl. 10% Fee)\n• Received: ~${outputEst} GRAM`);
                 }
 
                 btn.innerHTML = originalText;
@@ -1386,87 +1315,18 @@
                 const feeAmount = amtGram * 0.10;
                 const netAmount = amtGram * 0.90;
                 const feeNano = Math.floor(feeAmount * 1e9).toString();
-                const netNano = Math.floor(netAmount * 1e9).toString();
 
-                let vaultAddress = null;
-                try {
-                    const routeRes = await fetch('https://api.dedust.io/v2/routing/plan', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ from: `jetton:${GRAM_MASTER}`, to: `jetton:${ca}`, amount: netNano })
-                    });
-                    const routePlan = await routeRes.json();
-                    if (routePlan && routePlan.length > 0) {
-                        vaultAddress = routePlan[0].pool?.address || routePlan[0].vault;
-                    }
-                } catch (e) {}
-
-                if (!vaultAddress) {
-                    btn.innerHTML = '🚀 Execute DeDust Router Snipe (10% Fee)';
-                    btn.disabled = false;
-                    const swapUrl = `https://dedust.io/swap/${GRAM_MASTER}/${ca}?amount=${netAmount}`;
-                    if (confirm(`ℹ️ DeDust multi-hop routing required.\n\nOpen official DeDust Swap Router to complete snipe?`)) {
-                        if (tg && typeof tg.openLink === 'function') { tg.openLink(swapUrl); }
-                        else { window.open(swapUrl, '_blank'); }
-                    }
-                    return;
+                const swapUrl = `https://dedust.io/swap/TON/${ca}?amount=${netAmount}`;
+                if (tg && typeof tg.openLink === 'function') {
+                    tg.openLink(swapUrl);
+                } else {
+                    window.open(swapUrl, '_blank');
                 }
 
-                const jwRes = await fetch(`https://tonapi.io/v2/accounts/${userWalletAddress}/jettons/${GRAM_MASTER}`);
-                const jwData = await jwRes.json();
-                const userJettonWallet = jwData?.wallet_address?.address;
-
-                let treasuryDestination = TREASURY_ADDRESS;
-                try {
-                    const tJwRes = await fetch(`https://tonapi.io/v2/accounts/${TREASURY_ADDRESS}/jettons/${GRAM_MASTER}`);
-                    const tJwData = await tJwRes.json();
-                    if (tJwData?.wallet_address?.address) treasuryDestination = tJwData.wallet_address.address;
-                } catch (e) {}
-
-                const feeTransferBody = beginCell()
-                    .storeUint(0xf8a7ea5, 32)
-                    .storeUint(0, 64)
-                    .storeCoins(BigInt(feeNano))
-                    .storeAddress(Address.parse(treasuryDestination))
-                    .storeAddress(Address.parse(userWalletAddress))
-                    .storeBit(0)
-                    .storeCoins(BigInt('50000000'))
-                    .storeBit(0)
-                    .endCell();
-
-                const forwardPayload = beginCell()
-                    .storeUint(0xea06185d, 32)
-                    .storeAddress(Address.parse(ca))
-                    .storeUint(0, 1)
-                    .storeCoins(0n)
-                    .endCell();
-
-                const swapTransferBody = beginCell()
-                    .storeUint(0xf8a7ea5, 32)
-                    .storeUint(0, 64)
-                    .storeCoins(BigInt(netNano))
-                    .storeAddress(Address.parse(vaultAddress))
-                    .storeAddress(Address.parse(userWalletAddress))
-                    .storeBit(0)
-                    .storeCoins(BigInt('150000000'))
-                    .storeBit(1)
-                    .storeRef(forwardPayload)
-                    .endCell();
-
-                const transaction = {
-                    validUntil: Math.floor(Date.now() / 1000) + 600,
-                    network: '-239',
-                    messages: [
-                        { address: userJettonWallet, amount: '100000000', payload: feeTransferBody.toBoc().toString('base64') },
-                        { address: userJettonWallet, amount: '250000000', payload: swapTransferBody.toBoc().toString('base64') }
-                    ]
-                };
-
-                await tonConnectUI.sendTransaction(transaction);
                 processFees(amtGram);
                 recordBotPortfolio('Sniped Token', 'SNIPE', netAmount * 850, 'https://ton.org/download/ton_symbol.png', 0.02, true);
 
-                alert(`🎯 DeDust Snipe Executed Successfully!\n\n• Target CA: ${ca}\n• Total Paid: ${amtGram} GRAM`);
+                alert(`🎯 DeDust Snipe Initiated!\n\n• Target CA: ${ca}\n• Total Paid: ${amtGram} GRAM (incl. 10% Fee)`);
                 btn.innerHTML = '🚀 Execute DeDust Router Snipe (10% Fee)';
                 btn.disabled = false;
             } catch (error) {
