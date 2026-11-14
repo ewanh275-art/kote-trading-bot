@@ -119,12 +119,6 @@
             font-weight: 900;
             letter-spacing: 0.4px;
         }
-        .brand-text span {
-            font-size: 10px;
-            color: var(--accent-green);
-            font-weight: 800;
-            text-transform: uppercase;
-        }
         #ton-connect {
             transform: scale(0.85);
             transform-origin: right center;
@@ -467,7 +461,7 @@
 
     <!-- --- CINEMATIC INTRO SCREEN --- -->
     <div id="intro-screen">
-        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v9.9</div>
+        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v10.0</div>
         <div class="intro-content">
             <div class="intro-logo-moon">🐱</div>
             <div style="font-size: 24px; font-weight: 900; color: #fff; letter-spacing: 0.5px;">TOPBLAST MEMES & GRAM MEMES</div>
@@ -485,8 +479,7 @@
             <div style="display: flex; align-items: center; gap: 10px;">
                 <div class="brand-logo-box">🐱</div>
                 <div class="brand-text">
-                    <h1>Kote Pro Terminal</h1>
-                    <span id="configStatusLabel">● Topblast Memes & DeDust 694+ Active</span>
+                    <h1>Kote Trade Terminal</h1>
                 </div>
             </div>
             <div id="ton-connect"></div>
@@ -519,7 +512,7 @@
                     </div>
 
                     <div id="tradeAuditBadge" class="audit-badge">
-                        🛡️ DeDust Router & Status Shield Active
+                        🛡️ DeDust Router & 10% Fee Shield Active
                     </div>
 
                     <div class="tokenomics-grid">
@@ -545,8 +538,7 @@
                         <div class="input-group" style="margin-bottom: 0;">
                             <div class="input-top"><span id="receiveLabel">You Receive (Precision)</span><span id="receiveTokenSymbol">TOKEN</span></div>
                             <div class="input-main">
-                                <input type="text" id="tradeOutputAmount" class="pro-input" value="Loading..." readonly>
-                                <div class="token-badge" id="receiveBadgeToken">TOKEN</div>
+                                <input type="text" id="tradeOutputAmount" class="pro-input" style="width: 100%;" value="Loading..." readonly>
                             </div>
                         </div>
                     </div>
@@ -559,7 +551,7 @@
                     </div>
 
                     <button class="btn-action" id="executeTradeBtn" style="margin-bottom: 14px;" onclick="executeOnChainTrade()">
-                        ⚡ Execute DeDust Swap
+                        ⚡ Execute DeDust Swap (incl. 10% Fee)
                     </button>
 
                     <div class="card-header" style="margin-top: 8px; margin-bottom: 6px;">
@@ -576,13 +568,19 @@
             <section id="page-sniper" class="page">
                 <div class="card" style="max-width: 520px; margin: 0 auto; width: 100%;">
                     <div class="card-header">
-                        <span class="card-title">🎯 Kote Sniper & Anti-Scam Guard</span>
+                        <span class="card-title">🎯 Kote Sniper & 10% Fee Guard</span>
                         <span style="font-size: 11px; color: var(--accent-red); font-weight: 800;">● Shielded</span>
                     </div>
 
                     <div class="input-group">
                         <div class="input-top"><span>Token Contract / Curve Address</span><span>Verified Scanner</span></div>
-                        <input type="text" id="sniperCA" class="pro-input" style="width: 100%; font-size: 13px;" placeholder="Paste EQ... or UQ... contract" oninput="auditSniperCA(this.value)">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div id="sniperTokenLogoWrap" class="token-avatar-wrap" style="width: 36px; height: 36px; display: none;">
+                                <span class="token-avatar-fallback" id="sniperLogoFallback">?</span>
+                                <img id="sniperTokenLogoImg" src="" onerror="this.style.display='none';">
+                            </div>
+                            <input type="text" id="sniperCA" class="pro-input" style="width: 100%; font-size: 13px;" placeholder="Paste EQ... or UQ... contract" oninput="auditSniperCA(this.value)">
+                        </div>
                     </div>
 
                     <div id="sniperAuditResult" class="audit-badge" style="display:none; margin-bottom: 10px;"></div>
@@ -611,7 +609,7 @@
                     </div>
 
                     <button class="btn-action btn-red" style="margin-top: 8px;" onclick="executeSnipeOrder()">
-                        🚀 Execute DeDust Router Snipe
+                        🚀 Execute DeDust Router Snipe (10% Fee)
                     </button>
                 </div>
             </section>
@@ -669,8 +667,8 @@
                             <strong id="referralEarnings" style="font-size: 15px; color: var(--accent-green);">0.00 GRAM</strong>
                         </div>
                         <div style="background: var(--bg-input); border: 1px solid var(--border-color); padding: 12px; border-radius: 12px; text-align: center;">
-                            <span style="font-size: 10px; color: var(--text-muted); font-weight: 800;">Treasury Split (7%)</span>
-                            <strong style="font-size: 12px; color: var(--accent-red);">UQAC...tPdsGV</strong>
+                            <span style="font-size: 10px; color: var(--text-muted); font-weight: 800;">Treasury Fee (10%)</span>
+                            <strong style="font-size: 11px; color: var(--accent-red);">UQAC...tPdsGV</strong>
                         </div>
                     </div>
 
@@ -710,7 +708,7 @@
                                     <h3 style="font-size: 18px; font-weight: 900; color: #fff; letter-spacing: -0.3px;">MoonPay</h3>
                                     <span style="font-size: 10px; background: rgba(125, 0, 255, 0.25); color: #d8b4fe; padding: 2px 7px; border-radius: 6px; font-weight: 800;">Official Partner</span>
                                 </div>
-                                <span style="font-size: 11px; color: var(--text-muted);">Direct Deposit to Connected Wallet</span>
+                                <span style="font-size: 11px; color: var(--text-muted);">Direct Deposit to Connected Wallet (10% Fee Applied)</span>
                             </div>
                         </div>
                     </div>
@@ -780,6 +778,7 @@
         let selectedSnipeSlippage = 0.5;
 
         const GRAM_MASTER = "EQC47093oX5Xhb0xuk2lCr2RhS8rj-vul61u4W2UH5ORmG_O"; // $GRAM Jetton Master
+        const TREASURY_ADDRESS = "UQAC00000000000000000000000000000000000000tPdsGV"; // Treasury Fee Receiver
 
         // Hardcoded 116 Topblast Contract Addresses
         const topblastContractAddresses = [
@@ -873,7 +872,6 @@
                 }
 
                 renderTopblastList();
-                document.getElementById('configStatusLabel').innerText = `● Topblast Memes (${topblastTokens.length} Active)`;
             } catch (error) {
                 topblastTokens = topblastContractAddresses.map((ca, idx) => ({
                     name: `Topblast Token #${idx + 1}`,
@@ -961,16 +959,45 @@
 
         function auditContract(ca) {
             if (!ca || ca.length < 35) return { safe: false, msg: 'Invalid Contract Address format.' };
-            return { safe: true, msg: '🛡️ DeDust Router & Status Shield Active' };
+            return { safe: true, msg: '🛡️ DeDust Router & 10% Fee Shield Active' };
         }
 
-        window.auditSniperCA = function(ca) {
+        window.auditSniperCA = async function(ca) {
             const auditEl = document.getElementById('sniperAuditResult');
-            if (!ca || ca.length < 10) { auditEl.style.display = 'none'; return; }
+            const logoWrap = document.getElementById('sniperTokenLogoWrap');
+            const logoImg = document.getElementById('sniperTokenLogoImg');
+            const logoFallback = document.getElementById('sniperLogoFallback');
+
+            if (!ca || ca.length < 10) { 
+                auditEl.style.display = 'none'; 
+                logoWrap.style.display = 'none';
+                return; 
+            }
             auditEl.style.display = 'inline-flex';
             const res = auditContract(ca);
             auditEl.className = 'audit-badge';
             auditEl.innerText = res.msg;
+
+            // Fetch metadata for sniper preview logo
+            try {
+                const r = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${ca}`);
+                const d = await r.json();
+                if (d.pairs && d.pairs.length > 0) {
+                    const p = d.pairs[0];
+                    const logoUrl = p.info?.imageUrl || p.baseToken?.logoURI;
+                    const sym = p.baseToken?.symbol || '?';
+                    logoFallback.innerText = sym.charAt(0);
+                    if (logoUrl) {
+                        logoImg.style.display = 'block';
+                        logoImg.src = logoUrl;
+                    } else {
+                        logoImg.style.display = 'none';
+                    }
+                    logoWrap.style.display = 'flex';
+                }
+            } catch (err) {
+                logoWrap.style.display = 'none';
+            }
         };
 
         window.setTradeMode = function(mode) {
@@ -982,7 +1009,6 @@
             const payBadgeToken = document.getElementById('payBadgeToken');
             const receiveLabel = document.getElementById('receiveLabel');
             const receiveTokenSymbol = document.getElementById('receiveTokenSymbol');
-            const receiveBadgeToken = document.getElementById('receiveBadgeToken');
             const executeBtn = document.getElementById('executeTradeBtn');
 
             if (mode === 'buy') {
@@ -993,9 +1019,8 @@
                 payBadgeToken.innerText = '💎 GRAM';
                 receiveLabel.innerText = `You Receive (${currentActiveToken.symbol})`;
                 receiveTokenSymbol.innerText = currentActiveToken.symbol;
-                receiveBadgeToken.innerText = currentActiveToken.symbol;
                 executeBtn.className = 'btn-action btn-red';
-                executeBtn.innerHTML = `⚡ Execute DeDust Swap ($${currentActiveToken.symbol})`;
+                executeBtn.innerHTML = `⚡ Execute DeDust Buy ($${currentActiveToken.symbol}) [10% Fee]`;
             } else {
                 tabSell.classList.add('active');
                 tabBuy.classList.remove('active');
@@ -1004,9 +1029,8 @@
                 payBadgeToken.innerText = currentActiveToken.symbol;
                 receiveLabel.innerText = 'You Receive (GRAM)';
                 receiveTokenSymbol.innerText = 'GRAM';
-                receiveBadgeToken.innerText = '💎 GRAM';
                 executeBtn.className = 'btn-action btn-green-action';
-                executeBtn.innerHTML = `🔴 Execute DeDust Sell ($${currentActiveToken.symbol})`;
+                executeBtn.innerHTML = `🔴 Execute DeDust Sell ($${currentActiveToken.symbol}) [10% Fee]`;
             }
             calculateSwapOutput();
         };
@@ -1034,7 +1058,6 @@
             logoEl.src = logo;
 
             document.getElementById('receiveTokenSymbol').innerText = symbol;
-            document.getElementById('receiveBadgeToken').innerText = symbol;
             document.getElementById('chartTitle').innerText = `📊 Live Chart: $${symbol}`;
             document.getElementById('dexChartFrame').src = `https://dexscreener.com/ton/${address}?embed=1&theme=dark&trades=0&info=0`;
             document.getElementById('externalChartBtn').href = `https://dexscreener.com/ton/${address}`;
@@ -1081,6 +1104,8 @@
                 document.getElementById('tradeOutputAmount').value = '~ 0.00';
                 return;
             }
+            // 90% of input goes to swap after 10% fee
+            const netInput = inputVal * 0.90;
             try {
                 const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${currentActiveToken.address}`);
                 const data = await res.json();
@@ -1091,16 +1116,16 @@
                     currentActiveToken.priceNative = priceNative;
                     if(pair.priceUsd) currentActiveToken.priceUSD = parseFloat(pair.priceUsd);
                     
-                    let exactOutput = currentTradeMode === 'buy' ? inputVal / priceNative : inputVal * priceNative;
+                    let exactOutput = currentTradeMode === 'buy' ? netInput / priceNative : netInput * priceNative;
                     document.getElementById('tradeOutputAmount').value = '~ ' + exactOutput.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 });
                 } else {
                     const fallbackRate = 850.5;
-                    const resOutput = currentTradeMode === 'buy' ? inputVal * fallbackRate : inputVal / fallbackRate;
+                    const resOutput = currentTradeMode === 'buy' ? netInput * fallbackRate : netInput / fallbackRate;
                     document.getElementById('tradeOutputAmount').value = '~ ' + resOutput.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 });
                 }
             } catch (e) {
                 const fallbackRate = 850.5;
-                const resOutput = currentTradeMode === 'buy' ? inputVal * fallbackRate : inputVal / fallbackRate;
+                const resOutput = currentTradeMode === 'buy' ? netInput * fallbackRate : netInput / fallbackRate;
                 document.getElementById('tradeOutputAmount').value = '~ ' + resOutput.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 });
             }
         }
@@ -1207,12 +1232,12 @@
         };
 
         function processFees(amt) {
-            const fee = amt * 0.01;
+            const fee = amt * 0.10; // 10% fee tracking
             referralEarnings += fee * 0.30;
             document.getElementById('referralEarnings').innerText = referralEarnings.toFixed(2) + ' GRAM';
         }
 
-        // --- EXECUTING ON-CHAIN DEBUST SWAP ROUTER TRANSACTION ---
+        // --- EXECUTING ON-CHAIN DEBUST SWAP ROUTER TRANSACTION WITH 10% FEE SPLIT ---
         window.executeOnChainTrade = async function() {
             if (!tonConnectUI.connected) { tonConnectUI.openModal(); return; }
 
@@ -1224,15 +1249,21 @@
 
             const btn = document.getElementById('executeTradeBtn');
             const originalText = btn.innerHTML;
-            btn.innerHTML = '🛡️ Fetching DeDust Route...';
+            btn.innerHTML = '🛡️ Calculating 10% Fee & Route...';
             btn.disabled = true;
 
             try {
                 const sourceMaster = currentTradeMode === 'buy' ? GRAM_MASTER : currentActiveToken.address;
                 const targetMaster = currentTradeMode === 'buy' ? currentActiveToken.address : GRAM_MASTER;
-                const amountNano = Math.floor(inputVal * 1e9).toString();
+                
+                // 10% fee calculation, 90% net swap
+                const feeAmount = inputVal * 0.10;
+                const netAmount = inputVal * 0.90;
 
-                // 1. Query DeDust routing plan to get the vault address & destination parameters
+                const feeNano = Math.floor(feeAmount * 1e9).toString();
+                const netNano = Math.floor(netAmount * 1e9).toString();
+
+                // 1. Query DeDust routing plan for the net 90% amount
                 const fromAssetStr = `jetton:${sourceMaster}`;
                 const toAssetStr = `jetton:${targetMaster}`;
                 
@@ -1242,7 +1273,7 @@
                     body: JSON.stringify({
                         from: fromAssetStr,
                         to: toAssetStr,
-                        amount: amountNano
+                        amount: netNano
                     })
                 });
                 const routePlan = await routeRes.json();
@@ -1262,49 +1293,76 @@
                     throw new Error(`You do not have a Jetton wallet for ${currentTradeMode === 'buy' ? 'GRAM' : currentActiveToken.symbol}.`);
                 }
 
-                // 3. Build DeDust Swap Forward Payload Cell via @ton/core
-                // DeDust swap op-code: 0xea06185d
+                // 3. Fetch Treasury's Jetton Wallet address (or fallback to treasury owner address if not deployed)
+                let treasuryDestination = TREASURY_ADDRESS;
+                try {
+                    const tJwRes = await fetch(`https://tonapi.io/v2/accounts/${TREASURY_ADDRESS}/jettons/${sourceMaster}`);
+                    const tJwData = await tJwRes.json();
+                    if (tJwData?.wallet_address?.address) {
+                        treasuryDestination = tJwData.wallet_address.address;
+                    }
+                } catch (e) {}
+
+                // Message 1: 10% Fee Transfer to Treasury
+                const feeTransferBody = beginCell()
+                    .storeUint(0xf8a7ea5, 32) // op: transfer
+                    .storeUint(0, 64) // query_id
+                    .storeCoins(BigInt(feeNano))
+                    .storeAddress(Address.parse(treasuryDestination))
+                    .storeAddress(Address.parse(userWalletAddress))
+                    .storeBit(0)
+                    .storeCoins(BigInt('50000000')) // 0.05 TON gas
+                    .storeBit(0)
+                    .endCell();
+
+                // Message 2: 90% Net Swap Transfer to DeDust Vault
                 const forwardPayload = beginCell()
                     .storeUint(0xea06185d, 32) // op: swap
                     .storeAddress(Address.parse(targetMaster))
-                    .storeUint(0, 1) // kind: normal / limit order placeholder
-                    .storeCoins(0n) // min output / limit
+                    .storeUint(0, 1)
+                    .storeCoins(0n)
                     .endCell();
 
-                // TEP-74 Jetton Transfer Cell
-                const transferBody = beginCell()
+                const swapTransferBody = beginCell()
                     .storeUint(0xf8a7ea5, 32) // op: transfer
                     .storeUint(0, 64) // query_id
-                    .storeCoins(BigInt(amountNano)) // amount
+                    .storeCoins(BigInt(netNano))
                     .storeAddress(Address.parse(vaultAddress)) // destination (DeDust Vault)
-                    .storeAddress(Address.parse(userWalletAddress)) // response_destination (excess gas back to user)
-                    .storeBit(0) // custom_payload (Maybe Cell = 0)
-                    .storeCoins(BigInt('150000000')) // forward_ton_amount (0.15 TON for swap execution gas)
-                    .storeBit(1) // forward_payload in ref (1 = true)
+                    .storeAddress(Address.parse(userWalletAddress)) // response_destination
+                    .storeBit(0)
+                    .storeCoins(BigInt('150000000')) // 0.15 TON gas
+                    .storeBit(1)
                     .storeRef(forwardPayload)
                     .endCell();
 
                 const transaction = {
                     validUntil: Math.floor(Date.now() / 1000) + 600,
                     network: '-239',
-                    messages: [{
-                        address: userJettonWallet,
-                        amount: '250000000', // 0.25 TON native gas fee for transfer + forward execution
-                        payload: transferBody.toBoc().toString('base64')
-                    }]
+                    messages: [
+                        {
+                            address: userJettonWallet,
+                            amount: '100000000', // 0.1 TON gas for fee transfer
+                            payload: feeTransferBody.toBoc().toString('base64')
+                        },
+                        {
+                            address: userJettonWallet,
+                            amount: '250000000', // 0.25 TON gas for swap transfer
+                            payload: swapTransferBody.toBoc().toString('base64')
+                        }
+                    ]
                 };
 
-                btn.innerHTML = '🛡️ Signing DeDust Swap...';
+                btn.innerHTML = '🛡️ Signing Transaction (10% Fee Included)...';
                 const result = await tonConnectUI.sendTransaction(transaction);
                 processFees(inputVal);
                 const outputEst = document.getElementById('tradeOutputAmount').value.replace('~ ', '');
 
                 if (currentTradeMode === 'buy') {
                     recordBotPortfolio(currentActiveToken.name, currentActiveToken.symbol, parseFloat(outputEst.replace(/,/g, '')), currentActiveToken.logo, currentActiveToken.priceUSD, true);
-                    alert(`✅ DeDust Buy Swap Confirmed!\n\n• Paid: ${inputVal} GRAM\n• Received: ~${outputEst} $${currentActiveToken.symbol}`);
+                    alert(`✅ DeDust Buy Swap Confirmed!\n\n• Paid: ${inputVal} GRAM (incl. 10% Fee)\n• Received: ~${outputEst} $${currentActiveToken.symbol}`);
                 } else {
-                    recordBotPortfolio(currentActiveToken.name, currentActiveToken.symbol, inputVal, currentActiveToken.logo, currentActiveToken.priceUSD, false);
-                    alert(`✅ DeDust Sell Swap Confirmed!\n\n• Sold: ${inputVal} $${currentActiveToken.symbol}\n• Received: ~${outputEst} GRAM`);
+                    recordBotPortfolio(currentActiveToken.name, currentActiveToken.symbol, netAmount, currentActiveToken.logo, currentActiveToken.priceUSD, false);
+                    alert(`✅ DeDust Sell Swap Confirmed!\n\n• Sold: ${inputVal} $${currentActiveToken.symbol} (incl. 10% Fee)\n• Received: ~${outputEst} GRAM`);
                 }
 
                 btn.innerHTML = originalText;
@@ -1324,16 +1382,19 @@
             if (amtGram <= 0) { alert('Please enter a valid snipe amount.'); return; }
 
             const btn = event.target;
-            btn.innerHTML = '🛡️ Routing DeDust Snipe...';
+            btn.innerHTML = '🛡️ Routing DeDust Snipe (10% Fee)...';
             btn.disabled = true;
 
             try {
-                const amountNano = Math.floor(amtGram * 1e9).toString();
-                // Query DeDust route plan for snipe target
+                const feeAmount = amtGram * 0.10;
+                const netAmount = amtGram * 0.90;
+                const feeNano = Math.floor(feeAmount * 1e9).toString();
+                const netNano = Math.floor(netAmount * 1e9).toString();
+
                 const routeRes = await fetch('https://api.dedust.io/v2/routing/plan', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ from: `jetton:${GRAM_MASTER}`, to: `jetton:${ca}`, amount: amountNano })
+                    body: JSON.stringify({ from: `jetton:${GRAM_MASTER}`, to: `jetton:${ca}`, amount: netNano })
                 });
                 const routePlan = await routeRes.json();
                 if (!routePlan || routePlan.length === 0) throw new Error('No liquidity pool on DeDust for this contract yet.');
@@ -1343,6 +1404,24 @@
                 const jwData = await jwRes.json();
                 const userJettonWallet = jwData?.wallet_address?.address;
 
+                let treasuryDestination = TREASURY_ADDRESS;
+                try {
+                    const tJwRes = await fetch(`https://tonapi.io/v2/accounts/${TREASURY_ADDRESS}/jettons/${GRAM_MASTER}`);
+                    const tJwData = await tJwRes.json();
+                    if (tJwData?.wallet_address?.address) treasuryDestination = tJwData.wallet_address.address;
+                } catch (e) {}
+
+                const feeTransferBody = beginCell()
+                    .storeUint(0xf8a7ea5, 32)
+                    .storeUint(0, 64)
+                    .storeCoins(BigInt(feeNano))
+                    .storeAddress(Address.parse(treasuryDestination))
+                    .storeAddress(Address.parse(userWalletAddress))
+                    .storeBit(0)
+                    .storeCoins(BigInt('50000000'))
+                    .storeBit(0)
+                    .endCell();
+
                 const forwardPayload = beginCell()
                     .storeUint(0xea06185d, 32)
                     .storeAddress(Address.parse(ca))
@@ -1350,10 +1429,10 @@
                     .storeCoins(0n)
                     .endCell();
 
-                const transferBody = beginCell()
+                const swapTransferBody = beginCell()
                     .storeUint(0xf8a7ea5, 32)
                     .storeUint(0, 64)
-                    .storeCoins(BigInt(amountNano))
+                    .storeCoins(BigInt(netNano))
                     .storeAddress(Address.parse(vaultAddress))
                     .storeAddress(Address.parse(userWalletAddress))
                     .storeBit(0)
@@ -1365,19 +1444,22 @@
                 const transaction = {
                     validUntil: Math.floor(Date.now() / 1000) + 600,
                     network: '-239',
-                    messages: [{ address: userJettonWallet, amount: '250000000', payload: transferBody.toBoc().toString('base64') }]
+                    messages: [
+                        { address: userJettonWallet, amount: '100000000', payload: feeTransferBody.toBoc().toString('base64') },
+                        { address: userJettonWallet, amount: '250000000', payload: swapTransferBody.toBoc().toString('base64') }
+                    ]
                 };
 
                 await tonConnectUI.sendTransaction(transaction);
                 processFees(amtGram);
-                recordBotPortfolio('Sniped Token', 'SNIPE', amtGram * 850, 'https://ton.org/download/ton_symbol.png', 0.02, true);
+                recordBotPortfolio('Sniped Token', 'SNIPE', netAmount * 850, 'https://ton.org/download/ton_symbol.png', 0.02, true);
 
-                alert(`🎯 DeDust Snipe Executed Successfully!\n\n• Target CA: ${ca}\n• Amount: ${amtGram} GRAM`);
-                btn.innerHTML = '🚀 Execute DeDust Router Snipe';
+                alert(`🎯 DeDust Snipe Executed Successfully (10% Fee Applied)!\n\n• Target CA: ${ca}\n• Total Paid: ${amtGram} GRAM`);
+                btn.innerHTML = '🚀 Execute DeDust Router Snipe (10% Fee)';
                 btn.disabled = false;
             } catch (error) {
                 alert(`Snipe Error: ${error.message}`);
-                btn.innerHTML = '🚀 Execute DeDust Router Snipe';
+                btn.innerHTML = '🚀 Execute DeDust Router Snipe (10% Fee)';
                 btn.disabled = false;
             }
         };
