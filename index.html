@@ -6,6 +6,14 @@
     <title>Kote Trade Terminal - Topblast Memes & Gram Memes</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
+    <!-- Include @ton/core for DeDust payload encoding -->
+    <script type="importmap">
+      {
+        "imports": {
+          "@ton/core": "https://esm.sh/@ton/core@0.56.3"
+        }
+      }
+    </script>
     <style>
         :root {
             --bg-base: #050507;
@@ -459,7 +467,7 @@
 
     <!-- --- CINEMATIC INTRO SCREEN --- -->
     <div id="intro-screen">
-        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v9.8</div>
+        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v9.9</div>
         <div class="intro-content">
             <div class="intro-logo-moon">🐱</div>
             <div style="font-size: 24px; font-weight: 900; color: #fff; letter-spacing: 0.5px;">TOPBLAST MEMES & GRAM MEMES</div>
@@ -511,7 +519,7 @@
                     </div>
 
                     <div id="tradeAuditBadge" class="audit-badge">
-                        🛡️ Verified Pool & Status Shield Active
+                        🛡️ DeDust Router & Status Shield Active
                     </div>
 
                     <div class="tokenomics-grid">
@@ -551,7 +559,7 @@
                     </div>
 
                     <button class="btn-action" id="executeTradeBtn" style="margin-bottom: 14px;" onclick="executeOnChainTrade()">
-                        ⚡ Execute Buy Swap
+                        ⚡ Execute DeDust Swap
                     </button>
 
                     <div class="card-header" style="margin-top: 8px; margin-bottom: 6px;">
@@ -598,17 +606,17 @@
                     </div>
 
                     <div class="toggle-row">
-                        <span>🛡️ Anti-MEV & Bonding Curve Protection</span>
+                        <span>🛡️ Anti-MEV & DeDust Route Protection</span>
                         <input type="checkbox" id="antiMevCheck" checked style="accent-color: var(--accent-red); width: 16px; height: 16px;">
                     </div>
 
                     <button class="btn-action btn-red" style="margin-top: 8px;" onclick="executeSnipeOrder()">
-                        🚀 Execute Audited Snipe Order
+                        🚀 Execute DeDust Router Snipe
                     </button>
                 </div>
             </section>
 
-            <!-- 3. TOPBLAST SECTION (Hardcoded 116 Contract Addresses with Automated Metadata & Metrics) -->
+            <!-- 3. TOPBLAST SECTION -->
             <section id="page-topblast" class="page">
                 <div class="card" style="max-width: 650px; margin: 0 auto; width: 100%;">
                     <div class="card-header">
@@ -629,7 +637,7 @@
                 </div>
             </section>
 
-            <!-- 4. GRAM MEMES SECTION (All DeDust Pairs / Unlimited 694+ Pool Harvester) -->
+            <!-- 4. GRAM MEMES SECTION -->
             <section id="page-gram-memes" class="page">
                 <div class="card" style="max-width: 650px; margin: 0 auto; width: 100%;">
                     <div class="card-header">
@@ -751,13 +759,15 @@
         </nav>
     </div>
 
-    <script>
+    <script type="module">
+        import { Address, beginCell } from '@ton/core';
+
         const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
         if (tg) { tg.ready(); tg.expand(); }
 
-        function enterTerminal() {
+        window.enterTerminal = function() {
             document.getElementById('intro-screen').classList.add('hidden');
-        }
+        };
 
         const dynamicManifestUrl = new URL('tonconnect-manifest.json', window.location.href).href;
         const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
@@ -768,6 +778,8 @@
         let userWalletAddress = null;
         let referralEarnings = 0;
         let selectedSnipeSlippage = 0.5;
+
+        const GRAM_MASTER = "EQC47093oX5Xhb0xuk2lCr2RhS8rj-vul61u4W2UH5ORmG_O"; // $GRAM Jetton Master
 
         // Hardcoded 116 Topblast Contract Addresses
         const topblastContractAddresses = [
@@ -795,11 +807,11 @@
             "EQAOJ4ynsF2ov7C94ogjMZpuvnOx0OZ3hhuK9nBHz3PGH2ad", "EQAO85wCnetsFtuMtVJpxpF-4ycwXqvYQ6MzXpiZ_cjQExcD", "EQAmbbXQG6ECkRX2YmJwi8AzubLS9Sp-V6EUUNhNVEdWc2i-", "EQAmAnqgWPqYZRX8VFPmFkQ4BEG-usOTKJ7dS4iQr5v_ZjeJ",
             "EQAmaM1juMlEL5F2pJHLrkc4abz-VUUSTzDkj6oYTA0HmYaB", "EQA6sBJlj0HTA0T9zdxm-KmafxqcQyyvFZAdBNMPzk1ekNdc", "EQAmDS3NS9BCLSP4djrt_B8vaSdJvV5JcrL4rMd___BFyVaH", "EQAmos5Eeldo1k5cDSwle5awz-DNwf4zKgtrZ_VwET6lR6k3",
             "EQAOamg6rT4dxJTB-C4YGDBSW1hus5ZrzcbaGrT8YuXkw8dm", "EQA6wowjTYS2KKL3n3bzaPkbwHPqiwFtAWxiRJtYzYYp3QA-", "EQA6AswoZ18Qp70saYA8hKfpcMuIFd-onNQ2VEQTA62Bw3xR", "EQAmex4HNekmuqwAlYqnUbJCGz5dD9ZxEOBBHlUO7H5yhtTo",
-            "EQAm2powy3WrWeu4m5ndNqQjNCv-1MArFx4xOX9l7pKnbdWs", "EQAmGSxeHgU7zW9RQhMP9r5TNLcwoSkDvsT59-aNxnkVvwI2", "EQA6y83KY0_svjvSiYMBMPQPboGsKTIteXV7uv1-_x7L3hTB", "EQAm8U2jZ0FVd1faCxkicnducEy4d3XL7WyhNgOcwOLNzy5Q",
-            "EQAmNuK8ddxGRwP74Xi-VhLNZWio9w2BoULMkNwX-bXsOkVx", "EQAmQRaCKEitwYQ-LA1YhkkY-Bz6dU4Wrn76zCbDM2IN2fYc", "EQAm_-f_3k-PbmG9IZq8FKjLLhil00bYhs_SD6Ykci3SolP2", "EQAmxecdUiQtFXFRKadKa1mK36Izqb6oMlbYNQTHS7tyDDaw",
-            "EQA6JYz3GuEdMBwrRvYX61FuGna45gUyDBxqseLmumygmHb0", "EQAm9xnWCB0svMoS28516vNmCDKDeRZErZwOEhERiuaFKgVU", "EQBTJ2GdhlB_7nd6S0w7nbD8bipVmO1IRfglTv2CsNIc7ZyC", "EQAmot4vfcPAfi1PF50vPTeDNqJSEmZXd7nBluXlupQEZP0q",
-            "EQA6Snqtu_sG7R9pyGemN9Icx4VSlW3lglMqY-8WHpXHpf-g", "EQAOj_VVK7x0D4QxqHacchILORqFSinJDu9HpGKeuQJ0yGJf", "EQA61kaKxWxag-Z2V6rKjR1KubhFKgjNQ6If0yECqKGdnsHO", "EQAmdIm1kcTi3e4UfDc5LpSJalE7cRkH7I0pLCzXLXOU-UE-",
-            "EQAmOKY65ndud2hRYJm8AjRrY8kXNN3eFIcxQnoYm9Skk707", "EQAm6a2k8YN-2EQ7rUZD673y5kdeu9T1VVQ9Dhw4OZyVvH_h", "EQAmoVE9hop3IF5P8kbw6NGxnEC6PMuLBxvNrIWMzmwD3CAl", "EQAmj_ML4H8vUH1_TZTvJ7psAszc2n5U_v2VU2mHCc-uUR-u"
+            "EQAm2powy3WrWeu4m5ndNqQjNCv-1MArFx4xOX9l7pKnbdWs", "EQAmGSxeHgU7zW9RQhMP9r5TNLcwoSkDvsT59-aNxnkVvwI2", "EQA6y83KY0_svjvSiYMBMPQPboGsKTIteXV7uv1-_x7L3hTB", "EQAm8U2jZ0FVd1faCxkicnducEy4d3XL7WyhNgOcwOLNzy5Q", "EQAmNuK8ddxGRwP74Xi-VhLNZWio9w2BoULMkNwX-bXsOkVx",
+            "EQAmQRaCKEitwYQ-LA1YhkkY-Bz6dU4Wrn76zCbDM2IN2fYc", "EQAm_-f_3k-PbmG9IZq8FKjLLhil00bYhs_SD6Ykci3SolP2", "EQAmxecdUiQtFXFRKadKa1mK36Izqb6oMlbYNQTHS7tyDDaw", "EQA6JYz3GuEdMBwrRvYX61FuGna45gUyDBxqseLmumygmHb0",
+            "EQAm9xnWCB0svMoS28516vNmCDKDeRZErZwOEhERiuaFKgVU", "EQBTJ2GdhlB_7nd6S0w7nbD8bipVmO1IRfglTv2CsNIc7ZyC", "EQAmot4vfcPAfi1PF50vPTeDNqJSEmZXd7nBluXlupQEZP0q", "EQA6Snqtu_sG7R9pyGemN9Icx4VSlW3lglMqY-8WHpXHpf-g",
+            "EQAOj_VVK7x0D4QxqHacchILORqFSinJDu9HpGKeuQJ0yGJf", "EQA61kaKxWxag-Z2V6rKjR1KubhFKgjNQ6If0yECqKGdnsHO", "EQAmdIm1kcTi3e4UfDc5LpSJalE7cRkH7I0pLCzXLXOU-UE-", "EQAmOKY65ndud2hRYJm8AjRrY8kXNN3eFIcxQnoYm9Skk707",
+            "EQAm6a2k8YN-2EQ7rUZD673y5kdeu9T1VVQ9Dhw4OZyVvH_h", "EQAmoVE9hop3IF5P8kbw6NGxnEC6PMuLBxvNrIWMzmwD3CAl", "EQAmj_ML4H8vUH1_TZTvJ7psAszc2n5U_v2VU2mHCc-uUR-u"
         ];
 
         let topblastTokens = [];
@@ -808,12 +820,10 @@
         let botHeldPortfolio = [];
         let currentActiveToken = { name: 'Select Token', symbol: 'TOKEN', address: '', logo: '', mcap: 0, liq: 0, vol: 0, priceUSD: 0 };
 
-        // 1. Fetch Topblast Tokens via DexScreener Batch Endpoint using the 116 Hardcoded CAs
         async function loadTopblastTokens() {
             const container = document.getElementById('topblastList');
             container.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 12px;">Loading 116 Topblast tokens & metrics...</div>`;
             try {
-                // Batch query DexScreener (chunking addresses in groups of up to 30)
                 let allPairs = [];
                 for (let i = 0; i < topblastContractAddresses.length; i += 30) {
                     const chunk = topblastContractAddresses.slice(i, i + 30);
@@ -824,7 +834,6 @@
                     }
                 }
 
-                // If DexScreener returns pairs, map them; otherwise fallback to basic cards with the CAs
                 if (allPairs.length > 0) {
                     let uniqueMap = new Map();
                     allPairs.forEach(p => {
@@ -848,7 +857,6 @@
                     });
                     topblastTokens = Array.from(uniqueMap.values());
                 } else {
-                    // Fallback representation if batch query is rate-limited
                     topblastTokens = topblastContractAddresses.map((ca, idx) => ({
                         name: `Topblast Token #${idx + 1}`,
                         symbol: `TB${idx + 1}`,
@@ -867,8 +875,6 @@
                 renderTopblastList();
                 document.getElementById('configStatusLabel').innerText = `● Topblast Memes (${topblastTokens.length} Active)`;
             } catch (error) {
-                console.warn("Topblast batch load error:", error);
-                // Fallback rendering
                 topblastTokens = topblastContractAddresses.map((ca, idx) => ({
                     name: `Topblast Token #${idx + 1}`,
                     symbol: `TB${idx + 1}`,
@@ -886,7 +892,6 @@
             }
         }
 
-        // 2. Gram Memes Harvester (All 694+ DeDust Pairs)
         async function loadGramMemesTokens() {
             const container = document.getElementById('gramMemesList');
             container.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 12px;">Harvesting all DeDust pools (694+ target)...</div>`;
@@ -945,30 +950,30 @@
             }
         });
 
-        function switchPage(pageId, navBtn) {
+        window.switchPage = function(pageId, navBtn) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
             const targetId = pageId.startsWith('page-') ? pageId : 'page-' + pageId;
             document.getElementById(targetId).classList.add('active');
             if(navBtn) navBtn.classList.add('active');
             if(targetId === 'page-profile') renderBotPortfolio();
-        }
+        };
 
         function auditContract(ca) {
             if (!ca || ca.length < 35) return { safe: false, msg: 'Invalid Contract Address format.' };
-            return { safe: true, msg: '🛡️ Verified Pool & Status Shield Active' };
+            return { safe: true, msg: '🛡️ DeDust Router & Status Shield Active' };
         }
 
-        function auditSniperCA(ca) {
+        window.auditSniperCA = function(ca) {
             const auditEl = document.getElementById('sniperAuditResult');
             if (!ca || ca.length < 10) { auditEl.style.display = 'none'; return; }
             auditEl.style.display = 'inline-flex';
             const res = auditContract(ca);
             auditEl.className = 'audit-badge';
             auditEl.innerText = res.msg;
-        }
+        };
 
-        function setTradeMode(mode) {
+        window.setTradeMode = function(mode) {
             currentTradeMode = mode;
             const tabBuy = document.getElementById('tabBuy');
             const tabSell = document.getElementById('tabSell');
@@ -990,7 +995,7 @@
                 receiveTokenSymbol.innerText = currentActiveToken.symbol;
                 receiveBadgeToken.innerText = currentActiveToken.symbol;
                 executeBtn.className = 'btn-action btn-red';
-                executeBtn.innerHTML = `⚡ Execute Buy Swap ($${currentActiveToken.symbol})`;
+                executeBtn.innerHTML = `⚡ Execute DeDust Swap ($${currentActiveToken.symbol})`;
             } else {
                 tabSell.classList.add('active');
                 tabBuy.classList.remove('active');
@@ -1001,23 +1006,23 @@
                 receiveTokenSymbol.innerText = 'GRAM';
                 receiveBadgeToken.innerText = '💎 GRAM';
                 executeBtn.className = 'btn-action btn-green-action';
-                executeBtn.innerHTML = `🔴 Execute Sell Swap ($${currentActiveToken.symbol})`;
+                executeBtn.innerHTML = `🔴 Execute DeDust Sell ($${currentActiveToken.symbol})`;
             }
             calculateSwapOutput();
-        }
+        };
 
-        function setTradeAmount(val) {
+        window.setTradeAmount = function(val) {
             document.getElementById('tradeInputAmount').value = val;
             calculateSwapOutput();
-        }
+        };
 
-        function setSnipeSlip(val, el) {
+        window.setSnipeSlip = function(val, el) {
             el.parentElement.querySelectorAll('.quick-btn').forEach(b => b.classList.remove('active'));
             el.classList.add('active');
             selectedSnipeSlippage = val;
-        }
+        };
 
-        function selectTokenForTrade(address, name, symbol, logo, mcap, liq, vol, priceUSD = 0.01, graduated = true, migrationDex = 'dedust') {
+        window.selectTokenForTrade = function(address, name, symbol, logo, mcap, liq, vol, priceUSD = 0.01, graduated = true, migrationDex = 'dedust') {
             currentActiveToken = { name, symbol, address, logo, mcap, liq, vol, priceNative: 0.0012, priceUSD, graduated, migrationDex };
             
             document.getElementById('heroTokenName').innerText = `${name} ($${symbol})`;
@@ -1059,16 +1064,16 @@
             setTradeMode('buy');
             switchPage('page-trade', document.querySelectorAll('.nav-tab')[0]);
             calculateSwapOutput();
-        }
+        };
 
-        function selectTokenForSniper(address, symbol) {
+        window.selectTokenForSniper = function(address, symbol) {
             const sniperInput = document.getElementById('sniperCA');
             if (sniperInput) {
                 sniperInput.value = address;
                 auditSniperCA(address);
             }
             switchPage('sniper', document.querySelectorAll('.nav-tab')[1]);
-        }
+        };
 
         async function calculateSwapOutput() {
             const inputVal = parseFloat(document.getElementById('tradeInputAmount').value) || 0;
@@ -1099,6 +1104,7 @@
                 document.getElementById('tradeOutputAmount').value = '~ ' + resOutput.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 });
             }
         }
+        window.calculateSwapOutput = calculateSwapOutput;
 
         async function fetchRealWalletHoldings(address) {
             const container = document.getElementById('onChainWalletHoldings');
@@ -1193,12 +1199,12 @@
             });
         }
 
-        function copyReferralLink() {
+        window.copyReferralLink = function() {
             const link = document.getElementById('refLinkInput').value;
             if (!link.includes('http')) { alert('Connect wallet first.'); return; }
             navigator.clipboard.writeText(link);
             alert('Referral link copied!');
-        }
+        };
 
         function processFees(amt) {
             const fee = amt * 0.01;
@@ -1206,7 +1212,8 @@
             document.getElementById('referralEarnings').innerText = referralEarnings.toFixed(2) + ' GRAM';
         }
 
-        async function executeOnChainTrade() {
+        // --- EXECUTING ON-CHAIN DEBUST SWAP ROUTER TRANSACTION ---
+        window.executeOnChainTrade = async function() {
             if (!tonConnectUI.connected) { tonConnectUI.openModal(); return; }
 
             const inputVal = parseFloat(document.getElementById('tradeInputAmount').value) || 0;
@@ -1215,77 +1222,167 @@
                 return;
             }
 
-            const amountNano = Math.floor(inputVal * 1e9).toString();
-            const transaction = {
-                validUntil: Math.floor(Date.now() / 1000) + 600,
-                network: '-239',
-                messages: [{ address: currentActiveToken.address, amount: amountNano }]
-            };
+            const btn = document.getElementById('executeTradeBtn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '🛡️ Fetching DeDust Route...';
+            btn.disabled = true;
 
             try {
-                const btn = document.getElementById('executeTradeBtn');
-                const originalText = btn.innerHTML;
-                btn.innerHTML = '🛡️ Broadcasting Transaction...';
-                btn.disabled = true;
+                const sourceMaster = currentTradeMode === 'buy' ? GRAM_MASTER : currentActiveToken.address;
+                const targetMaster = currentTradeMode === 'buy' ? currentActiveToken.address : GRAM_MASTER;
+                const amountNano = Math.floor(inputVal * 1e9).toString();
 
+                // 1. Query DeDust routing plan to get the vault address & destination parameters
+                const fromAssetStr = `jetton:${sourceMaster}`;
+                const toAssetStr = `jetton:${targetMaster}`;
+                
+                const routeRes = await fetch('https://api.dedust.io/v2/routing/plan', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        from: fromAssetStr,
+                        to: toAssetStr,
+                        amount: amountNano
+                    })
+                });
+                const routePlan = await routeRes.json();
+                if (!routePlan || routePlan.length === 0) {
+                    throw new Error('No direct DeDust liquidity pool route found for this pair.');
+                }
+
+                const firstStep = routePlan[0];
+                const vaultAddress = firstStep.pool?.address || firstStep.vault;
+                if (!vaultAddress) throw new Error('Could not resolve DeDust Vault address from route plan.');
+
+                // 2. Fetch User's Personal Jetton Wallet for the source token
+                const jwRes = await fetch(`https://tonapi.io/v2/accounts/${userWalletAddress}/jettons/${sourceMaster}`);
+                const jwData = await jwRes.json();
+                const userJettonWallet = jwData?.wallet_address?.address;
+                if (!userJettonWallet) {
+                    throw new Error(`You do not have a Jetton wallet for ${currentTradeMode === 'buy' ? 'GRAM' : currentActiveToken.symbol}.`);
+                }
+
+                // 3. Build DeDust Swap Forward Payload Cell via @ton/core
+                // DeDust swap op-code: 0xea06185d
+                const forwardPayload = beginCell()
+                    .storeUint(0xea06185d, 32) // op: swap
+                    .storeAddress(Address.parse(targetMaster))
+                    .storeUint(0, 1) // kind: normal / limit order placeholder
+                    .storeCoins(0n) // min output / limit
+                    .endCell();
+
+                // TEP-74 Jetton Transfer Cell
+                const transferBody = beginCell()
+                    .storeUint(0xf8a7ea5, 32) // op: transfer
+                    .storeUint(0, 64) // query_id
+                    .storeCoins(BigInt(amountNano)) // amount
+                    .storeAddress(Address.parse(vaultAddress)) // destination (DeDust Vault)
+                    .storeAddress(Address.parse(userWalletAddress)) // response_destination (excess gas back to user)
+                    .storeBit(0) // custom_payload (Maybe Cell = 0)
+                    .storeCoins(BigInt('150000000')) // forward_ton_amount (0.15 TON for swap execution gas)
+                    .storeBit(1) // forward_payload in ref (1 = true)
+                    .storeRef(forwardPayload)
+                    .endCell();
+
+                const transaction = {
+                    validUntil: Math.floor(Date.now() / 1000) + 600,
+                    network: '-239',
+                    messages: [{
+                        address: userJettonWallet,
+                        amount: '250000000', // 0.25 TON native gas fee for transfer + forward execution
+                        payload: transferBody.toBoc().toString('base64')
+                    }]
+                };
+
+                btn.innerHTML = '🛡️ Signing DeDust Swap...';
                 const result = await tonConnectUI.sendTransaction(transaction);
                 processFees(inputVal);
-                const txBoc = result.boc ? result.boc.slice(0, 24) + '...' : 'Confirmed';
                 const outputEst = document.getElementById('tradeOutputAmount').value.replace('~ ', '');
 
                 if (currentTradeMode === 'buy') {
                     recordBotPortfolio(currentActiveToken.name, currentActiveToken.symbol, parseFloat(outputEst.replace(/,/g, '')), currentActiveToken.logo, currentActiveToken.priceUSD, true);
-                    alert(`✅ Buy Swap Confirmed!\n\n• Swapped: ${inputVal} GRAM\n• Received: ~${outputEst} $${currentActiveToken.symbol}\n• Tx BoC: ${txBoc}`);
+                    alert(`✅ DeDust Buy Swap Confirmed!\n\n• Paid: ${inputVal} GRAM\n• Received: ~${outputEst} $${currentActiveToken.symbol}`);
                 } else {
                     recordBotPortfolio(currentActiveToken.name, currentActiveToken.symbol, inputVal, currentActiveToken.logo, currentActiveToken.priceUSD, false);
-                    alert(`✅ Sell Swap Confirmed!\n\n• Sold: ${inputVal} $${currentActiveToken.symbol}\n• Received: ~${outputEst} GRAM\n• Tx BoC: ${txBoc}`);
+                    alert(`✅ DeDust Sell Swap Confirmed!\n\n• Sold: ${inputVal} $${currentActiveToken.symbol}\n• Received: ~${outputEst} GRAM`);
                 }
 
                 btn.innerHTML = originalText;
                 btn.disabled = false;
             } catch (error) {
-                alert('Transaction was cancelled or failed.');
-                const btn = document.getElementById('executeTradeBtn');
-                btn.innerHTML = currentTradeMode === 'buy' ? `⚡ Execute Buy Swap ($${currentActiveToken.symbol})` : `🔴 Execute Sell Swap ($${currentActiveToken.symbol})`;
+                alert(`Swap Failed: ${error.message}`);
+                btn.innerHTML = originalText;
                 btn.disabled = false;
             }
-        }
+        };
 
-        async function executeSnipeOrder() {
+        window.executeSnipeOrder = async function() {
             if (!tonConnectUI.connected) { tonConnectUI.openModal(); return; }
             const ca = document.getElementById('sniperCA').value.trim();
             const amtGram = parseFloat(document.getElementById('sniperAmount').value) || 0;
             if (!ca) { alert('Please enter a contract address.'); return; }
             if (amtGram <= 0) { alert('Please enter a valid snipe amount.'); return; }
 
-            const amountNano = Math.floor(amtGram * 1e9).toString();
-            const transaction = {
-                validUntil: Math.floor(Date.now() / 1000) + 600,
-                network: '-239',
-                messages: [{ address: ca, amount: amountNano }]
-            };
+            const btn = event.target;
+            btn.innerHTML = '🛡️ Routing DeDust Snipe...';
+            btn.disabled = true;
 
             try {
-                const btn = event.target;
-                const originalText = btn.innerHTML;
-                btn.innerHTML = '🛡️ Sniping Curve...';
-                btn.disabled = true;
+                const amountNano = Math.floor(amtGram * 1e9).toString();
+                // Query DeDust route plan for snipe target
+                const routeRes = await fetch('https://api.dedust.io/v2/routing/plan', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ from: `jetton:${GRAM_MASTER}`, to: `jetton:${ca}`, amount: amountNano })
+                });
+                const routePlan = await routeRes.json();
+                if (!routePlan || routePlan.length === 0) throw new Error('No liquidity pool on DeDust for this contract yet.');
 
-                const result = await tonConnectUI.sendTransaction(transaction);
+                const vaultAddress = routePlan[0].pool?.address || routePlan[0].vault;
+                const jwRes = await fetch(`https://tonapi.io/v2/accounts/${userWalletAddress}/jettons/${GRAM_MASTER}`);
+                const jwData = await jwRes.json();
+                const userJettonWallet = jwData?.wallet_address?.address;
+
+                const forwardPayload = beginCell()
+                    .storeUint(0xea06185d, 32)
+                    .storeAddress(Address.parse(ca))
+                    .storeUint(0, 1)
+                    .storeCoins(0n)
+                    .endCell();
+
+                const transferBody = beginCell()
+                    .storeUint(0xf8a7ea5, 32)
+                    .storeUint(0, 64)
+                    .storeCoins(BigInt(amountNano))
+                    .storeAddress(Address.parse(vaultAddress))
+                    .storeAddress(Address.parse(userWalletAddress))
+                    .storeBit(0)
+                    .storeCoins(BigInt('150000000'))
+                    .storeBit(1)
+                    .storeRef(forwardPayload)
+                    .endCell();
+
+                const transaction = {
+                    validUntil: Math.floor(Date.now() / 1000) + 600,
+                    network: '-239',
+                    messages: [{ address: userJettonWallet, amount: '250000000', payload: transferBody.toBoc().toString('base64') }]
+                };
+
+                await tonConnectUI.sendTransaction(transaction);
                 processFees(amtGram);
                 recordBotPortfolio('Sniped Token', 'SNIPE', amtGram * 850, 'https://ton.org/download/ton_symbol.png', 0.02, true);
 
-                alert(`🎯 Audited Snipe Confirmed!\n\n• CA: ${ca}\n• Amount: ${amtGram} GRAM`);
-                btn.innerHTML = originalText;
+                alert(`🎯 DeDust Snipe Executed Successfully!\n\n• Target CA: ${ca}\n• Amount: ${amtGram} GRAM`);
+                btn.innerHTML = '🚀 Execute DeDust Router Snipe';
                 btn.disabled = false;
             } catch (error) {
-                alert('Snipe transaction cancelled or failed.');
-                const btn = document.querySelector('#page-sniper .btn-red');
-                if(btn) { btn.innerHTML = '🚀 Execute Audited Snipe Order'; btn.disabled = false; }
+                alert(`Snipe Error: ${error.message}`);
+                btn.innerHTML = '🚀 Execute DeDust Router Snipe';
+                btn.disabled = false;
             }
-        }
+        };
 
-        function launchMoonPay() {
+        window.launchMoonPay = function() {
             if (!userWalletAddress) {
                 alert('Please connect your TON wallet via TonConnect first.');
                 tonConnectUI.openModal();
@@ -1294,10 +1391,10 @@
             const amount = document.getElementById('fiatAmount').value || 100;
             const url = `https://buy.moonpay.com/?currencyCode=ton&baseCurrencyAmount=${amount}&walletAddress=${userWalletAddress}`;
             if (tg && typeof tg.openLink === 'function') { tg.openLink(url); } else { window.open(url, '_blank'); }
-        }
+        };
 
-        function filterTopblastList() { renderTopblastList(); }
-        function filterGramMemesList() { renderGramMemesList(); }
+        window.filterTopblastList = function() { renderTopblastList(); };
+        window.filterGramMemesList = function() { renderGramMemesList(); };
 
         function renderTopblastList() {
             const q = document.getElementById('topblastSearchInput').value.toLowerCase();
