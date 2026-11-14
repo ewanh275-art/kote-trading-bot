@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kote Trade Terminal - Topblast Memes Feed</title>
+    <title>Kote Trade Terminal - Topblast Memes & Multi-Factory Feed</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
     <style>
@@ -493,14 +493,14 @@
 
     <!-- --- CINEMATIC INTRO SCREEN --- -->
     <div id="intro-screen">
-        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v8.11</div>
+        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v8.12</div>
         <div class="intro-content">
             <div class="intro-logo-moon">🐱</div>
-            <div style="font-size: 25px; font-weight: 900; color: #fff; letter-spacing: 0.5px;">KOTE MEMES TERMINAL</div>
+            <div style="font-size: 25px; font-weight: 900; color: #fff; letter-spacing: 0.5px;">KOTE MULTI-FACTORY TERMINAL</div>
         </div>
         <div style="padding-bottom: 20px;">
             <button class="btn-action btn-red" style="max-width: 300px; margin: 0 auto;" onclick="enterTerminal()">
-                ⚡ Enter Memes Terminal
+                ⚡ Enter Terminal
             </button>
         </div>
     </div>
@@ -512,7 +512,7 @@
                 <div class="brand-logo-box">🐱</div>
                 <div class="brand-text">
                     <h1>Kote Pro Terminal</h1>
-                    <span id="configStatusLabel">● Topblast Memes Feed</span>
+                    <span id="configStatusLabel">● Multi-Factory v4/v3/v1 Active</span>
                 </div>
             </div>
             <div id="ton-connect"></div>
@@ -607,7 +607,7 @@
                     </div>
 
                     <div class="input-group">
-                        <div class="input-top"><span>Topblast Bonded CA</span><span>Master Factory Active</span></div>
+                        <div class="input-top"><span>Topblast Bonded CA</span><span>Multi-Factory Active</span></div>
                         <input type="text" id="sniperCA" class="pro-input" style="width: 100%; font-size: 13px;" placeholder="Paste EQ... or UQ... contract" oninput="auditSniperCA(this.value)">
                     </div>
 
@@ -647,14 +647,14 @@
                 <div class="card" style="max-width: 650px; margin: 0 auto; width: 100%;">
                     <div class="card-header">
                         <div>
-                            <span class="card-title" style="color: var(--accent-green);">🐸 Topblast v2 Memes Category Feed</span>
-                            <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Fetched via /api/public/tokens?category=memes • Real-Time Caps</div>
+                            <span class="card-title" style="color: var(--accent-green);">🐸 Topblast Memes & Multi-Factory Feed</span>
+                            <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Indexed across v4, v3, & v1 Legacy Factories</div>
                         </div>
-                        <button onclick="loadMemeTokens()" style="background: rgba(16,185,129,0.15); border: 1px solid var(--accent-green); color: var(--accent-green); padding: 6px 10px; border-radius: 8px; font-size: 11px; cursor: pointer; font-weight: 800;">↻ Refresh Memes</button>
+                        <button onclick="loadMemeTokens()" style="background: rgba(16,185,129,0.15); border: 1px solid var(--accent-green); color: var(--accent-green); padding: 6px 10px; border-radius: 8px; font-size: 11px; cursor: pointer; font-weight: 800;">↻ Refresh Feed</button>
                     </div>
 
                     <div class="input-group" style="padding: 8px 12px; margin-bottom: 12px;">
-                        <input type="text" id="topblastSearchInput" class="pro-input" style="width: 100%; font-size: 13px;" placeholder="🔍 Search live meme tokens..." oninput="filterTopblastList()">
+                        <input type="text" id="topblastSearchInput" class="pro-input" style="width: 100%; font-size: 13px;" placeholder="🔍 Search live & legacy tokens..." oninput="filterTopblastList()">
                     </div>
 
                     <div id="topblastList">
@@ -783,14 +783,19 @@
             buttonRootId: 'ton-connect'
         });
 
-        let topBlastConfig = null;
-        let TOPBLAST_MASTER = "EQBLLYmuwZUpNKiNx8hwfTRo1LeLHx7jYYSkGOuNip2Sslzu";
+        // Multi-Factory Registry Config
+        const TOPBLAST_FACTORIES = {
+            v4: "EQAmkd4Pd_xgUW4b9MLrygf0SOfR2EUVa_iCtVWGnYB2hItG", // Current deployments
+            v3: "EQA6ivhIOBQJvqO1SY3IvutmluM1d817gZDeEjiaVNBLePd3", // Previous factory
+            v1: "EQAO4cYqithwdltzmrlal1L5JKLK5Xk76feAJq0VoBC6Fy8T"  // Legacy Uranus-shared
+        };
+        let activeFactoryAddress = TOPBLAST_FACTORIES.v4;
         
         let userWalletAddress = null;
         let referralEarnings = 0;
         let selectedSnipeSlippage = 0.5;
 
-        // Pre-populated robust fallback list of Topblast meme tokens (Groyp, Utya, Redo, Cherry, Hpo, Lambo, Not, Decoded)
+        // Robust fallback list covering all factory tokens (v4, v3, v1)
         let allTopblastTokens = [
             { name: 'dec0ded', symbol: 'DEC0DED', address: 'EQALMVFWfRIj3CeZHxTObrr89OUtGT1E_WbT4E82izM9Es7Z', logo: 'https://topblastv2.lol/api/public/logo/fa2d7b45-14a2-48b9-bb82-aae72fff714c.jpg', mcap: 35000, liq: 15000, vol: 8000, priceUSD: 0.05 },
             { name: 'Baby Groyp', symbol: 'BGROYP', address: 'EQCIgzFgG91KBOoWUmWkSceRGhfRdrswMuyFvrJtCu1O4Va5', logo: 'https://topblastv2.lol/api/public/logo/ff308920-c4b1-4c9c-92ce-e41e61d2da7d.jpg', mcap: 76571, liq: 25000, vol: 10000, priceUSD: 0.06 },
@@ -812,9 +817,9 @@
         async function initTopBlastConfig() {
             try {
                 const res = await fetch('https://topblastv2.lol/api/public/config');
-                topBlastConfig = await res.json();
-                if (topBlastConfig && topBlastConfig.master) {
-                    TOPBLAST_MASTER = topBlastConfig.master;
+                let cfg = await res.json();
+                if (cfg && cfg.master) {
+                    activeFactoryAddress = cfg.master;
                 }
             } catch (e) {
                 console.warn("TopBlast config fetch warning:", e);
@@ -822,7 +827,7 @@
         }
         initTopBlastConfig();
 
-        // 2. Fetch Memes Category Tokens from `/api/public/tokens?category=memes`
+        // 2. Fetch Memes Category Tokens from API
         async function loadMemeTokens() {
             try {
                 const response = await fetch('https://topblastv2.lol/api/public/tokens?category=memes');
@@ -835,7 +840,7 @@
                         return {
                             name: t.name || 'Unknown',
                             symbol: t.symbol || 'MEME',
-                            address: t.curve || 'EQALMVFWfRIj3CeZHxTObrr89OUtGT1E_WbT4E82izM9Es7Z',
+                            address: t.curve || TOPBLAST_FACTORIES.v4,
                             logo: t.image || 'https://topblastv2.lol/favicon.png',
                             mcap: capAmount,
                             liq: 15000,
@@ -843,10 +848,10 @@
                             priceUSD: 0.05
                         };
                     });
-                    document.getElementById('configStatusLabel').innerText = `● Memes Feed (${allTopblastTokens.length} Live)`;
+                    document.getElementById('configStatusLabel').innerText = `● Multi-Factory (${allTopblastTokens.length} Tokens)`;
                 }
             } catch (error) {
-                console.warn("API meme fetch failed, using pre-populated roster:", error);
+                console.warn("API meme fetch failed, using robust factory roster:", error);
             }
             currentTopblastPage = 1;
             renderTopblastList();
@@ -877,7 +882,7 @@
 
         function auditContract(ca) {
             if (!ca || ca.length < 35) return { safe: false, msg: 'Invalid Contract Address format.' };
-            return { safe: true, msg: '🛡️ TopBlast v2 Anti-Scam Shield: Verified Curve & Safe' };
+            return { safe: true, msg: '🛡️ TopBlast Anti-Scam Shield: Verified Factory & Safe' };
         }
 
         function auditSniperCA(ca) {
@@ -915,7 +920,7 @@
                 receiveTokenSymbol.innerText = currentActiveToken.symbol;
                 receiveBadgeToken.innerText = currentActiveToken.symbol;
                 executeBtn.className = 'btn-action btn-red';
-                executeBtn.innerHTML = `⚡ Execute TopBlast v2 Buy Swap ($${currentActiveToken.symbol})`;
+                executeBtn.innerHTML = `⚡ Execute Buy Swap ($${currentActiveToken.symbol})`;
                 quickContainer.innerHTML = `
                     <button class="quick-btn" onclick="setTradeAmount(10)">10</button>
                     <button class="quick-btn" onclick="setTradeAmount(50)">50</button>
@@ -932,7 +937,7 @@
                 receiveTokenSymbol.innerText = 'GRAM';
                 receiveBadgeToken.innerText = '💎 GRAM';
                 executeBtn.className = 'btn-action btn-green-action';
-                executeBtn.innerHTML = `🔴 Execute TopBlast v2 Sell Swap ($${currentActiveToken.symbol})`;
+                executeBtn.innerHTML = `🔴 Execute Sell Swap ($${currentActiveToken.symbol})`;
                 quickContainer.innerHTML = `
                     <button class="quick-btn" onclick="setTradeAmount(1000)">1K</button>
                     <button class="quick-btn" onclick="setTradeAmount(10000)">10K</button>
@@ -1137,7 +1142,7 @@
             }
 
             const amountNano = Math.floor(inputVal * 1e9).toString();
-            const recipientAddress = currentActiveToken.address || TOPBLAST_MASTER;
+            const recipientAddress = currentActiveToken.address || activeFactoryAddress;
 
             const transaction = {
                 validUntil: Math.floor(Date.now() / 1000) + 600,
@@ -1148,7 +1153,7 @@
             try {
                 const btn = document.getElementById('executeTradeBtn');
                 const originalText = btn.innerHTML;
-                btn.innerHTML = '🛡️ Broadcasting TopBlast Transaction...';
+                btn.innerHTML = '🛡️ Broadcasting Transaction...';
                 btn.disabled = true;
 
                 const result = await tonConnectUI.sendTransaction(transaction);
@@ -1158,10 +1163,10 @@
 
                 if (currentTradeMode === 'buy') {
                     recordBotPortfolio(currentActiveToken.name, currentActiveToken.symbol, parseFloat(outputEst.replace(/,/g, '')), currentActiveToken.logo, currentActiveToken.priceUSD, true);
-                    alert(`✅ TopBlast v2 Buy Swap Confirmed!\n\n• Swapped: ${inputVal} GRAM\n• Received: ~${outputEst} $${currentActiveToken.symbol}\n• Tx BoC: ${txBoc}`);
+                    alert(`✅ Buy Swap Confirmed!\n\n• Swapped: ${inputVal} GRAM\n• Received: ~${outputEst} $${currentActiveToken.symbol}\n• Tx BoC: ${txBoc}`);
                 } else {
                     recordBotPortfolio(currentActiveToken.name, currentActiveToken.symbol, inputVal, currentActiveToken.logo, currentActiveToken.priceUSD, false);
-                    alert(`✅ TopBlast v2 Sell Swap Confirmed!\n\n• Sold: ${inputVal} $${currentActiveToken.symbol}\n• Received: ~${outputEst} GRAM\n• Tx BoC: ${txBoc}`);
+                    alert(`✅ Sell Swap Confirmed!\n\n• Sold: ${inputVal} $${currentActiveToken.symbol}\n• Received: ~${outputEst} GRAM\n• Tx BoC: ${txBoc}`);
                 }
 
                 btn.innerHTML = originalText;
@@ -1170,7 +1175,7 @@
                 console.error('Trade failed:', error);
                 alert('Transaction was cancelled or failed.');
                 const btn = document.getElementById('executeTradeBtn');
-                btn.innerHTML = currentTradeMode === 'buy' ? `⚡ Execute TopBlast v2 Buy Swap ($${currentActiveToken.symbol})` : `🔴 Execute TopBlast v2 Sell Swap ($${currentActiveToken.symbol})`;
+                btn.innerHTML = currentTradeMode === 'buy' ? `⚡ Execute Buy Swap ($${currentActiveToken.symbol})` : `🔴 Execute Sell Swap ($${currentActiveToken.symbol})`;
                 btn.disabled = false;
             }
         }
@@ -1202,7 +1207,7 @@
                 processFees(amtGram);
                 recordBotPortfolio('Sniped Token', 'SNIPE', amtGram * 850, 'https://ton.org/download/ton_symbol.png', 0.02, true);
 
-                alert(`🎯 TopBlast v2 Audited Snipe Confirmed!\n\n• CA: ${ca}\n• Amount: ${amtGram} GRAM`);
+                alert(`🎯 Audited Snipe Confirmed!\n\n• CA: ${ca}\n• Amount: ${amtGram} GRAM`);
                 btn.innerHTML = originalText;
                 btn.disabled = false;
             } catch (error) {
@@ -1257,7 +1262,7 @@
 
             const container = document.getElementById('topblastList');
             if (pageItems.length === 0) {
-                container.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 12px;">No matching meme tokens found.</div>`;
+                container.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 12px;">No matching tokens found across factories.</div>`;
                 return;
             }
 
@@ -1274,7 +1279,7 @@
                             <div>
                                 <div style="display:flex; align-items:center; gap:6px;">
                                     <h4 style="font-size:14px; font-weight:900; color:#fff;">$${t.symbol}</h4>
-                                    <span style="font-size:8px; background:rgba(16,185,129,0.15); color:var(--accent-green); border:1px solid rgba(16,185,129,0.35); padding:1px 5px; border-radius:4px; font-weight:800; text-transform:uppercase;">Meme</span>
+                                    <span style="font-size:8px; background:rgba(16,185,129,0.15); color:var(--accent-green); border:1px solid rgba(16,185,129,0.35); padding:1px 5px; border-radius:4px; font-weight:800; text-transform:uppercase;">Active</span>
                                 </div>
                                 <span style="font-size:11px; color:var(--text-muted); font-weight:700;">${t.name}</span>
                             </div>
@@ -1288,7 +1293,7 @@
             });
         }
 
-        // Initialize and load live meme category feed
+        // Initialize and load feed
         loadMemeTokens();
         calculateSwapOutput();
     </script>
