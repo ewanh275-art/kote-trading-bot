@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kote Trade Terminal - Full Topblast v2 Integration</title>
+    <title>Kote Trade Terminal - Dynamic Topblast v2 Integration</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
     <style>
@@ -493,7 +493,7 @@
 
     <!-- --- CINEMATIC INTRO SCREEN --- -->
     <div id="intro-screen">
-        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v8.5</div>
+        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v8.6</div>
         <div class="intro-content">
             <div class="intro-logo-moon">🐱</div>
             <div style="font-size: 25px; font-weight: 900; color: #fff; letter-spacing: 0.5px;">KOTE TRADE/SNIPER BOT</div>
@@ -642,23 +642,23 @@
                 </div>
             </section>
 
-            <!-- 3. TOPBLAST v2 LIVE TOKENS & MARKET FEED (DYNAMIC MULTI-PAGE PAGINATION) -->
+            <!-- 3. TOPBLAST v2 LIVE TOKENS & MARKET FEED (DYNAMIC API FETCH) -->
             <section id="page-launches" class="page">
                 <div class="card" style="max-width: 650px; margin: 0 auto; width: 100%;">
                     <div class="card-header">
                         <div>
-                            <span class="card-title" style="color: var(--accent-green);">🟢 Complete Topblast v2 Token Registry</span>
-                            <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">All Bonded Tokens • Dynamic Multi-Page Feed • 10 Per Page</div>
+                            <span class="card-title" style="color: var(--accent-green);">🟢 Complete Topblast v2 Live Registry</span>
+                            <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Dynamic Live API Fetch • Utya, Redo, Kote, Cherry & More</div>
                         </div>
-                        <button onclick="loadTopblastTokens()" style="background: rgba(16,185,129,0.15); border: 1px solid var(--accent-green); color: var(--accent-green); padding: 6px 10px; border-radius: 8px; font-size: 11px; cursor: pointer; font-weight: 800;">↻ Refresh</button>
+                        <button onclick="loadTopblastTokens()" style="background: rgba(16,185,129,0.15); border: 1px solid var(--accent-green); color: var(--accent-green); padding: 6px 10px; border-radius: 8px; font-size: 11px; cursor: pointer; font-weight: 800;">↻ Refresh API</button>
                     </div>
 
                     <div class="input-group" style="padding: 8px 12px; margin-bottom: 12px;">
-                        <input type="text" id="topblastSearchInput" class="pro-input" style="width: 100%; font-size: 13px;" placeholder="🔍 Search all Topblast tokens..." oninput="filterTopblastList()">
+                        <input type="text" id="topblastSearchInput" class="pro-input" style="width: 100%; font-size: 13px;" placeholder="🔍 Search all Topblast tokens (e.g. Utya, Redo, Kote)..." oninput="filterTopblastList()">
                     </div>
 
                     <div id="topblastList">
-                        <div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 12px;">Loading Topblast v2 tokens...</div>
+                        <div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 12px;">Fetching live tokens from Topblast API...</div>
                     </div>
 
                     <div class="pagination-bar">
@@ -791,135 +791,15 @@
         let referralEarnings = 0;
         let selectedSnipeSlippage = 0.5;
 
-        // Fully populated complete Topblast v2 token registry containing every single token provided
+        // Fallback initial token list (will be overwritten by live API fetch)
         let allTopblastTokens = [
-            { name: 'dec0ded', symbol: 'DEC0DED', address: 'EQALMVFWfRIj3CeZHxTObrr89OUtGT1E_WbT4E82izM9Es7Z', logo: 'https://topblastv2.lol/api/public/logo/fa2d7b45-14a2-48b9-bb82-aae72fff714c.jpg', mcap: 35000, liq: 15000, vol: 8000, priceUSD: 0.05 },
-            { name: 'Grams Hold Their Value', symbol: 'HOLDVALUE', address: 'EQDarxGC_tOEmjRVjd97pRZtdtj4kTIRhy94B6t2eWkCmIeB', logo: 'https://topblastv2.lol/api/public/logo/901a9efa-c654-470e-bfbb-60e88e49cd89.jpg', mcap: 34000, liq: 14500, vol: 7800, priceUSD: 0.048 },
-            { name: 'Telemarkets', symbol: 'TMARKETS', address: 'EQBBgTL1f04kui7Lbor2Q0a98PDtqoOojXm3paYANcDYjvlF', logo: 'https://topblastv2.lol/api/public/logo/98f27544-f601-4927-88f0-1ea45bc72c29.jpg', mcap: 33500, liq: 14000, vol: 7500, priceUSD: 0.045 },
-            { name: 'TELEMARKETS', symbol: 'TLM', address: 'EQABsCaNgDyZWq1ObrmLUapFDeB68ZqnFa8wiT9AL4gbt8vV', logo: 'https://topblastv2.lol/api/public/logo/6aae8efd-6fba-4d9e-add6-5ddcecb2852f.jpg', mcap: 33000, liq: 13800, vol: 7200, priceUSD: 0.044 },
-            { name: 'The PENIS Token', symbol: 'PENIS', address: 'EQCDh4cK3N5v3L9HVI5ZMrlTY9zK60ic_FzTACo1iU79PVqt', logo: 'https://topblastv2.lol/api/public/logo/bb612472-bc3b-40b6-9e56-857d67c9d2a3.jpg', mcap: 32500, liq: 13500, vol: 7000, priceUSD: 0.042 },
-            { name: 'The Boss', symbol: 'BOSS', address: 'EQC_oxUeBxgGcZrQe49ead4CoO3dUy7ugmE92hKoSxLb87H-', logo: 'https://topblastv2.lol/api/public/logo/e8a67778-4cb6-49ab-a102-5d345d7029c2.jpg', mcap: 32000, liq: 13000, vol: 6800, priceUSD: 0.04 },
-            { name: 'The Boss', symbol: 'BOSS', address: 'EQCB9fFCRGt6thwkWiybSjOYWxuD3j4v9D2yN5aYNwPi9FOu', logo: 'https://topblastv2.lol/api/public/logo/6c5bb506-3457-4349-8ce0-2f9ba077e66d.png', mcap: 31500, liq: 12800, vol: 6500, priceUSD: 0.038 },
-            { name: 'TON Founder', symbol: 'FOUNDER', address: 'EQBTt6BKgN10y3nZQGvDpSb0NJXED1MWypLvWwE8Q5TPxuPl', logo: 'https://topblastv2.lol/api/public/logo/c5919521-e72d-440f-be66-c8998bff84ae.jpg', mcap: 31000, liq: 12500, vol: 6200, priceUSD: 0.036 },
-            { name: 'founder at @ton_blockchain', symbol: 'FOUNDER', address: 'EQCIslY_ri-DcfUR-nOvDT90P50rDvpJoqZGmT1I0u2yxBbE', logo: 'https://topblastv2.lol/api/public/logo/6697ed6a-9ea0-4798-b4ba-8d8d6815fde4.jpg', mcap: 30500, liq: 12200, vol: 6000, priceUSD: 0.035 },
-            { name: 'Russian Honeypot', symbol: 'HONEYPOT', address: 'EQC8hWp_g7uL-YzZC9AoFxANKK9ZtZve8oMogwxiu9_jexH5', logo: 'https://topblastv2.lol/api/public/logo/9de49a9c-de0b-4933-96c7-551a54cb3769.jpg', mcap: 30000, liq: 12000, vol: 5800, priceUSD: 0.034 },
-            { name: 'France', symbol: 'GAY', address: 'EQA4tUf6qj7cbCFzS_RLUTBBBEpJvqDbNiFvPpeml4UwuR6S', logo: 'https://topblastv2.lol/api/public/logo/9cb1f905-8f34-45c2-9d61-d18b064b6ec6.png', mcap: 29500, liq: 11800, vol: 5600, priceUSD: 0.033 },
-            { name: 'Honeypot Try Harder', symbol: 'HONEYPOT', address: 'EQCl0qpTIovRa4StLfhUYUKECqOHQUwMaJDUZD20p0x3kuso', logo: 'https://topblastv2.lol/api/public/logo/29ec2aba-f4fd-4221-a0cd-eff8253db5f4.jpg', mcap: 29000, liq: 11500, vol: 5500, priceUSD: 0.032 },
-            { name: 'Partner Test 2520', symbol: 'PTST2520', address: 'EQCpAufS8VVP30prdUw_ZXkcgKVM0UIBT27jyrA9GCgZiaeM', logo: 'https://topblastv2.lol/api/public/logo/95ed0235-244b-46f0-8cc3-e8badb7af6ef.png', mcap: 28500, liq: 11200, vol: 5300, priceUSD: 0.031 },
-            { name: 'test', symbol: 'TEST', address: 'EQBxWJJqOzTn8txLM-f-kDmpFXXF15536PgMReitaKxlMJM1', logo: 'https://topblastv2.lol/api/public/logo/60f7dd59-121a-482a-abe8-1bb2305f8f67.png', mcap: 28000, liq: 11000, vol: 5200, priceUSD: 0.03 },
-            { name: 'Rich Uncle', symbol: 'UNC', address: 'EQB_3-SPs2QeMb2c9nk4DzybAOH9QhsMBxkRJ9KDSzfn3fIT', logo: 'https://topblastv2.lol/api/public/logo/c81a52a3-a7c5-49f0-9550-ca76cea44a56.jpg', mcap: 27500, liq: 10800, vol: 5000, priceUSD: 0.029 },
-            { name: 'Shake it!', symbol: 'SHAKEIT', address: 'EQBbANhlMpAYoH4nzH__X8KxDDCbQb2qVu5p4qc4G8uwCRhu', logo: 'https://topblastv2.lol/api/public/logo/28fa9367-b8aa-4a8f-a707-45d230f472a7.png', mcap: 27000, liq: 10500, vol: 4800, priceUSD: 0.028 },
-            { name: 'Shake It!', symbol: 'SHAKEIT', address: 'EQDSbKWMAQtvQ_a0n8aT4Bd9eixO3DKi4jk6ITay8s0YMsPa', logo: 'https://topblastv2.lol/api/public/logo/b1d7589a-5cee-4c58-a2ba-a0d762d1389d.jpg', mcap: 26500, liq: 10200, vol: 4700, priceUSD: 0.027 },
-            { name: 'SonsOfPavel', symbol: 'SONS', address: 'EQAh7-iOGruW-gR_QPfjz_-hzSNx5FCJCEwmVDCHSZQ-OVSX', logo: 'https://topblastv2.lol/api/public/logo/b224dca8-4dce-46f5-80ab-4596297f27b7.gif', mcap: 26000, liq: 10000, vol: 4500, priceUSD: 0.026 },
-            { name: 'Block(ed) Chain', symbol: 'BLOCK', address: 'EQAFQ9-WThGsuRUQpQaTb2_8WH2qtrB0a1cvR1Ic4h_tTQAR', logo: 'https://topblastv2.lol/api/public/logo/6f2c14ed-f078-4f8d-ab52-cbf79b610e5e.jpg', mcap: 25500, liq: 9800, vol: 4400, priceUSD: 0.025 },
-            { name: 'BotNews', symbol: 'BOTNEWS', address: 'EQAFR771vUjPXe1Clmw9qURHhL9NRMF6iP_uJt3koHFaNYBi', logo: 'https://topblastv2.lol/api/public/logo/89ebb00f-087d-4c96-bf7a-2bb2cf5fac49.jpg', mcap: 25000, liq: 9500, vol: 4200, priceUSD: 0.024 },
-            { name: 'PaidWithGram', symbol: 'PAYGRAM', address: 'EQD2XJa_cUdvZxw_6o8MGh7MfT4IWIzFU3cUuI82Hnku3l9C', logo: 'https://topblastv2.lol/api/public/logo/52c0725e-bff7-4ffc-a0a8-17a67a4a3344.jpg', mcap: 24500, liq: 9200, vol: 4000, priceUSD: 0.023 },
-            { name: 'Aurora headphones', symbol: 'AURORA', address: 'EQBnmKsO3VkH0wRQFdzop3GxIYTvToIPbPKcwEQDIGKvDBQP', logo: 'https://topblastv2.lol/api/public/logo/83583c45-e6ab-4b4e-91bb-208e4bba22ee.jpg', mcap: 24000, liq: 9000, vol: 3900, priceUSD: 0.022 },
-            { name: 'Gusya', symbol: 'GUSYA', address: 'EQAYNfIJVLrgzYJzN60sQJiveq9XDUvrpFvzT0bdaW3IptvK', logo: 'https://topblastv2.lol/api/public/logo/83473bb1-cc34-4488-aa7b-f0c767416538.png', mcap: 23500, liq: 8800, vol: 3800, priceUSD: 0.021 },
-            { name: 'ONE DOLLAR', symbol: 'ONE', address: 'EQCCSpoiEjsMTrfXSqsM9TrafzDq4mtB64h3RoeEXwDMOkAG', logo: 'https://topblastv2.lol/api/public/logo/117c4f39-47a1-492d-8bcc-5e9012d29e87.jpg', mcap: 23000, liq: 8500, vol: 3600, priceUSD: 0.02 },
-            { name: 'Fuck Pavel Durov', symbol: 'FPD', address: 'EQB3tvUIqE5Tru75AeYhhsWMQ3r4MKGY3-FLjj627w1EX3Hn', logo: 'https://topblastv2.lol/api/public/logo/a5522944-3f70-4b28-b349-286a5bd96e44.png', mcap: 22500, liq: 8200, vol: 3500, priceUSD: 0.019 },
-            { name: 'BLOCKED BY DUROV', symbol: 'BLOCKED', address: 'EQDC21vzHoDeA5sk8zu8koEDR9_8OpMSmPNB3EFsukPL_UuW', logo: 'https://topblastv2.lol/api/public/logo/9c2f3d7e-c5c8-479d-8422-e84b1cceb7c3.jpg', mcap: 22000, liq: 8000, vol: 3400, priceUSD: 0.018 },
-            { name: 'Crypto Revolution', symbol: 'REVOLUTION', address: 'EQD7hE0PAZnVBTqetHkB4vXI2ieuzZYQsBqju7qG-sUka3O8', logo: 'https://topblastv2.lol/api/public/logo/8d0af280-d0ff-43fb-a78d-04c27f660af4.png', mcap: 21500, liq: 7800, vol: 3300, priceUSD: 0.017 },
-            { name: 'TOAD', symbol: 'TOAD', address: 'EQCRNyPV-K97dLZz_4nKg22NZ0sLZp5ccWikWkk19WPHggfz', logo: 'https://topblastv2.lol/api/public/logo/265ebcde-512c-42d9-9557-9dcb2ac91ab4.png', mcap: 21000, liq: 7500, vol: 3200, priceUSD: 0.016 },
-            { name: 'Takeover Test', symbol: 'CTOTEST', address: 'EQCMB5uPbx5Lgd1QKbndL10soaAeXH4ODc_9cOqxArdPlMsO', logo: 'https://topblastv2.lol/icon-512.png', mcap: 20800, liq: 7300, vol: 3150, priceUSD: 0.0155 },
-            { name: 'Dividend', symbol: 'EARN', address: 'EQBhalhwLogeoLGS5b_3Uyjrnud_SJK4KN9PRGYs3Us5WQkV', logo: 'https://topblastv2.lol/icon-512.png', mcap: 20600, liq: 7250, vol: 3120, priceUSD: 0.0152 },
-            { name: 'R32 Test 0746', symbol: 'R32T0746', address: 'EQC5gJtaGcBJQxDFodP99ryFE7R_rxmdi-4v0HT6AyxDn783', logo: 'https://topblastv2.lol/icon-512.png', mcap: 20400, liq: 7150, vol: 3080, priceUSD: 0.0148 },
-            { name: 'Peepger', symbol: 'PEEPGER', address: 'EQBxwN0_JV0dIui5HbbJ1_3_iJdhPQwX3ic9pplANM3gPnch', logo: 'https://topblastv2.lol/api/public/logo/73c81feb-acfd-4b61-89b9-324034ca3ae3.jpg', mcap: 20200, liq: 7100, vol: 3050, priceUSD: 0.0145 },
-            { name: 'Widget', symbol: 'WIDGET', address: 'EQD3Q4DTtS0f53_YUTCDaywZ011rTTxm9tY5Imm9F2UM7DL2', logo: 'https://topblastv2.lol/api/public/logo/0e24f184-b09a-46fd-9895-255e7740ba64.jpg', mcap: 20000, liq: 7000, vol: 3000, priceUSD: 0.014 },
-            { name: 'TopBlast Pot Test', symbol: 'TBPOT', address: 'EQDXkFrHbzoKThDtf9Ro71ePO4YCm9R-0IOab78mzq2wAplA', logo: 'https://topblastv2.lol/favicon.png', mcap: 19800, liq: 6900, vol: 2950, priceUSD: 0.0135 },
-            { name: 'TopBlast Pot Test', symbol: 'TBPOT', address: 'EQCIbP-YwkWsPF9uZJHVx_xUoRhO9B5pio1qQ9FNANBPPGCh', logo: 'https://topblastv2.lol/favicon.png', mcap: 19600, liq: 6800, vol: 2900, priceUSD: 0.013 },
-            { name: 'Durov’s Girlfriend', symbol: 'ALEXA', address: 'EQAcVRvOJV0VBRrqc_bWvTuaPilpqBKOiw3uus6TIlYdcBOj', logo: 'https://topblastv2.lol/api/public/logo/06e92ef5-fefa-487a-b025-e80874ec330a.jpg', mcap: 19400, liq: 6700, vol: 2850, priceUSD: 0.0125 },
-            { name: 'test', symbol: 'TEST', address: 'EQAgD_zlfADC0zKh6mlRSpm50Rbou1TdLhoxL8b9lRzOrDZe', logo: 'https://topblastv2.lol/api/public/logo/fae685f9-71ff-4236-8215-a5424988788a.png', mcap: 19200, liq: 6600, vol: 2800, priceUSD: 0.012 },
-            { name: 'Ton Cat', symbol: 'TCAT', address: 'EQCDzAGAgddxyx8m1oxiiHMOrgNrY7m4E6y1UVEOGpyobDoW', logo: 'https://topblastv2.lol/api/public/logo/ae732cb6-62d9-4889-8801-59f2f45a3c08.jpg', mcap: 19000, liq: 6500, vol: 2750, priceUSD: 0.0118 },
-            { name: 'TELECAT', symbol: 'TELECAT', address: 'EQCDobG6DjQW19PQeQm9Rk6KVbVp2FJvymPNhRrGY-2Cqt3n', logo: 'https://topblastv2.lol/api/public/logo/0da6a6b3-c0aa-4f9e-9061-58663b4d990c.jpg', mcap: 18800, liq: 6400, vol: 2700, priceUSD: 0.0115 },
-            { name: 'sadhollow', symbol: 'SADHOLLOW', address: 'EQDEmkf32pDQ_Fjq-rSsgXEQfuyp4krSv8cDNk7dhFPdP2sk', logo: 'https://topblastv2.lol/api/public/logo/c26205ec-4c9c-47a8-99eb-c6ac3c864dbb.png', mcap: 135127, liq: 45000, vol: 18000, priceUSD: 0.085 },
-            { name: "DON'T BUY IT", symbol: 'DBI', address: 'EQB0_IUEzGGrIvbXgFeDmVI0_xd-gd9ChJ1VNDJND1pKuFXA', logo: 'https://topblastv2.lol/api/public/logo/b19c10a6-8741-4c98-a924-bdccc938a774.jpg', mcap: 18600, liq: 6300, vol: 2650, priceUSD: 0.011 },
-            { name: 'nokys', symbol: 'NOKYS', address: 'EQBUZMec1gRj8EFmPIOen5hBbD7IY_7SnO8JPsLre0AuzGOA', logo: 'https://topblastv2.lol/api/public/logo/f7f539e6-4b69-4959-8596-da5c8f162438.jpg', mcap: 18400, liq: 6200, vol: 2600, priceUSD: 0.0108 },
-            { name: 'TopBlast R31 Stock', symbol: 'TB31S', address: 'EQDhzxELemlmv9GWwdn9e6cKCqK9UEBAJLYI2DM5GBVwur1k', logo: 'https://topblastv2.lol/favicon.png', mcap: 3398, liq: 1200, vol: 500, priceUSD: 0.0099 },
-            { name: 'TopBlast R31 Community', symbol: 'TB31C', address: 'EQC6wcOZsYB6y3IRxMuYTP_ZThlCFqd6ouQGcBJZAUOZQhwN', logo: 'https://topblastv2.lol/favicon.png', mcap: 18200, liq: 6100, vol: 2550, priceUSD: 0.0105 },
-            { name: 'TopBlast R31 Test', symbol: 'TB31A', address: 'EQDAC2CaK8K0BzUa7m-wwFinodTVaD9DZGvtKYqLHZ7m6Y02', logo: 'https://topblastv2.lol/favicon.png', mcap: 18000, liq: 6000, vol: 2500, priceUSD: 0.01 },
-            { name: 'DwarfStar', symbol: 'DS', address: 'EQDVq6zbRqLGxhvkjorIMhSGi_BaaS8Kza5xlWVbm32t3Og9', logo: 'https://www.space.com/astronomy/stars/do-the-cores-of-dead-stars-exist-forever', mcap: 17800, liq: 5900, vol: 2450, priceUSD: 0.0098 },
-            { name: 'DragMasha', symbol: 'HDM', address: 'EQDheGgq83_zSK7uWHqSD7MtTyvP1U9UB2HoEfuHDhBFkP-N', logo: 'https://topblastv2.lol/api/public/logo/ffb2d8dd-415c-48a0-89ba-4c9142919d6c.jpg', mcap: 17600, liq: 5800, vol: 2400, priceUSD: 0.0095 },
-            { name: 'ðŸ§¸', symbol: 'HBEAR', address: 'EQBr7fUbH3Vw-m0G9V6vrj8Y7cpmSbzmctWIAnXrTzBPxSdA', logo: 'https://topblastv2.lol/api/public/logo/51fa5547-828a-439f-9452-1bf19e6613d6.jpg', mcap: 17400, liq: 5700, vol: 2350, priceUSD: 0.0092 },
-            { name: 'REDOPUMping', symbol: 'REDOPUMP', address: 'EQASAF-aiqCwyxYnAJH5Bjr0EJoxwQq2t09E9CVue6KpUg6n', logo: 'https://topblastv2.lol/api/public/logo/79c2bba9-8c2a-430a-9f31-1101e368a4ec.png', mcap: 17200, liq: 5600, vol: 2300, priceUSD: 0.009 },
-            { name: 'Egg', symbol: 'EGG', address: 'EQDgnprfAk2-tH1FQd5d8a_ztxP3ir_LIpztX6rYQzrRmcEM', logo: 'https://ibb.co/35qmwKKq', mcap: 135127, liq: 45000, vol: 18000, priceUSD: 0.085 },
-            { name: 'Stable Gram', symbol: 'STABLE', address: 'EQCIgzY5oqnYl4A1uUljYwE-K0oHnOgMiCheWcNePfBL2f4O', logo: 'https://ibb.co/wh5hrXSw', mcap: 2500, liq: 1000, vol: 400, priceUSD: 1.0 },
-            { name: 'Baby Groyp', symbol: 'BGROYP', address: 'EQCIgzFgG91KBOoWUmWkSceRGhfRdrswMuyFvrJtCu1O4Va5', logo: 'https://topblastv2.lol/api/public/logo/ff308920-c4b1-4c9c-92ce-e41e61d2da7d.jpg', mcap: 76571, liq: 25000, vol: 10000, priceUSD: 0.06 },
-            { name: 'community coin', symbol: 'COMMUNITY', address: 'EQCYANY2UJO4mur0mGdAMpD3knGG1gA5JXOSxxL97JgXzD95', logo: 'https://static.vecteezy.com/system/resources/previews/009/119/539/non_2x/smh-logo-smh-letter-smh-letter-logo-design-initials-smh-logo-linked-with-circle-and-uppercase-monogram-logo-smh-typography-for-technology-business-and-real-estate-brand-vector.jpg', mcap: 17000, liq: 5500, vol: 2250, priceUSD: 0.0088 },
-            { name: 'TopBlast Window Drill', symbol: 'TBWIN', address: 'EQCbTrlPEdp3iIH6S-PXaqXrI6WLCdGNzv-iJJby5khQQCyV', logo: 'https://topblastv2.lol/icon-512.png', mcap: 16800, liq: 5400, vol: 2200, priceUSD: 0.0085 },
-            { name: 'TopBlast SP500 Drill', symbol: 'TBSPX', address: 'EQBhy0ZDFxl4lK1t6jb5Dcab0rNLizt67FaC5fHvGWDPm05W', logo: 'https://topblastv2.lol/icon-512.png', mcap: 3398, liq: 1200, vol: 500, priceUSD: 0.0099 },
-            { name: 'TopBlast USDT Drill', symbol: 'TBUSDT', address: 'EQADDvy20-rSE5KJLyDW-WCyNfTNfeIq1PKR6FPeL_B3KNXE', logo: 'https://topblastv2.lol/icon-512.png', mcap: 2500, liq: 1000, vol: 400, priceUSD: 1.0 },
-            { name: 'TopBlast GRAM Drill', symbol: 'TBGRAM', address: 'EQBdcjcD0R47vMFOnkLEWOzt1OagxKPcjtNhTCq7k61H8Bjx', logo: 'https://topblastv2.lol/icon-512.png', mcap: 16600, liq: 5300, vol: 2150, priceUSD: 0.0082 },
-            { name: 'TopBlast Fill Drill', symbol: 'TBFILL', address: 'EQBU8sdu3T_KrsaJ_jfLR3Eon37tQecds0goHwKcKLjIpsNG', logo: 'https://topblastv2.lol/icon-512.png', mcap: 16400, liq: 5200, vol: 2100, priceUSD: 0.008 },
-            { name: 'R29 Test HOODx', symbol: 'THOODX', address: 'EQDYcvoK6axyi-BNlSI_ZnWpl2YVbVp2LAolQyJbihBej3kY', logo: 'https://topblastv2.lol/api/public/logo/caad218c-752d-4189-b149-ade1e7f225ee.png', mcap: 31623, liq: 11000, vol: 4500, priceUSD: 0.052 },
-            { name: 'R29 Test COINx', symbol: 'TCOINX', address: 'EQC7f1EF_NHXmAZv1YYUaxgiYmxh1kTMDzPqvanjhztanIr3', logo: 'https://topblastv2.lol/api/public/logo/caad218c-752d-4189-b149-ade1e7f225ee.png', mcap: 18909, liq: 6500, vol: 2600, priceUSD: 0.035 },
-            { name: 'R29 Test NVDAx', symbol: 'TNVDAX', address: 'EQDbNzOt3YYw_t2TcIkBMZqkK5bZvJq9woDfAlHOl77oJInN', logo: 'https://topblastv2.lol/api/public/logo/caad218c-752d-4189-b149-ade1e7f225ee.png', mcap: 13432, liq: 4800, vol: 1900, priceUSD: 0.028 },
-            { name: 'R29 Test AMZNx', symbol: 'TAMZNX', address: 'EQD_7JiaxceiKLKIW9HJuvRE0E9kk7sjOod35RSrUHrB7MPG', logo: 'https://topblastv2.lol/api/public/logo/caad218c-752d-4189-b149-ade1e7f225ee.png', mcap: 9605, liq: 3500, vol: 1400, priceUSD: 0.022 },
-            { name: 'R29 Test QQQx', symbol: 'TQQQX', address: 'EQCH2uQ4RceMlICTT57xkOUft1MM19qKVHkWltHKnLF6EomR', logo: 'https://topblastv2.lol/api/public/logo/caad218c-752d-4189-b149-ade1e7f225ee.png', mcap: 3813, liq: 1400, vol: 600, priceUSD: 0.012 },
-            { name: 'R29 Test MSTRx', symbol: 'TMSTRX', address: 'EQA2tb7xtBPDf8HZX1WT6DO9vOkIFw8_LyplY1mmxnETbMHT', logo: 'https://topblastv2.lol/api/public/logo/caad218c-752d-4189-b149-ade1e7f225ee.png', mcap: 19715, liq: 6800, vol: 2700, priceUSD: 0.041 },
-            { name: 'R29 Test GOOGLx', symbol: 'TGOOGLX', address: 'EQBb5dLBbiQEPhdjSit3zlPrs59PegwxfH-JHvVPcsuR1Nm5', logo: 'https://topblastv2.lol/api/public/logo/caad218c-752d-4189-b149-ade1e7f225ee.png', mcap: 8775, liq: 3100, vol: 1250, priceUSD: 0.019 },
-            { name: 'R29 Test SP500', symbol: 'TSP500', address: 'EQAXNlnK4f0WwRtt8aW0VYeSEFqcM4cjU0MAgFzbth1_JSzR', logo: 'https://topblastv2.lol/api/public/logo/caad218c-752d-4189-b149-ade1e7f225ee.png', mcap: 3398, liq: 1200, vol: 500, priceUSD: 0.0099 },
-            { name: 'R29 Test TSLAx', symbol: 'TTSLAX', address: 'EQAqXzI3oRioTpTDnF81jAgN2MYIQD93viCx3bXYYMKvUYK5', logo: 'https://topblastv2.lol/api/public/logo/caad218c-752d-4189-b149-ade1e7f225ee.png', mcap: 6994, liq: 2500, vol: 1000, priceUSD: 0.016 },
-            { name: 'R29 Test AAPLx', symbol: 'TAAPLX', address: 'EQA8CIhbRRGwVioxg7rl86_kc6zq_nOpPf363t29zLJI2SlM', logo: 'https://topblastv2.lol/api/public/logo/caad218c-752d-4189-b149-ade1e7f225ee.png', mcap: 7306, liq: 2600, vol: 1050, priceUSD: 0.017 },
-            { name: 'R29 Test XAUH', symbol: 'TXAUH', address: 'EQDEXD-ipuPB11hL0glz_oq42L2r-FsQRxtV4nPWxzT-fsxG', logo: 'https://topblastv2.lol/api/public/logo/caad218c-752d-4189-b149-ade1e7f225ee.png', mcap: 19207, liq: 6700, vol: 2700, priceUSD: 1.0 },
-            { name: 'R29 Test hGRAM', symbol: 'THGRAM', address: 'EQBXDzzTUkWUEentdhY60KH_Ty5ci_mei5VszTw4h0mg-yaG', logo: 'https://topblastv2.lol/api/public/logo/caad218c-752d-4189-b149-ade1e7f225ee.png', mcap: 19069, liq: 6600, vol: 2650, priceUSD: 0.045 },
-            { name: 'R29 Test ENA', symbol: 'TENA', address: 'EQBBHZg2bbjOXWcIgx8j0iswX72pDtd-xDjNa45iXXhfs1_O', logo: 'https://topblastv2.lol/api/public/logo/caad218c-752d-4189-b149-ade1e7f225ee.png', mcap: 14982, liq: 5200, vol: 2100, priceUSD: 0.032 },
-            { name: 'R29 Test USDe', symbol: 'TUSDE', address: 'EQAO1dHLVsf_rdrnttLTfKgXRUs6S14T5ONtQJ6b7yXwL0zP', logo: 'https://topblastv2.lol/api/public/logo/caad218c-752d-4189-b149-ade1e7f225ee.png', mcap: 2500, liq: 1000, vol: 400, priceUSD: 1.0 },
-            { name: 'R29 Test CHERRY', symbol: 'TCHERRY', address: 'EQCuH78EnCEZrZarHliLFVvGHeAS_euCw0dyZIrJljKwDoFh', logo: 'https://topblastv2.lol/api/public/logo/caad218c-752d-4189-b149-ade1e7f225ee.png', mcap: 249040, liq: 85000, vol: 34000, priceUSD: 0.12 },
-            { name: 'R29 Test HPO', symbol: 'THPO', address: 'EQCsUMjl8HIGAVvcEAOn1ALe4oagrUxFY5uOaVYi56dcWQWW', logo: 'https://topblastv2.lol/api/public/logo/caad218c-752d-4189-b149-ade1e7f225ee.png', mcap: 586931, liq: 190000, vol: 78000, priceUSD: 0.25 },
-            { name: 'R29 Test XAUt0', symbol: 'TXAUT0', address: 'EQC3LAHw6496ZObP0zMbL8W6HB1AKfreBJ_Lal5aJWmTDQLY', logo: 'https://topblastv2.lol/api/public/logo/caad218c-752d-4189-b149-ade1e7f225ee.png', mcap: 6195, liq: 2200, vol: 900, priceUSD: 2000.0 },
-            { name: 'R29 Test LAMBO', symbol: 'TLAMBO', address: 'EQBgmGwDPhq_h1HiheVI67JxK31z2EMOuRermkTaFpvAT8KP', logo: 'https://topblastv2.lol/api/public/logo/caad218c-752d-4189-b149-ade1e7f225ee.png', mcap: 8879350, liq: 2500000, vol: 1200000, priceUSD: 1.5 },
-            { name: 'R29 Test XROCK', symbol: 'TXROCK', address: 'EQDPM-C3ttkxgUdzVe6lOoNq8dHcFR2McTEUaJfkDvUVBz_P', logo: 'https://topblastv2.lol/api/public/logo/caad218c-752d-4189-b149-ade1e7f225ee.png', mcap: 80035, liq: 28000, vol: 11000, priceUSD: 0.04 },
-            { name: 'R29 Test DUST', symbol: 'TDUST', address: 'EQDF4s9O7-xieZLASfcAU8LL2eUrZhGWfv67qO6CQxsFb8gj', logo: 'https://topblastv2.lol/api/public/logo/caad218c-752d-4189-b149-ade1e7f225ee.png', mcap: 5115, liq: 1800, vol: 750, priceUSD: 0.015 },
-            { name: 'R29 Test STON', symbol: 'TSTON', address: 'EQCT1iS7zOkRRO7r-Pw3lP-DrI7ObliUkyDjIaqF-3u7h7pU', logo: 'https://topblastv2.lol/api/public/logo/caad218c-752d-4189-b149-ade1e7f225ee.png', mcap: 5153, liq: 1850, vol: 760, priceUSD: 0.018 },
-            { name: 'R29 Test MY', symbol: 'TMY', address: 'EQAH2xkBVlftqORdlY8BIDGELl_LCnPCrN-HRtMD8x9S5G4W', logo: 'https://topblastv2.lol/api/public/logo/caad218c-752d-4189-b149-ade1e7f225ee.png', mcap: 72231, liq: 25000, vol: 10000, priceUSD: 0.05 },
-            { name: 'R29 Test GRAM C', symbol: 'TGRAM', address: 'EQAR6gcN59Ag2JcKvDKpr7DmMTv5rJFP3V0o4QM1wpGcv4sK', logo: 'https://topblastv2.lol/api/public/logo/caad218c-752d-4189-b149-ade1e7f225ee.png', mcap: 20000, liq: 7000, vol: 3000, priceUSD: 0.02 },
-            { name: 'R29 Test REDO', symbol: 'TREDO', address: 'EQDu0bqJgNEZrwTmk_N3neHoW-4DkX1q1o32NTfWi2U-1OJD', logo: 'https://topblastv2.lol/api/public/logo/caad218c-752d-4189-b149-ade1e7f225ee.png', mcap: 63082, liq: 22000, vol: 9000, priceUSD: 0.045 },
-            { name: 'R29 Test USDT', symbol: 'TUSDT', address: 'EQD4npT9iSSG3Tw60Dqh_CGIHbsjC_1RYTbQ4iKc-HTEHbFB', logo: 'https://topblastv2.lol/api/public/logo/caad218c-752d-4189-b149-ade1e7f225ee.png', mcap: 2500, liq: 1000, vol: 400, priceUSD: 1.0 },
-            { name: 'R29 Test NOT', symbol: 'TNOT', address: 'EQBeq_ktUr37ca1WMgUTzpWgSv6fXw5BCKwRa4XtExOjbGNm', logo: 'https://topblastv2.lol/api/public/logo/caad218c-752d-4189-b149-ade1e7f225ee.png', mcap: 749102, liq: 250000, vol: 95000, priceUSD: 0.008 },
-            { name: 'R29 Test UTYA', symbol: 'TUTYA', address: 'EQAbD4lEMD8kle6dcj_sUnfpkSH3TESgM34MsYDY69yaeaCe', logo: 'https://topblastv2.lol/api/public/logo/caad218c-752d-4189-b149-ade1e7f225ee.png', mcap: 135127, liq: 45000, vol: 18000, priceUSD: 0.085 },
-            { name: 'R29 Test GROYP', symbol: 'TGROYP', address: 'EQDAObAPNuivXPKrO0k3NVtU3NBkn6WvifWetiXLo9Yb4l64', logo: 'https://topblastv2.lol/api/public/logo/caad218c-752d-4189-b149-ade1e7f225ee.png', mcap: 76571, liq: 25000, vol: 10000, priceUSD: 0.06 },
-            { name: 'R29 Test GRAM', symbol: 'TGRAM', address: 'EQA5TJ0eN0FJ09x3Sg2SxEjedABQ8W42j8BjSGscLGluLnN0', logo: 'https://topblastv2.lol/api/public/logo/caad218c-752d-4189-b149-ade1e7f225ee.png', mcap: 20000, liq: 7000, vol: 3000, priceUSD: 0.02 },
-            { name: 'paired with UTYA', symbol: 'DUCK', address: 'EQCMSsXZcRKbJZ6ESq0x2ooKUQ2AR_-SJSenszCWXW5-B6t3', logo: 'https://upload.wikimedia.org/wikipedia/en/d/df/Lamborghini_Logo.svg', mcap: 135127, liq: 45000, vol: 18000, priceUSD: 0.085 },
-            { name: 'paired with MY', symbol: 'OH', address: 'EQAApayGXgjb9OPu-M-lpeltJXkSbu-TwjVmPyjn7h3zb6d3', logo: 'https://upload.wikimedia.org/wikipedia/en/d/df/Lamborghini_Logo.svg', mcap: 72231, liq: 25000, vol: 10000, priceUSD: 0.05 },
-            { name: 'paired with USDE', symbol: 'STEBL', address: 'EQB3Zyyli68dcDikoQKBzYbUZIczSDCoCBsnJIe_Vb6-xm4b', logo: 'https://upload.wikimedia.org/wikipedia/en/d/df/Lamborghini_Logo.svg', mcap: 2500, liq: 1000, vol: 400, priceUSD: 1.0 },
-            { name: 'pair GOLD', symbol: 'GOLDEN', address: 'EQDRoGDRefidb_yGz4pImyid2rxnQccYDlr8eWMK1pLLU0MW', logo: 'https://upload.wikimedia.org/wikipedia/en/d/df/Lamborghini_Logo.svg', mcap: 6195, liq: 2200, vol: 900, priceUSD: 2000.0 },
-            { name: 'paired with LAMBO', symbol: 'WEN', address: 'EQD9yLhtFP48rBp6hFgQi9erOmDjUhy5aYlYzGPv_HvP6zOW', logo: 'https://upload.wikimedia.org/wikipedia/en/d/df/Lamborghini_Logo.svg', mcap: 8879350, liq: 2500000, vol: 1200000, priceUSD: 1.5 },
-            { name: 'paired with hGRAM', symbol: 'STAKED', address: 'EQCl3DlGWrVrJ61yRIbK_AEDh0xqOtIKU1eES6fWevyGH5Gd', logo: 'https://image-cdn-fa.spotifycdn.com/image/ab67706c0000da84129c1dd925728533296effee', mcap: 19069, liq: 6600, vol: 2650, priceUSD: 0.045 },
-            { name: 'paired with groyp', symbol: 'BIG', address: 'EQDCz6AbGqYmcjb0AMo6fkCRu9YQYGUSGNbIAnlEt0RyeFR8', logo: 'https://image-cdn-fa.spotifycdn.com/image/ab67706c0000da84129c1dd925728533296effee', mcap: 76571, liq: 25000, vol: 10000, priceUSD: 0.06 },
-            { name: 'paired with gram', symbol: 'GRAM', address: 'EQAgDVY-T9Ad-R_bgeg664uVyCzc5-Kfi_yGEC1FWtMzGNxI', logo: 'https://image-cdn-fa.spotifycdn.com/image/ab67706c0000da84129c1dd925728533296effee', mcap: 20000, liq: 7000, vol: 3000, priceUSD: 0.02 },
-            { name: 'New Era', symbol: 'NE', address: 'EQA6A5_WosOoNfOBUhkRsU5kYIup1y_NAPPDxmTq3M6ZNyp3', logo: 'https://media.istockphoto.com/id/1362142320/vector/new-sticker-red-new-product-or-collection-badge-vectornewest-stamp.jpg', mcap: 20000, liq: 7000, vol: 3000, priceUSD: 0.02 },
-            { name: 'Roadster', symbol: 'RDSTR', address: 'EQAW4zeAw_9V2w2uJdiLAqiJFrmZjiBUpaddTNC5S23Obfpv', logo: 'https://imgur.com/a/V2JJAm0', mcap: 6994, liq: 2500, vol: 1000, priceUSD: 0.016 },
-            { name: 'ONRANK', symbol: 'ONRANK', address: 'EQCq06bTNTTZ4GBl-lko77Si5xC9Sges1BwRJn6mTmvJYUVi', logo: 'https://onrank.lol/icon.png', mcap: 2500, liq: 1000, vol: 400, priceUSD: 1.0 },
-            { name: 'TON', symbol: 'TON', address: 'EQC-FySx_HnTZGd2WW8pM1uAHBFz_l3wnkapiV2wqZaPZlwS', logo: 'https://logo.svgcdn.com/token-branded/ton.png', mcap: 18909, liq: 6500, vol: 2600, priceUSD: 3.5 },
-            { name: 'Just YABLOKO', symbol: 'YABLO', address: 'EQDMiFEgUN6g7VB3no_AFqwTc4q1rgfpbTgzIPtzs1WmRsLz', logo: 'https://i.postimg.cc/1zd3Nrh6/yblo.png', mcap: 7306, liq: 2600, vol: 1050, priceUSD: 0.17 },
-            { name: 'Gramus', symbol: 'GRAMUS', address: 'EQDErcHxFnecEK-TzZZcw1AFhNkzASRjfqbxn7wWPSNkH73u', logo: 'https://i.ibb.co/TxJfqd83/IMG-4637.png', mcap: 2500, liq: 1000, vol: 400, priceUSD: 1.0 },
-            { name: 'GRAM 500', symbol: 'GRAM500', address: 'EQA0MxeLqxigYSRQ9ze9kagOom3QYRSklOIC-bdAPRoDnac2', logo: 'https://imgur.com/a/yoem5Vh', mcap: 3398, liq: 1200, vol: 500, priceUSD: 0.0099 },
-            { name: 'Russian Spy', symbol: 'RUSSIAN', address: 'EQDG462njRV6zHn9YCWbr7_jUlVbkCgq-sQprm1Qw5OFEnbu', logo: 'https://imgur.com/a/myyjQ3g', mcap: 3398, liq: 1200, vol: 500, priceUSD: 0.0099 },
-            { name: 'Jacket', symbol: 'JACKET', address: 'EQBQT51KbYZvvSg5XHtvlvDxVHil6vEZX1wj2Dr4qhUdZpkl', logo: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSZkPbVXTQO28WDgf4I-LQSr_C5KhADTq7qMDCikkmH9qXuu1uaH-8t8hU&s=10', mcap: 13432, liq: 4800, vol: 1900, priceUSD: 0.28 },
-            { name: 'USDGram', symbol: 'USDG', address: 'EQDiVxnvqZg47Ryxjl3jptsCFFyEuVV-2fiqGw8S1vQl9yPv', logo: 'https://ibb.co/7xM7hQ8v', mcap: 2500, liq: 1000, vol: 400, priceUSD: 1.0 },
-            { name: 'Golden Daddy', symbol: 'DADDY', address: 'EQDJ8SVGuPokjbnatqDQjfN9wR7gz9y8G6xfZYT3h4WteaYB', logo: 'https://imgur.com/a/KfMMMRJ', mcap: 6195, liq: 2200, vol: 900, priceUSD: 2000.0 },
-            { name: 'Golden Gram', symbol: 'GOLDEN', address: 'EQA5n_q--Q0kQ5c9qSM-_B9c7XJBSELpod-hFKa9AXie4tMk', logo: 'https://ibb.co/sJXtqQ09', mcap: 6195, liq: 2200, vol: 900, priceUSD: 2000.0 },
-            { name: 'ROBINGRAM', symbol: 'RHG', address: 'EQDDTfJom8zwdixM5T7Hj3RxFMjzgwBtpM_WBrlYPCGwQPw4', logo: 'https://cdn3.emoji.gg/emojis/666045-robinhoodlogo.png', mcap: 31623, liq: 11000, vol: 4500, priceUSD: 0.052 },
-            { name: 'gramstock', symbol: 'GRAM500', address: 'EQA0Rrd-plEp3PtwBL2fecht_G1BnNjTCze_BFUPq8WWQp7Z', logo: 'https://ibb.co/BVDS2dQy', mcap: 3398, liq: 1200, vol: 500, priceUSD: 0.0099 },
-            { name: 'first memestocks', symbol: 'MEMESTOCKS', address: 'EQDpwvmqvqL9YVk1EflDHX8W9yNsPFMHpiGD5YGkxkHvx82A', logo: 'https://imgur.com/a/B4Df2IL', mcap: 3398, liq: 1200, vol: 500, priceUSD: 0.0099 },
-            { name: 'testinho', symbol: 'WAKAWAKA', address: 'EQAzZRCv-fiNdNu3PVI6FSQ5QOQkAWkr7yboWK0veTH_hT2Z', logo: 'https://cdn.pixabay.com/photo/2014/06/03/19/38/road-sign-361514_640.png', mcap: 6195, liq: 2200, vol: 900, priceUSD: 2000.0 },
-            { name: 'number8', symbol: 'EIGHT', address: 'EQCrfWQSWWyFnFWVh5weuMQj8mChIQUzHj9IuIFfHPXStiEg', logo: 'https://thumbs.dreamstime.com/b/test-yellow-symbol-icon-isolated-sign-red-round-white-120989693.jpg', mcap: 31623, liq: 11000, vol: 4500, priceUSD: 0.052 },
-            { name: 'number7', symbol: 'SEVEN', address: 'EQAG_iuGSZD_uQLgUerd-noQSWSg_xoCP_tmNXeopPCEcqEt', logo: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRE_O0Uxc8HXJ-WrxPUl2jXWmvDYLuq0RZ00E1yMTHJrQ&s=10', mcap: 8775, liq: 3100, vol: 1250, priceUSD: 0.019 },
-            { name: 'number6', symbol: 'SIX', address: 'EQDHdF8U87eNX8SBzQQP_HvkGz29Q55tfPOhiq9iR7VWIPue', logo: 'https://s2.coinmarketcap.com/static/img/coins/200x200/37004.png', mcap: 6994, liq: 2500, vol: 1000, priceUSD: 0.016 },
-            { name: 'midas', symbol: 'MIDAS', address: 'EQBZ14cXJ5vKs4JJmA9Gw-ikxoxzsQO2WuXf-6RWRQ8Ay6Hw', logo: 'https://yt3.googleusercontent.com/ytc/AIdro_mA6fAp2z9F-9AeqjFZvPuyv-cWrkvCEEx1lkI0Ho02ZA=s900-c-k-c0x00ffffff-no-rj', mcap: 6195, liq: 2200, vol: 900, priceUSD: 2000.0 },
-            { name: 'mambono5', symbol: 'NO5', address: 'EQDgddODhN7ZYvMsJzM3dwhmCCQOGDujeO5PwSUEImbQ1FIz', logo: 'https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg', mcap: 7306, liq: 2600, vol: 1050, priceUSD: 0.17 },
-            { name: 'number4', symbol: 'FOUR', address: 'EQAG5mCqHlZQnULBr7iM2jPUP_Dfjuz4sLVU2FVq9ccxRxHV', logo: 'https://xstocks-metadata.backed.fi/logos/tokens/SPYx.png', mcap: 3398, liq: 1200, vol: 500, priceUSD: 0.0099 },
-            { name: 'number3', symbol: 'THIRD', address: 'EQDf2OFwoZPCnCDrVP-HP0qp45WcejXQLGPPVtHtJUKXY6gd', logo: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR3eVGtUirMjgHXa_BWccYm7CZPMiJzSeyh1lgit4x8Bg&s', mcap: 6195, liq: 2200, vol: 900, priceUSD: 2000.0 },
-            { name: 'number2', symbol: 'SECOND', address: 'EQA5qySla072sKk5PvL2uHaldRc3v_FS8WU9uDhukpNn1a1S', logo: 'https://images.seeklogo.com/logo-png/61/1/ethena-usde-usde-logo-png_seeklogo-617898.png', mcap: 2500, liq: 1000, vol: 400, priceUSD: 1.0 },
-            { name: 'Number1', symbol: 'FIRST', address: 'EQDO0BttNECQGTx_UiBQ5ULjiCVQEnqUdFm2jTKmXnq3Zhhj', logo: 'https://upload.wikimedia.org/wikipedia/commons/0/01/USDT_Logo.png', mcap: 2500, liq: 1000, vol: 400, priceUSD: 1.0 }
+            { name: 'dec0ded', symbol: 'DEC0DED', address: 'EQALMVFWfRIj3CeZHxTObrr89OUtGT1E_WbT4E82izM9Es7Z', logo: 'https://topblastv2.lol/api/public/logo/fa2d7b45-14a2-48b9-bb82-aae72fff714c.jpg', mcap: 35000, liq: 15000, vol: 8000, priceUSD: 0.05 }
         ];
 
         let currentTopblastPage = 1;
         const pageSize = 10;
         let currentTradeMode = 'buy';
         let botHeldPortfolio = [];
-
         let currentActiveToken = allTopblastTokens[0];
 
         async function initTopBlastConfig() {
@@ -934,6 +814,34 @@
             }
         }
         initTopBlastConfig();
+
+        // Dynamic Live Token Fetching Function
+        async function loadTopblastTokens() {
+            try {
+                // Fetch live tokens from Topblast v2 public registry
+                const response = await fetch('https://topblastv2.lol/api/public/tokens');
+                const data = await response.json();
+                
+                let rawTokens = Array.isArray(data) ? data : (data.tokens || []);
+                
+                if (rawTokens.length > 0) {
+                    allTopblastTokens = rawTokens.map(t => ({
+                        name: t.name || 'Unknown',
+                        symbol: t.symbol || 'TOKEN',
+                        address: t.curve || t.address || 'EQBLLYmuwZUpNKiNx8hwfTRo1LeLHx7jYYSkGOuNip2Sslzu',
+                        logo: t.image || t.logo || 'https://topblastv2.lol/favicon.png',
+                        mcap: t.cap?.amount ? parseFloat(t.cap.amount) * 18.5 : 25000,
+                        liq: 10000,
+                        vol: 5000,
+                        priceUSD: t.priceUSD || 0.02
+                    }));
+                }
+            } catch (error) {
+                console.warn("API fetch failed, using fallback token list:", error);
+            }
+
+            renderTopblastList();
+        }
 
         tonConnectUI.onStatusChange(wallet => {
             if (wallet && wallet.account) {
@@ -1315,10 +1223,6 @@
             if (tg && typeof tg.openLink === 'function') { tg.openLink(url); } else { window.open(url, '_blank'); }
         }
 
-        function loadTopblastTokens() {
-            renderTopblastList();
-        }
-
         function filterTopblastList() {
             currentTopblastPage = 1;
             renderTopblastList();
@@ -1384,6 +1288,7 @@
             });
         }
 
+        // Initialize and load live tokens on startup
         loadTopblastTokens();
         calculateSwapOutput();
     </script>
