@@ -485,7 +485,7 @@
 
     <!-- --- CINEMATIC INTRO SCREEN --- -->
     <div id="intro-screen">
-        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v10.8</div>
+        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v10.9</div>
         <div class="intro-content">
             <div class="intro-logo-moon">🐱</div>
             <div style="font-size: 24px; font-weight: 900; color: #fff; letter-spacing: 0.5px;">GRAM & TOPBLAST MEMES</div>
@@ -1395,12 +1395,13 @@
                     });
                 }
 
-                // 2. Build Correct DeDust v2 Native Vault Swap Payload using @ton/core Cell Builder
+                // 2. Build Correct DeDust v2 Native Vault Swap Payload with explicit recipient address
                 const poolAddr = Address.parse(currentActiveToken.address);
+                const userAddr = Address.parse(userWalletAddress); // CRITICAL FIX: Explicit wallet address for delivery
 
                 const swapParamsCell = beginCell()
                     .storeUint(0, 32)        // deadline (0 = disabled)
-                    .storeAddress(null)      // recipient_addr (null = sender)
+                    .storeAddress(userAddr)  // recipient_addr (Explicit user address so tokens land in wallet)
                     .storeAddress(null)      // referral_addr (null = none)
                     .storeBit(0)             // fulfill_payload
                     .storeBit(0)             // reject_payload
@@ -1420,7 +1421,7 @@
                 const payloadBoc = swapCell.toBoc().toString('base64');
 
                 // 3. DeDust Native Vault Swap Message with Encoded Payload & Gas
-                const swapTonTotal = netAmount + 0.25;
+                const swapTonTotal = netAmount + 0.35; // Gas buffer for vault
                 messages.push({
                     address: DEDUST_NATIVE_VAULT,
                     amount: Math.floor(swapTonTotal * 1e9).toString(),
@@ -1434,14 +1435,14 @@
 
                 const result = await tonConnectUI.sendTransaction(transaction);
 
-                alert(`✅ In-App DeDust Swap Confirmed!\n\n• Swapped: ${netAmount} GRAM for $${currentActiveToken.symbol}\n• Fee Split Processed On-Chain\n• Tx Hash: ${result.boc ? result.boc.slice(0, 20) + '...' : 'Success'}`);
+                alert(`✅ In-App DeDust Swap Confirmed!\n\n• Swapped: ${netAmount} GRAM for $${currentActiveToken.symbol}\n• Tokens routed to: ${userWalletAddress.slice(0,6)}...\n• Tx Hash: ${result.boc ? result.boc.slice(0, 20) + '...' : 'Success'}`);
 
                 setTimeout(() => {
                     if (userWalletAddress) {
                         verifyBlockchainTransactions(userWalletAddress);
                         fetchRealWalletHoldings(userWalletAddress);
                     }
-                }, 12000); // 12 seconds to allow TonAPI indexing
+                }, 12000);
 
                 btn.innerHTML = originalText;
                 btn.disabled = false;
@@ -1477,9 +1478,11 @@
                 }
 
                 const poolAddr = Address.parse(ca);
+                const userAddr = Address.parse(userWalletAddress);
+
                 const swapParamsCell = beginCell()
                     .storeUint(0, 32)
-                    .storeAddress(null)
+                    .storeAddress(userAddr)
                     .storeAddress(null)
                     .storeBit(0)
                     .storeBit(0)
@@ -1500,7 +1503,7 @@
 
                 messages.push({
                     address: DEDUST_NATIVE_VAULT,
-                    amount: Math.floor((netAmount + 0.25) * 1e9).toString(),
+                    amount: Math.floor((netAmount + 0.35) * 1e9).toString(),
                     payload: payloadBoc
                 });
 
@@ -1518,7 +1521,7 @@
                         verifyBlockchainTransactions(userWalletAddress);
                         fetchRealWalletHoldings(userWalletAddress);
                     }
-                }, 12000); // 12 seconds to allow TonAPI indexing
+                }, 12000);
 
                 btn.innerHTML = originalText;
                 btn.disabled = false;
