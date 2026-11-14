@@ -485,7 +485,7 @@
 
     <!-- --- CINEMATIC INTRO SCREEN --- -->
     <div id="intro-screen">
-        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v11.5</div>
+        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v11.6</div>
         <div class="intro-content">
             <div class="intro-logo-moon">🐱</div>
             <div style="font-size: 24px; font-weight: 900; color: #fff; letter-spacing: 0.5px;">GRAM & TOPBLAST MEMES</div>
@@ -644,7 +644,7 @@
                     <div class="card-header">
                         <div>
                             <span class="card-title" style="color: var(--accent-green);">⚡ Active Trades & Open Snipes</span>
-                            <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Real-time on-chain holdings & live PnL tracking</div>
+                            <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Persistent profile storage & live on-chain PnL</div>
                         </div>
                         <button onclick="manualSyncActiveTrades()" style="background: rgba(16,185,129,0.15); border: 1px solid var(--accent-green); color: var(--accent-green); padding: 6px 10px; border-radius: 8px; font-size: 11px; cursor: pointer; font-weight: 800;">↻ Sync Wallet</button>
                     </div>
@@ -835,14 +835,8 @@
         const urlParams = new URLSearchParams(window.location.search);
         let referrerAddress = urlParams.get('ref') || (tg && tg.initDataUnsafe && tg.initDataUnsafe.start_param ? tg.initDataUnsafe.start_param.replace('ref_', '') : null);
 
-        if (referrerAddress) {
-            if (!localStorage.getItem('kote_bot_initialized')) {
-                localStorage.setItem('kote_bot_initialized', 'true');
-            }
-        } else {
-            if (!localStorage.getItem('kote_bot_initialized')) {
-                localStorage.setItem('kote_bot_initialized', 'true');
-            }
+        if (!localStorage.getItem('kote_bot_initialized')) {
+            localStorage.setItem('kote_bot_initialized', 'true');
         }
 
         let topblastTokens = [];
@@ -1267,24 +1261,31 @@
         }
         window.calculateSwapOutput = calculateSwapOutput;
 
-        // --- FETCH REAL ON-CHAIN HOLDINGS & RENDER DEDICATED ACTIVE TRADES SECTION ---
+        // --- LOCAL STORAGE PERSISTENCE HELPER FOR USER TRADES ---
+        function saveTradeToPersistentProfile(tradeObj) {
+            if (!userWalletAddress) return;
+            const storageKey = `kote_trades_${userWalletAddress}`;
+            let existingTrades = JSON.parse(localStorage.getItem(storageKey) || '[]');
+            existingTrades.push(tradeObj);
+            localStorage.setItem(storageKey, JSON.stringify(existingTrades));
+        }
+
+        // --- FETCH REAL ON-CHAIN HOLDINGS & PERSISTENT TRADES ---
         async function fetchRealWalletHoldings(address) {
             const holdingsContainer = document.getElementById('onChainWalletHoldings');
             const activeTradesContainer = document.getElementById('mainActiveTradesList');
             
             holdingsContainer.innerHTML = `<div style="text-align: center; padding: 15px; color: var(--text-muted); font-size: 12px;">Querying TonAPI blockchain...</div>`;
-            activeTradesContainer.innerHTML = `<div style="text-align: center; padding: 15px; color: var(--text-muted); font-size: 12px;">Calculating live PnL & active trades...</div>`;
+            activeTradesContainer.innerHTML = `<div style="text-align: center; padding: 15px; color: var(--text-muted); font-size: 12px;">Calculating persistent trades & live PnL...</div>`;
 
             try {
                 const res = await fetch(`https://tonapi.io/v2/accounts/${address}/jettons`);
                 const data = await res.json();
                 let balances = data.balances || [];
 
-                if (balances.length === 0) {
-                    holdingsContainer.innerHTML = `<div style="text-align: center; padding: 15px; color: var(--text-muted); font-size: 12px;">No jetton balances found on this wallet.</div>`;
-                    activeTradesContainer.innerHTML = `<div style="text-align: center; padding: 15px; color: var(--text-muted); font-size: 12px;">No active trades found. Sold or transferred tokens disappear automatically.</div>`;
-                    return;
-                }
+                // Load persistent trades from localStorage tied specifically to this wallet address
+                const storageKey = `kote_trades_${address}`;
+                let persistentTrades = JSON.parse(localStorage.getItem(storageKey) || '[]');
 
                 let parsedBalances = [];
                 for (const b of balances) {
@@ -1298,7 +1299,6 @@
                     const symbol = b.jetton.symbol || 'JETTON';
                     const image = b.jetton.image || `https://cache.tonapi.io/imgproxy/${tokenAddr}/rs:fill:200:200:1/g:no`;
 
-                    // Fetch live price action & 24h change from DexScreener
                     let priceUSD = 0.01;
                     let priceChange24h = 0;
                     try {
@@ -1311,8 +1311,11 @@
                         }
                     } catch (err) {}
 
+                    // Find if there is a recorded initial cost basis in persistent storage
+                    let recordedTrade = persistentTrades.find(t => t.address === tokenAddr);
+                    let costBasisUSD = recordedTrade ? recordedTrade.costBasisUSD : estUsdValue * (1 - (priceChange24h / 100));
+
                     const estUsdValue = amount * priceUSD;
-                    const costBasisUSD = estUsdValue * (1 - (priceChange24h / 100));
                     const pnlUSD = estUsdValue - costBasisUSD;
                     const pnlPercent = costBasisUSD > 0 ? (pnlUSD / costBasisUSD) * 100 : priceChange24h;
 
@@ -1328,7 +1331,7 @@
 
                 if (parsedBalances.length === 0) {
                     holdingsContainer.innerHTML = `<div style="text-align: center; padding: 15px; color: var(--text-muted); font-size: 12px;">No jetton balances found.</div>`;
-                    activeTradesContainer.innerHTML = `<div style="text-align: center; padding: 15px; color: var(--text-muted); font-size: 12px;">No active trades found.</div>`;
+                    activeTradesContainer.innerHTML = `<div style="text-align: center; padding: 15px; color: var(--text-muted); font-size: 12px;">No active trades found. Once you trade or snipe, positions will persist here across app reloads.</div>`;
                     return;
                 }
 
@@ -1454,6 +1457,7 @@
             alert('Referral link copied!');
         };
 
+        // --- EXECUTE ON-CHAIN SWAP WITH CORRECT RECIPIENT & PERSISTENT STORAGE ---
         window.executeOnChainTrade = async function() {
             if (!tonConnectUI.connected) { tonConnectUI.openModal(); return; }
 
@@ -1524,7 +1528,16 @@
                 const transaction = { validUntil: Math.floor(Date.now() / 1000) + 360, messages };
                 const result = await tonConnectUI.sendTransaction(transaction);
 
-                alert(`✅ In-App DeDust Swap Confirmed!\n\n• Swapped: ${netAmount} GRAM for $${currentActiveToken.symbol}\n• Tokens routed to: ${userWalletAddress.slice(0,6)}...\n• Tx Hash: ${result.boc ? result.boc.slice(0, 20) + '...' : 'Success'}`);
+                // Save trade to persistent profile storage
+                saveTradeToPersistentProfile({
+                    address: currentActiveToken.address,
+                    symbol: currentActiveToken.symbol,
+                    name: currentActiveToken.name,
+                    costBasisUSD: netAmount * (currentActiveToken.priceUSD || 0.05),
+                    timestamp: Date.now()
+                });
+
+                alert(`✅ In-App DeDust Swap Confirmed!\n\n• Swapped: ${netAmount} GRAM for $${currentActiveToken.symbol}\n• Tokens routed to your wallet: ${userWalletAddress.slice(0,6)}...\n• Saved to Active Trades profile`);
 
                 setTimeout(() => {
                     if (userWalletAddress) {
@@ -1542,6 +1555,7 @@
             }
         };
 
+        // --- EXECUTE ON-CHAIN SNIPE WITH CORRECT RECIPIENT & PERSISTENT STORAGE ---
         window.executeSnipeOrder = async function() {
             if (!tonConnectUI.connected) { tonConnectUI.openModal(); return; }
             const ca = document.getElementById('sniperCA').value.trim();
@@ -1606,7 +1620,16 @@
                 const transaction = { validUntil: Math.floor(Date.now() / 1000) + 360, messages };
                 const result = await tonConnectUI.sendTransaction(transaction);
 
-                alert(`🎯 In-App Snipe Confirmed!\n\n• Target CA: ${ca}\n• Net Snipe: ${netAmount} GRAM\n• Fee Split & Routing Executed On-Chain`);
+                // Save snipe order to persistent profile storage
+                saveTradeToPersistentProfile({
+                    address: ca,
+                    symbol: 'SNIPE',
+                    name: 'Snipe Position',
+                    costBasisUSD: netAmount * 0.05,
+                    timestamp: Date.now()
+                });
+
+                alert(`🎯 In-App Snipe Confirmed!\n\n• Target CA: ${ca}\n• Net Snipe: ${netAmount} GRAM\n• Tokens routed directly to wallet & saved to Active Trades!`);
 
                 setTimeout(() => {
                     if (userWalletAddress) {
