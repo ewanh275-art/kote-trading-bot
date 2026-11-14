@@ -722,8 +722,8 @@
                         <div style="text-align: center; padding: 15px; color: var(--text-muted); font-size: 12px;">No active bot trades executed yet.</div>
                     </div>
 
-                    <!-- CONNECTED WALLET ACTUAL HOLDINGS -->
-                    <div class="card-title" style="margin-bottom: 8px;">💎 Connected Wallet Actual Holdings</div>
+                    <!-- CONNECTED WALLET ACTUAL HOLDINGS (Filtered > $1) -->
+                    <div class="card-title" style="margin-bottom: 8px;">💎 Connected Wallet Actual Holdings <span style="font-size: 9px; color: var(--text-muted);">(> $1.00 Filtered)</span></div>
                     <div id="onChainWalletHoldings" style="display: flex; flex-direction: column; gap: 8px;">
                         <div style="text-align: center; padding: 15px; color: var(--text-muted); font-size: 12px;">Connect wallet via TonConnect to load live wallet assets.</div>
                     </div>
@@ -1262,10 +1262,11 @@
         }
         window.calculateSwapOutput = calculateSwapOutput;
 
-        // --- ACTUAL WALLET HOLDINGS REFLECTING CONNECTED WALLET ---
+        // --- REAL WALLET HOLDINGS WITH DEXSCREENER PRICING & STRICT > $1 FILTER ---
         async function fetchRealWalletHoldings(address) {
             const container = document.getElementById('onChainWalletHoldings');
-            container.innerHTML = `<div style="text-align: center; padding: 15px; color: var(--text-muted); font-size: 12px;">Querying actual wallet holdings from TonAPI...</div>`;
+            container.innerHTML = `<div style="text-align: center; padding: 15px; color: var(--text-muted); font-size: 12px;">Querying wallet holdings & fetching real-time prices...</div>`;
+            
             try {
                 const res = await fetch(`https://tonapi.io/v2/accounts/${address}/jettons`);
                 if (!res.ok) throw new Error(`TonAPI status ${res.status}`);
@@ -1278,6 +1279,8 @@
                 }
 
                 container.innerHTML = '';
+                let displayedCount = 0;
+
                 for (const b of balances) {
                     const rawBalance = parseFloat(b.balance || 0);
                     const decimals = b.jetton.decimals || 9;
@@ -1289,19 +1292,28 @@
                     const symbol = b.jetton.symbol || 'JETTON';
                     const image = b.jetton.image || `https://cache.tonapi.io/imgproxy/${tokenAddress}/rs:fill:200:200:1/g:no`;
 
-                    // Fetch current price from DexScreener
+                    // Fetch exact real-time price using the contract address via DexScreener
                     let priceUSD = 0;
                     try {
                         const dexRes = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${tokenAddress}`);
                         const dexData = await dexRes.json();
                         if (dexData.pairs && dexData.pairs.length > 0) {
-                            priceUSD = parseFloat(dexData.pairs[0].priceUsd) || 0;
+                            const bestPair = dexData.pairs.reduce((prev, curr) => (curr.liquidity?.usd || 0) > (prev.liquidity?.usd || 0) ? curr : prev);
+                            priceUSD = parseFloat(bestPair.priceUsd) || 0;
                         }
                     } catch (err) {
+                        console.error(`DexScreener price fetch error for ${symbol}:`, err);
                         priceUSD = b.price?.prices?.USD || 0;
                     }
 
                     const estUsdValue = amount * priceUSD;
+
+                    // STRICT FILTER: If worth $1.00 or less, skip showing it completely
+                    if (estUsdValue <= 1.0) {
+                        continue;
+                    }
+
+                    displayedCount++;
 
                     container.innerHTML += `
                         <div class="launch-card" onclick="selectTokenForTrade('${tokenAddress}', '${name.replace(/'/g, "\\'")}', '${symbol}', '${image}', 50000, 20000, 10000, ${priceUSD}, true, 'dedust')">
@@ -1317,16 +1329,19 @@
                             </div>
                             <div style="text-align:right;">
                                 <div style="font-size:11px; color:var(--text-main); font-weight:800;">${amount.toLocaleString(undefined, {maximumFractionDigits: 4})} ${symbol}</div>
-                                <div style="font-size:12px; font-weight:900; color:${priceUSD > 0 ? 'var(--accent-green)' : 'var(--text-muted)'};">
-                                    ${priceUSD > 0 ? `~$${estUsdValue.toFixed(2)}` : 'Unpriced'}
-                                </div>
+                                <div style="font-size:12px; font-weight:900; color:var(--accent-green);">~$${estUsdValue.toFixed(2)}</div>
                             </div>
                         </div>
                     `;
                 }
+
+                if (displayedCount === 0) {
+                    container.innerHTML = `<div style="text-align: center; padding: 15px; color: var(--text-muted); font-size: 12px;">No token holdings worth over $1.00 found in this wallet.</div>`;
+                }
+
             } catch (e) {
-                console.error('Wallet fetch error:', e);
-                container.innerHTML = `<div style="text-align: center; padding: 15px; color: var(--accent-red); font-size: 12px;">Failed to load wallet holdings.</div>`;
+                console.error('Wallet holdings fetch error:', e);
+                container.innerHTML = `<div style="text-align: center; padding: 15px; color: var(--accent-red); font-size: 12px;">Failed to load live wallet holdings.</div>`;
             }
         }
 
@@ -1353,10 +1368,9 @@
                     }
                 } catch (err) {}
 
-                // Estimate token amount received based on entry price vs current price
                 const estimatedTokens = (trade.netGram * 850) / (trade.buyPriceUSD > 0 ? trade.buyPriceUSD : 0.01);
                 const currentWorthUSD = estimatedTokens * currentPrice;
-                const initialSpentUSD = trade.inputGram * 0.50; // estimated gram fiat peg or token cost basis
+                const initialSpentUSD = trade.inputGram * 0.50; 
                 const pnlPercentage = initialSpentUSD > 0 ? ((currentWorthUSD - initialSpentUSD) / initialSpentUSD) * 100 : 0;
                 const pnlColor = pnlPercentage >= 0 ? 'var(--accent-green)' : 'var(--accent-red)';
 
@@ -1378,7 +1392,6 @@
 
         // --- VERIFY ON-CHAIN REFERRALS & TRANSACTIONS ---
         async function verifyBlockchainTransactions(address) {
-            const container = document.getElementById('botHeldPortfolioList');
             let instantRefCount = parseInt(localStorage.getItem('kote_instant_ref_count') || '0');
 
             try {
@@ -1526,7 +1539,6 @@
 
                 const result = await tonConnectUI.sendTransaction(transaction);
 
-                // Save active trade to localStorage for PnL and active trades tracker
                 let activeTrades = JSON.parse(localStorage.getItem('kote_active_trades') || '[]');
                 activeTrades.unshift({
                     id: Date.now(),
