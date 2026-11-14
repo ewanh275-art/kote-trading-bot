@@ -493,10 +493,10 @@
 
     <!-- --- CINEMATIC INTRO SCREEN --- -->
     <div id="intro-screen">
-        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v8.10</div>
+        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v8.11</div>
         <div class="intro-content">
             <div class="intro-logo-moon">🐱</div>
-            <div style="font-size: 25px; font-weight: 900; color: #fff; letter-spacing: 0.5px;">KOTE MEME TERMINAL</div>
+            <div style="font-size: 25px; font-weight: 900; color: #fff; letter-spacing: 0.5px;">KOTE MEMES TERMINAL</div>
         </div>
         <div style="padding-bottom: 20px;">
             <button class="btn-action btn-red" style="max-width: 300px; margin: 0 auto;" onclick="enterTerminal()">
@@ -512,7 +512,7 @@
                 <div class="brand-logo-box">🐱</div>
                 <div class="brand-text">
                     <h1>Kote Pro Terminal</h1>
-                    <span id="configStatusLabel">● Topblast Memes API Active</span>
+                    <span id="configStatusLabel">● Topblast Memes Feed</span>
                 </div>
             </div>
             <div id="ton-connect"></div>
@@ -528,7 +528,7 @@
                         <div style="display: flex; align-items: center; gap: 12px;">
                             <div class="token-avatar-wrap" style="width: 48px; height: 48px;">
                                 <span class="token-avatar-fallback" id="heroTokenFallback">D</span>
-                                <img id="heroTokenLogo" src="https://topblastv2.lol/__l5e/assets-v1/b79d9573-cc82-46b0-8793-bebb33ab9b1b/gram-diamond-mark.png" onerror="this.style.display='none';">
+                                <img id="heroTokenLogo" src="https://topblastv2.lol/api/public/logo/fa2d7b45-14a2-48b9-bb82-aae72fff714c.jpg" onerror="this.style.display='none';">
                             </div>
                             <div>
                                 <div style="display:flex; align-items:center; gap:6px;">
@@ -658,7 +658,7 @@
                     </div>
 
                     <div id="topblastList">
-                        <div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 12px;">Fetching live meme category from Topblast API...</div>
+                        <!-- Rendered dynamically -->
                     </div>
 
                     <div class="pagination-bar">
@@ -790,9 +790,16 @@
         let referralEarnings = 0;
         let selectedSnipeSlippage = 0.5;
 
-        // Dynamic Token Array populated from Memes category feed
+        // Pre-populated robust fallback list of Topblast meme tokens (Groyp, Utya, Redo, Cherry, Hpo, Lambo, Not, Decoded)
         let allTopblastTokens = [
-            { name: 'dec0ded', symbol: 'DEC0DED', address: 'EQALMVFWfRIj3CeZHxTObrr89OUtGT1E_WbT4E82izM9Es7Z', logo: 'https://topblastv2.lol/api/public/logo/fa2d7b45-14a2-48b9-bb82-aae72fff714c.jpg', mcap: 35000, liq: 15000, vol: 8000, priceUSD: 0.05 }
+            { name: 'dec0ded', symbol: 'DEC0DED', address: 'EQALMVFWfRIj3CeZHxTObrr89OUtGT1E_WbT4E82izM9Es7Z', logo: 'https://topblastv2.lol/api/public/logo/fa2d7b45-14a2-48b9-bb82-aae72fff714c.jpg', mcap: 35000, liq: 15000, vol: 8000, priceUSD: 0.05 },
+            { name: 'Baby Groyp', symbol: 'BGROYP', address: 'EQCIgzFgG91KBOoWUmWkSceRGhfRdrswMuyFvrJtCu1O4Va5', logo: 'https://topblastv2.lol/api/public/logo/ff308920-c4b1-4c9c-92ce-e41e61d2da7d.jpg', mcap: 76571, liq: 25000, vol: 10000, priceUSD: 0.06 },
+            { name: 'R29 Test CHERRY', symbol: 'TCHERRY', address: 'EQCuH78EnCEZrZarHliLFVvGHeAS_euCw0dyZIrJljKwDoFh', logo: 'https://topblastv2.lol/api/public/logo/caad218c-752d-4189-b149-ade1e7f225ee.png', mcap: 249040, liq: 85000, vol: 34000, priceUSD: 0.12 },
+            { name: 'R29 Test HPO', symbol: 'THPO', address: 'EQCsUMjl8HIGAVvcEAOn1ALe4oagrUxFY5uOaVYi56dcWQWW', logo: 'https://topblastv2.lol/api/public/logo/caad218c-752d-4189-b149-ade1e7f225ee.png', mcap: 586931, liq: 190000, vol: 78000, priceUSD: 0.25 },
+            { name: 'R29 Test LAMBO', symbol: 'TLAMBO', address: 'EQBgmGwDPhq_h1HiheVI67JxK31z2EMOuRermkTaFpvAT8KP', logo: 'https://topblastv2.lol/api/public/logo/caad218c-752d-4189-b149-ade1e7f225ee.png', mcap: 8879350, liq: 2500000, vol: 1200000, priceUSD: 1.5 },
+            { name: 'R29 Test UTYA', symbol: 'TUTYA', address: 'EQAbD4lEMD8kle6dcj_sUnfpkSH3TESgM34MsYDY69yaeaCe', logo: 'https://topblastv2.lol/api/public/logo/caad218c-752d-4189-b149-ade1e7f225ee.png', mcap: 135127, liq: 45000, vol: 18000, priceUSD: 0.085 },
+            { name: 'R29 Test REDO', symbol: 'TREDO', address: 'EQDu0bqJgNEZrwTmk_N3neHoW-4DkX1q1o32NTfWi2U-1OJD', logo: 'https://topblastv2.lol/api/public/logo/caad218c-752d-4189-b149-ade1e7f225ee.png', mcap: 63082, liq: 22000, vol: 9000, priceUSD: 0.045 },
+            { name: 'R29 Test NOT', symbol: 'TNOT', address: 'EQBeq_ktUr37ca1WMgUTzpWgSv6fXw5BCKwRa4XtExOjbGNm', logo: 'https://topblastv2.lol/api/public/logo/caad218c-752d-4189-b149-ade1e7f225ee.png', mcap: 749102, liq: 250000, vol: 95000, priceUSD: 0.008 }
         ];
 
         let currentTopblastPage = 1;
@@ -818,12 +825,8 @@
         // 2. Fetch Memes Category Tokens from `/api/public/tokens?category=memes`
         async function loadMemeTokens() {
             try {
-                document.getElementById('topblastList').innerHTML = `<div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 12px;">Fetching live meme tokens from Topblast API...</div>`;
-                
-                // Fetching specifically the memes category per Topblast documentation
                 const response = await fetch('https://topblastv2.lol/api/public/tokens?category=memes');
                 const data = await response.json();
-                
                 let rawTokens = data.tokens || [];
                 
                 if (rawTokens.length > 0) {
@@ -840,15 +843,13 @@
                             priceUSD: 0.05
                         };
                     });
-                    
-                    currentTopblastPage = 1;
-                    renderTopblastList();
-                    document.getElementById('configStatusLabel').innerText = `● Memes Feed (${allTopblastTokens.length} Tokens)`;
+                    document.getElementById('configStatusLabel').innerText = `● Memes Feed (${allTopblastTokens.length} Live)`;
                 }
             } catch (error) {
-                console.warn("API meme tokens fetch failed, keeping fallback list:", error);
-                renderTopblastList();
+                console.warn("API meme fetch failed, using pre-populated roster:", error);
             }
+            currentTopblastPage = 1;
+            renderTopblastList();
         }
 
         tonConnectUI.onStatusChange(wallet => {
@@ -1287,7 +1288,7 @@
             });
         }
 
-        // Initialize and load the memes category feed immediately on startup
+        // Initialize and load live meme category feed
         loadMemeTokens();
         calculateSwapOutput();
     </script>
