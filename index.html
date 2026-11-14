@@ -485,7 +485,7 @@
 
     <!-- --- CINEMATIC INTRO SCREEN --- -->
     <div id="intro-screen">
-        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v10.6</div>
+        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v10.7</div>
         <div class="intro-content">
             <div class="intro-logo-moon">🐱</div>
             <div style="font-size: 24px; font-weight: 900; color: #fff; letter-spacing: 0.5px;">GRAM & TOPBLAST MEMES</div>
@@ -1327,7 +1327,7 @@
             alert('Referral link copied!');
         };
 
-        // --- EXECUTE SWAP DIRECTLY IN-APP VIA TONCONNECT & DEDUST NATIVE VAULT PAYLOAD ---
+        // --- EXECUTE SWAP DIRECTLY IN-APP VIA TONCONNECT & CORRECTED DEDUST NATIVE VAULT PAYLOAD ---
         window.executeOnChainTrade = async function() {
             if (!tonConnectUI.connected) { tonConnectUI.openModal(); return; }
 
@@ -1368,17 +1368,26 @@
                     });
                 }
 
-                // 2. Build DeDust Vault Swap Payload using @ton/core Cell Builder
+                // 2. Build Correct DeDust v2 Native Vault Swap Payload using @ton/core Cell Builder
                 const poolAddr = Address.parse(currentActiveToken.address);
+
+                const swapParamsCell = beginCell()
+                    .storeUint(0, 32)        // deadline (0 = disabled)
+                    .storeAddress(null)      // recipient_addr (null = sender)
+                    .storeAddress(null)      // referral_addr (null = none)
+                    .storeBit(0)             // fulfill_payload
+                    .storeBit(0)             // reject_payload
+                    .endCell();
+
                 const swapCell = beginCell()
-                    .storeUint(0xea06185d, 32) // DeDust swap opcode
-                    .storeCoins(Math.floor(netAmount * 1e9))
-                    .storeBit(0) // no next step
-                    .storeAddress(poolAddr)
-                    .storeCoins(0) // min output / slippage
-                    .storeBit(0) // no referral
-                    .storeBit(0) // no fulfill payload
-                    .storeBit(0) // no reject payload
+                    .storeUint(0xea06185d, 32) // swap operation code
+                    .storeUint(0n, 64)         // query_id
+                    .storeCoins(Math.floor(netAmount * 1e9)) // amount in nanotons
+                    .storeAddress(poolAddr)    // target pool address
+                    .storeBit(0)             // kind: given_in (0)
+                    .storeCoins(0)             // limit (min output / slippage)
+                    .storeBit(0)             // next: nothing (direct swap)
+                    .storeRef(swapParamsCell)  // swap_params reference cell
                     .endCell();
 
                 const payloadBoc = swapCell.toBoc().toString('base64');
@@ -1421,6 +1430,7 @@
             if (amtGram <= 0) { alert('Please enter a valid snipe amount.'); return; }
 
             const btn = event.target;
+            const originalText = btn.innerHTML;
             btn.innerHTML = '🛡️ Signing In-App Snipe...';
             btn.disabled = true;
 
@@ -1437,15 +1447,23 @@
                 }
 
                 const poolAddr = Address.parse(ca);
+                const swapParamsCell = beginCell()
+                    .storeUint(0, 32)
+                    .storeAddress(null)
+                    .storeAddress(null)
+                    .storeBit(0)
+                    .storeBit(0)
+                    .endCell();
+
                 const swapCell = beginCell()
                     .storeUint(0xea06185d, 32)
+                    .storeUint(0n, 64)
                     .storeCoins(Math.floor(netAmount * 1e9))
-                    .storeBit(0)
                     .storeAddress(poolAddr)
+                    .storeBit(0)
                     .storeCoins(0)
                     .storeBit(0)
-                    .storeBit(0)
-                    .storeBit(0)
+                    .storeRef(swapParamsCell)
                     .endCell();
 
                 const payloadBoc = swapCell.toBoc().toString('base64');
@@ -1469,11 +1487,11 @@
                     if (userWalletAddress) verifyBlockchainTransactions(userWalletAddress);
                 }, 4000);
 
-                btn.innerHTML = '🚀 Execute In-App Router Snipe';
+                btn.innerHTML = originalText;
                 btn.disabled = false;
             } catch (error) {
                 alert(`Snipe Cancelled or Failed: ${error.message || error}`);
-                btn.innerHTML = '🚀 Execute In-App Router Snipe';
+                btn.innerHTML = originalText;
                 btn.disabled = false;
             }
         };
