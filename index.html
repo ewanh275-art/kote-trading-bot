@@ -467,11 +467,11 @@
 
     <!-- --- CINEMATIC INTRO SCREEN --- -->
     <div id="intro-screen">
-        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE CRIMSON TERMINAL v7.1</div>
+        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE CRIMSON TERMINAL v7.2</div>
         <div class="intro-content">
             <div class="intro-logo-moon">🐱</div>
             <div style="font-size: 25px; font-weight: 900; color: #fff; letter-spacing: 0.5px;">KOTE SNIPER & TOPBLAST HUB</div>
-            <div style="font-size: 13px; color: var(--text-muted); max-width: 290px; line-height: 1.5;">Bulletproof token avatar rendering, anti-scam audit shield, and sorted portfolio valuations.</div>
+            <div style="font-size: 13px; color: var(--text-muted); max-width: 290px; line-height: 1.5;">Live DexScreener liquidity synchronization, seamless Topblast trade routing, and robust transaction broadcasting.</div>
         </div>
         <div style="padding-bottom: 20px;">
             <button class="btn-action btn-red" style="max-width: 300px; margin: 0 auto;" onclick="enterTerminal()">
@@ -487,7 +487,7 @@
                 <div class="brand-logo-box">🐱</div>
                 <div class="brand-text">
                     <h1>Kote Pro Terminal</h1>
-                    <span>● Bulletproof Image Fallbacks</span>
+                    <span>● Live DexScreener Sync</span>
                 </div>
             </div>
             <div id="ton-connect"></div>
@@ -531,8 +531,8 @@
                     </div>
 
                     <div class="trade-tabs">
-                        <button class="trade-tab-btn active buy-mode" id="tabBuy" onclick="setTradeMode('buy')">🟢 Buy $KOTE</button>
-                        <button class="trade-tab-btn sell-mode" id="tabSell" onclick="setTradeMode('sell')">🔴 Sell $KOTE</button>
+                        <button class="trade-tab-btn active buy-mode" id="tabBuy" onclick="setTradeMode('buy')">🟢 Buy Token</button>
+                        <button class="trade-tab-btn sell-mode" id="tabSell" onclick="setTradeMode('sell')">🔴 Sell Token</button>
                     </div>
 
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
@@ -766,6 +766,8 @@
             address: 'EQAmvp1Vrr0zY2--STdH-0X_mP5iCD61p2vNVJYwHlgBni2C',
             logo: 'https://ewanh275-art.github.io/kote-trading-bot/cat.png',
             mcap: 36000,
+            liq: 18200,
+            vol: 12400,
             priceNative: 0.0012,
             priceUSD: 0.042
         };
@@ -794,7 +796,7 @@
         }
 
         function auditContract(ca) {
-            if (!ca || ca.length < 40) return { safe: false, msg: 'Invalid Contract Address format.' };
+            if (!ca || ca.length < 35) return { safe: false, msg: 'Invalid Contract Address format.' };
             if (ca.includes('Honeypot') || ca.includes('Scam')) {
                 return { safe: false, msg: '⚠️ Warning: Contract flagged as potential honeypot/scam!' };
             }
@@ -880,11 +882,13 @@
             selectedSnipeSlippage = val;
         }
 
-        function selectTokenForTrade(address, name, symbol, logo, mcap, priceUSD = 0.01) {
-            currentActiveToken = { name, symbol, address, logo, mcap, priceNative: 0.0012, priceUSD };
+        function selectTokenForTrade(address, name, symbol, logo, mcap, liq, vol, priceUSD = 0.01) {
+            currentActiveToken = { name, symbol, address, logo, mcap, liq, vol, priceNative: 0.0012, priceUSD };
+            
             document.getElementById('heroTokenName').innerText = `${name} ($${symbol})`;
             document.getElementById('heroTokenCA').innerText = address;
             document.getElementById('heroTokenFallback').innerText = symbol.charAt(0);
+            
             const logoEl = document.getElementById('heroTokenLogo');
             logoEl.style.display = 'block';
             logoEl.src = logo;
@@ -895,8 +899,10 @@
             document.getElementById('dexChartFrame').src = `https://dexscreener.com/ton/${address}?embed=1&theme=dark&trades=0&info=0`;
             document.getElementById('externalChartBtn').href = `https://dexscreener.com/ton/${address}`;
             
-            const formattedMcap = mcap >= 1e6 ? '$' + (mcap/1e6).toFixed(2) + 'M' : '$' + (mcap/1e3).toFixed(1) + 'K';
-            document.getElementById('tokMcap').innerText = formattedMcap;
+            document.getElementById('tokMcap').innerText = mcap >= 1e6 ? '$' + (mcap/1e6).toFixed(2) + 'M' : '$' + (mcap/1e3).toFixed(1) + 'K';
+            document.getElementById('tokLiq').innerText = liq >= 1e6 ? '$' + (liq/1e6).toFixed(2) + 'M' : '$' + (liq/1e3).toFixed(1) + 'K';
+            document.getElementById('tokVol').innerText = vol >= 1e6 ? '$' + (vol/1e6).toFixed(2) + 'M' : '$' + (vol/1e3).toFixed(1) + 'K';
+            document.getElementById('heroTokenPrice').innerText = '$' + priceUSD.toFixed(6);
 
             const audit = auditContract(address);
             const auditEl = document.getElementById('tradeAuditBadge');
@@ -910,6 +916,7 @@
 
             setTradeMode('buy');
             switchPage('trade', document.querySelectorAll('.nav-tab')[0]);
+            calculateSwapOutput();
         }
 
         async function calculateSwapOutput() {
@@ -923,9 +930,10 @@
                 const data = await res.json();
                 const pairs = data.pairs || [];
                 if (pairs.length > 0) {
-                    const priceNative = parseFloat(pairs[0].priceNative) || 0.0012;
+                    const pair = pairs[0];
+                    const priceNative = parseFloat(pair.priceNative) || 0.0012;
                     currentActiveToken.priceNative = priceNative;
-                    if(pairs[0].priceUsd) currentActiveToken.priceUSD = parseFloat(pairs[0].priceUsd);
+                    if(pair.priceUsd) currentActiveToken.priceUSD = parseFloat(pair.priceUsd);
                     
                     let exactOutput = 0;
                     if (currentTradeMode === 'buy') {
@@ -936,9 +944,14 @@
 
                     document.getElementById('tradeOutputAmount').value = '~ ' + exactOutput.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 });
                     
-                    const realMcap = pairs[0].marketCap || pairs[0].fdv || currentActiveToken.mcap || 36000;
+                    const realMcap = pair.marketCap || pair.fdv || currentActiveToken.mcap || 36000;
+                    const realLiq = pair.liquidity?.usd || currentActiveToken.liq || 18200;
+                    const realVol = pair.volume?.h24 || currentActiveToken.vol || 12400;
+
                     document.getElementById('tokMcap').innerText = '$' + (realMcap >= 1e6 ? (realMcap/1e6).toFixed(2) + 'M' : (realMcap/1e3).toFixed(1) + 'K');
-                    if(pairs[0].priceUsd) document.getElementById('heroTokenPrice').innerText = '$' + parseFloat(pairs[0].priceUsd).toFixed(6);
+                    document.getElementById('tokLiq').innerText = '$' + (realLiq >= 1e6 ? (realLiq/1e6).toFixed(2) + 'M' : (realLiq/1e3).toFixed(1) + 'K');
+                    document.getElementById('tokVol').innerText = '$' + (realVol >= 1e6 ? (realVol/1e6).toFixed(2) + 'M' : (realVol/1e3).toFixed(1) + 'K');
+                    if(pair.priceUsd) document.getElementById('heroTokenPrice').innerText = '$' + parseFloat(pair.priceUsd).toFixed(6);
                 } else {
                     const fallbackRate = 850.5;
                     const resOutput = currentTradeMode === 'buy' ? inputVal * fallbackRate : inputVal / fallbackRate;
@@ -1087,8 +1100,7 @@
                 messages: [
                     {
                         address: recipientAddress,
-                        amount: amountNano,
-                        payload: currentTradeMode === 'buy' ? "te6cckEBAQEAAgA..." : "te6cckEBAQEAAgB..."
+                        amount: amountNano
                     }
                 ]
             };
@@ -1096,7 +1108,7 @@
             try {
                 const btn = document.getElementById('executeTradeBtn');
                 const originalText = btn.innerHTML;
-                btn.innerHTML = '🛡️ Auditing & Broadcasting Tx...';
+                btn.innerHTML = '🛡️ Broadcasting Transaction...';
                 btn.disabled = true;
 
                 const result = await tonConnectUI.sendTransaction(transaction);
@@ -1195,12 +1207,11 @@
         }
 
         async function loadTopblastOnlyTokens() {
-            const container = document.getElementById('topblastList');
             const topblastRegistry = [
-                { name: 'Kote Official', symbol: 'KOTE', address: 'EQAmvp1Vrr0zY2--STdH-0X_mP5iCD61p2vNVJYwHlgBni2C', logo: 'https://ewanh275-art.github.io/kote-trading-bot/cat.png', mcap: 36000, priceUSD: 0.042 },
-                { name: 'Long Capital', symbol: 'LNG', address: 'EQC_LongCapital_Topblast_TON', logo: 'https://cache.tonapi.io/imgproxy/EQC_LongCapital_Topblast_TON/rs:fill:200:200:1/g:no', mcap: 142000, priceUSD: 0.12 },
-                { name: 'Pepe Grinch', symbol: 'GRINCH', address: 'EQB_PepeGrinch_Topblast_TON', logo: 'https://cache.tonapi.io/imgproxy/EQB_PepeGrinch_Topblast_TON/rs:fill:200:200:1/g:no', mcap: 89000, priceUSD: 0.08 },
-                { name: 'Honk Honkler', symbol: 'HONK', address: 'EQD_HonkHonkler_Topblast_TON', logo: 'https://cache.tonapi.io/imgproxy/EQD_HonkHonkler_Topblast_TON/rs:fill:200:200:1/g:no', mcap: 64500, priceUSD: 0.05 }
+                { name: 'Kote Official', symbol: 'KOTE', address: 'EQAmvp1Vrr0zY2--STdH-0X_mP5iCD61p2vNVJYwHlgBni2C', logo: 'https://ewanh275-art.github.io/kote-trading-bot/cat.png', mcap: 36000, liq: 18200, vol: 12400, priceUSD: 0.042 },
+                { name: 'Long Capital', symbol: 'LNG', address: 'EQC_LongCapital_Topblast_TON', logo: 'https://cache.tonapi.io/imgproxy/EQC_LongCapital_Topblast_TON/rs:fill:200:200:1/g:no', mcap: 142000, liq: 52000, vol: 34000, priceUSD: 0.12 },
+                { name: 'Pepe Grinch', symbol: 'GRINCH', address: 'EQB_PepeGrinch_Topblast_TON', logo: 'https://cache.tonapi.io/imgproxy/EQB_PepeGrinch_Topblast_TON/rs:fill:200:200:1/g:no', mcap: 89000, liq: 31000, vol: 19000, priceUSD: 0.08 },
+                { name: 'Honk Honkler', symbol: 'HONK', address: 'EQD_HonkHonkler_Topblast_TON', logo: 'https://cache.tonapi.io/imgproxy/EQD_HonkHonkler_Topblast_TON/rs:fill:200:200:1/g:no', mcap: 64500, liq: 22000, vol: 15500, priceUSD: 0.05 }
             ];
 
             try {
@@ -1209,14 +1220,20 @@
                 (data.pairs || []).forEach(p => {
                     if (p.chainId === 'ton' && p.baseToken) {
                         const liveMcap = p.marketCap || p.fdv || 36000;
+                        const liveLiq = p.liquidity?.usd || 18200;
+                        const liveVol = p.volume?.h24 || 12400;
                         const livePriceUSD = p.priceUsd ? parseFloat(p.priceUsd) : 0.01;
                         const liveLogo = (p.info && p.info.imageUrl) || `https://cache.tonapi.io/imgproxy/${p.baseToken.address}/rs:fill:200:200:1/g:no`;
+                        
                         const existingIdx = topblastRegistry.findIndex(t => t.address === p.baseToken.address || t.symbol === p.baseToken.symbol);
                         if (existingIdx !== -1) {
                             topblastRegistry[existingIdx].mcap = liveMcap;
+                            topblastRegistry[existingIdx].liq = liveLiq;
+                            topblastRegistry[existingIdx].vol = liveVol;
                             topblastRegistry[existingIdx].priceUSD = livePriceUSD;
+                            if (p.info?.imageUrl) topblastRegistry[existingIdx].logo = p.info.imageUrl;
                         } else {
-                            topblastRegistry.push({ name: p.baseToken.name, symbol: p.baseToken.symbol, address: p.baseToken.address, logo: liveLogo, mcap: liveMcap, priceUSD: livePriceUSD });
+                            topblastRegistry.push({ name: p.baseToken.name, symbol: p.baseToken.symbol, address: p.baseToken.address, logo: liveLogo, mcap: liveMcap, liq: liveLiq, vol: liveVol, priceUSD: livePriceUSD });
                         }
                     }
                 });
@@ -1257,7 +1274,7 @@
                                 <span style="font-size:11px; color:var(--accent-green); font-weight:700;">Live MCap: ${formattedMcap} • Audited</span>
                             </div>
                         </div>
-                        <button class="btn-action btn-red" style="width:auto; padding:7px 14px; font-size:11px;" onclick="selectTokenForTrade('${t.address}', '${t.name.replace(/'/g, "\\'")}', '${t.symbol}', '${t.logo}', ${t.mcap}, ${t.priceUSD})">Trade</button>
+                        <button class="btn-action btn-red" style="width:auto; padding:7px 14px; font-size:11px;" onclick="selectTokenForTrade('${t.address}', '${t.name.replace(/'/g, "\\'")}', '${t.symbol}', '${t.logo}', ${t.mcap}, ${t.liq || 15000}, ${t.vol || 10000}, ${t.priceUSD})">Trade</button>
                     </div>
                 `;
             });
