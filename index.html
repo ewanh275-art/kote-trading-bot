@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kote Trade Terminal - Live Topblast v2 API Integration</title>
+    <title>Kote Trade Terminal - Topblast Memes Feed</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
     <style>
@@ -493,14 +493,14 @@
 
     <!-- --- CINEMATIC INTRO SCREEN --- -->
     <div id="intro-screen">
-        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v8.9</div>
+        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v8.10</div>
         <div class="intro-content">
             <div class="intro-logo-moon">🐱</div>
-            <div style="font-size: 25px; font-weight: 900; color: #fff; letter-spacing: 0.5px;">KOTE TRADE/SNIPER BOT</div>
+            <div style="font-size: 25px; font-weight: 900; color: #fff; letter-spacing: 0.5px;">KOTE MEME TERMINAL</div>
         </div>
         <div style="padding-bottom: 20px;">
             <button class="btn-action btn-red" style="max-width: 300px; margin: 0 auto;" onclick="enterTerminal()">
-                ⚡ Enter Kote Terminal
+                ⚡ Enter Memes Terminal
             </button>
         </div>
     </div>
@@ -512,7 +512,7 @@
                 <div class="brand-logo-box">🐱</div>
                 <div class="brand-text">
                     <h1>Kote Pro Terminal</h1>
-                    <span id="configStatusLabel">● Topblast v2 API Live</span>
+                    <span id="configStatusLabel">● Topblast Memes API Active</span>
                 </div>
             </div>
             <div id="ton-connect"></div>
@@ -532,15 +532,15 @@
                             </div>
                             <div>
                                 <div style="display:flex; align-items:center; gap:6px;">
-                                    <h2 style="font-size: 17px; font-weight: 900;" id="heroTokenName">GRAM ($GRAM)</h2>
-                                    <span style="font-size: 9px; background: rgba(16,185,129,0.15); color: var(--accent-green); border: 1px solid rgba(16,185,129,0.35); padding: 2px 6px; border-radius: 6px; font-weight: 800; text-transform: uppercase;">Native</span>
+                                    <h2 style="font-size: 17px; font-weight: 900;" id="heroTokenName">dec0ded ($DEC0DED)</h2>
+                                    <span style="font-size: 9px; background: rgba(16,185,129,0.15); color: var(--accent-green); border: 1px solid rgba(16,185,129,0.35); padding: 2px 6px; border-radius: 6px; font-weight: 800; text-transform: uppercase;">Meme</span>
                                 </div>
-                                <span style="font-size: 10px; color: var(--text-muted); font-family: monospace;" id="heroTokenCA">EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM9c</span>
+                                <span style="font-size: 10px; color: var(--text-muted); font-family: monospace;" id="heroTokenCA">EQALMVFWfRIj3CeZHxTObrr89OUtGT1E_WbT4E82izM9Es7Z</span>
                             </div>
                         </div>
                         <div style="text-align: right;">
-                            <div style="font-size: 16px; font-weight: 900; color: var(--accent-green);" id="heroTokenPrice">$1.000000</div>
-                            <div style="font-size: 11px; color: var(--accent-green); font-weight: 800;" id="heroTokenChange">Live</div>
+                            <div style="font-size: 16px; font-weight: 900; color: var(--accent-green);" id="heroTokenPrice">$0.050000</div>
+                            <div style="font-size: 11px; color: var(--accent-green); font-weight: 800;" id="heroTokenChange">+15.2%</div>
                         </div>
                     </div>
 
@@ -549,7 +549,7 @@
                     </div>
 
                     <div class="tokenomics-grid">
-                        <div class="stat-card"><span>Market Cap</span><strong id="tokMcap">$2.5K</strong></div>
+                        <div class="stat-card"><span>Market Cap</span><strong id="tokMcap">$35.0K</strong></div>
                         <div class="stat-card"><span>24h Volume</span><strong id="tokVol">$8.0K</strong></div>
                         <div class="stat-card"><span>Liquidity</span><strong id="tokLiq">$15.0K</strong></div>
                         <div class="stat-card"><span>Status</span><strong style="color:var(--accent-green)">Bonded</strong></div>
@@ -569,10 +569,10 @@
                             </div>
                         </div>
                         <div class="input-group" style="margin-bottom: 0;">
-                            <div class="input-top"><span id="receiveLabel">You Receive (Precision)</span><span id="receiveTokenSymbol">GRAM</span></div>
+                            <div class="input-top"><span id="receiveLabel">You Receive (Precision)</span><span id="receiveTokenSymbol">DEC0DED</span></div>
                             <div class="input-main">
                                 <input type="text" id="tradeOutputAmount" class="pro-input" value="Loading..." readonly>
-                                <div class="token-badge" id="receiveBadgeToken">GRAM</div>
+                                <div class="token-badge" id="receiveBadgeToken">DEC0DED</div>
                             </div>
                         </div>
                     </div>
@@ -589,11 +589,11 @@
                     </button>
 
                     <div class="card-header" style="margin-top: 8px; margin-bottom: 6px;">
-                        <span class="card-title" id="chartTitle">📊 Live Chart: $GRAM</span>
-                        <a id="externalChartBtn" href="https://dexscreener.com/ton/EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM9c" target="_blank" style="font-size: 11px; color: var(--accent-red); text-decoration: none; font-weight: 800;">DexScreener ↗</a>
+                        <span class="card-title" id="chartTitle">📊 Live Chart: $DEC0DED</span>
+                        <a id="externalChartBtn" href="https://dexscreener.com/ton/EQALMVFWfRIj3CeZHxTObrr89OUtGT1E_WbT4E82izM9Es7Z" target="_blank" style="font-size: 11px; color: var(--accent-red); text-decoration: none; font-weight: 800;">DexScreener ↗</a>
                     </div>
                     <div class="chart-box">
-                        <iframe id="dexChartFrame" src="https://dexscreener.com/ton/EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM9c?embed=1&theme=dark&trades=0&info=0"></iframe>
+                        <iframe id="dexChartFrame" src="https://dexscreener.com/ton/EQALMVFWfRIj3CeZHxTObrr89OUtGT1E_WbT4E82izM9Es7Z?embed=1&theme=dark&trades=0&info=0"></iframe>
                     </div>
                 </div>
             </section>
@@ -642,23 +642,23 @@
                 </div>
             </section>
 
-            <!-- 3. TOPBLAST v2 API LIVE TOKENS DIRECTORY -->
+            <!-- 3. TOPBLAST v2 MEMES API FEED -->
             <section id="page-launches" class="page">
                 <div class="card" style="max-width: 650px; margin: 0 auto; width: 100%;">
                     <div class="card-header">
                         <div>
-                            <span class="card-title" style="color: var(--accent-green);">🟢 Live Topblast v2 Token Registry API</span>
-                            <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Fetched from /api/public/tokens • Real-Time Caps & Data</div>
+                            <span class="card-title" style="color: var(--accent-green);">🐸 Topblast v2 Memes Category Feed</span>
+                            <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Fetched via /api/public/tokens?category=memes • Real-Time Caps</div>
                         </div>
-                        <button onclick="loadTopblastTokens()" style="background: rgba(16,185,129,0.15); border: 1px solid var(--accent-green); color: var(--accent-green); padding: 6px 10px; border-radius: 8px; font-size: 11px; cursor: pointer; font-weight: 800;">↻ Refresh API</button>
+                        <button onclick="loadMemeTokens()" style="background: rgba(16,185,129,0.15); border: 1px solid var(--accent-green); color: var(--accent-green); padding: 6px 10px; border-radius: 8px; font-size: 11px; cursor: pointer; font-weight: 800;">↻ Refresh Memes</button>
                     </div>
 
                     <div class="input-group" style="padding: 8px 12px; margin-bottom: 12px;">
-                        <input type="text" id="topblastSearchInput" class="pro-input" style="width: 100%; font-size: 13px;" placeholder="🔍 Search live tokens (Utya, Redo, Kote, etc.)..." oninput="filterTopblastList()">
+                        <input type="text" id="topblastSearchInput" class="pro-input" style="width: 100%; font-size: 13px;" placeholder="🔍 Search live meme tokens..." oninput="filterTopblastList()">
                     </div>
 
                     <div id="topblastList">
-                        <div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 12px;">Fetching live token directory from Topblast API...</div>
+                        <div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 12px;">Fetching live meme category from Topblast API...</div>
                     </div>
 
                     <div class="pagination-bar">
@@ -790,9 +790,9 @@
         let referralEarnings = 0;
         let selectedSnipeSlippage = 0.5;
 
-        // Dynamic Token Array populated live from Topblast API
+        // Dynamic Token Array populated from Memes category feed
         let allTopblastTokens = [
-            { name: 'GRAM', symbol: 'GRAM', address: 'EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM9c', logo: 'https://topblastv2.lol/__l5e/assets-v1/b79d9573-cc82-46b0-8793-bebb33ab9b1b/gram-diamond-mark.png', mcap: 2500, liq: 10000, vol: 5000, priceUSD: 1.0 }
+            { name: 'dec0ded', symbol: 'DEC0DED', address: 'EQALMVFWfRIj3CeZHxTObrr89OUtGT1E_WbT4E82izM9Es7Z', logo: 'https://topblastv2.lol/api/public/logo/fa2d7b45-14a2-48b9-bb82-aae72fff714c.jpg', mcap: 35000, liq: 15000, vol: 8000, priceUSD: 0.05 }
         ];
 
         let currentTopblastPage = 1;
@@ -801,7 +801,7 @@
         let botHeldPortfolio = [];
         let currentActiveToken = allTopblastTokens[0];
 
-        // 1. Dynamic Config Fetch (Per Topblast Documentation)
+        // 1. Dynamic Config Fetch
         async function initTopBlastConfig() {
             try {
                 const res = await fetch('https://topblastv2.lol/api/public/config');
@@ -815,26 +815,26 @@
         }
         initTopBlastConfig();
 
-        // 2. Live Token Directory API Fetch (/api/public/tokens)
-        async function loadTopblastTokens() {
+        // 2. Fetch Memes Category Tokens from `/api/public/tokens?category=memes`
+        async function loadMemeTokens() {
             try {
-                document.getElementById('topblastList').innerHTML = `<div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 12px;">Fetching live tokens from Topblast API...</div>`;
+                document.getElementById('topblastList').innerHTML = `<div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 12px;">Fetching live meme tokens from Topblast API...</div>`;
                 
-                const response = await fetch('https://topblastv2.lol/api/public/tokens');
+                // Fetching specifically the memes category per Topblast documentation
+                const response = await fetch('https://topblastv2.lol/api/public/tokens?category=memes');
                 const data = await response.json();
                 
                 let rawTokens = data.tokens || [];
                 
                 if (rawTokens.length > 0) {
                     allTopblastTokens = rawTokens.map(t => {
-                        // Extract real market cap amount from API response structure
-                        let capAmount = t.cap && t.cap.amount ? parseFloat(t.cap.amount) : 2500;
+                        let capAmount = t.cap && t.cap.amount ? parseFloat(t.cap.amount) : 35000;
                         return {
                             name: t.name || 'Unknown',
-                            symbol: t.symbol || 'TOKEN',
-                            address: t.curve || 'EQBLLYmuwZUpNKiNx8hwfTRo1LeLHx7jYYSkGOuNip2Sslzu',
+                            symbol: t.symbol || 'MEME',
+                            address: t.curve || 'EQALMVFWfRIj3CeZHxTObrr89OUtGT1E_WbT4E82izM9Es7Z',
                             logo: t.image || 'https://topblastv2.lol/favicon.png',
-                            mcap: capAmount * 18.5,
+                            mcap: capAmount,
                             liq: 15000,
                             vol: 8000,
                             priceUSD: 0.05
@@ -843,10 +843,10 @@
                     
                     currentTopblastPage = 1;
                     renderTopblastList();
-                    document.getElementById('configStatusLabel').innerText = `● Topblast v2 (${allTopblastTokens.length} Live Tokens)`;
+                    document.getElementById('configStatusLabel').innerText = `● Memes Feed (${allTopblastTokens.length} Tokens)`;
                 }
             } catch (error) {
-                console.warn("API token fetch failed, keeping fallback list:", error);
+                console.warn("API meme tokens fetch failed, keeping fallback list:", error);
                 renderTopblastList();
             }
         }
@@ -1256,7 +1256,7 @@
 
             const container = document.getElementById('topblastList');
             if (pageItems.length === 0) {
-                container.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 12px;">No matching Topblast tokens found.</div>`;
+                container.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 12px;">No matching meme tokens found.</div>`;
                 return;
             }
 
@@ -1273,7 +1273,7 @@
                             <div>
                                 <div style="display:flex; align-items:center; gap:6px;">
                                     <h4 style="font-size:14px; font-weight:900; color:#fff;">$${t.symbol}</h4>
-                                    <span style="font-size:8px; background:rgba(16,185,129,0.15); color:var(--accent-green); border:1px solid rgba(16,185,129,0.35); padding:1px 5px; border-radius:4px; font-weight:800; text-transform:uppercase;">Bonded</span>
+                                    <span style="font-size:8px; background:rgba(16,185,129,0.15); color:var(--accent-green); border:1px solid rgba(16,185,129,0.35); padding:1px 5px; border-radius:4px; font-weight:800; text-transform:uppercase;">Meme</span>
                                 </div>
                                 <span style="font-size:11px; color:var(--text-muted); font-weight:700;">${t.name}</span>
                             </div>
@@ -1287,8 +1287,8 @@
             });
         }
 
-        // Initialize and load live tokens on startup
-        loadTopblastTokens();
+        // Initialize and load the memes category feed immediately on startup
+        loadMemeTokens();
         calculateSwapOutput();
     </script>
 </body>
