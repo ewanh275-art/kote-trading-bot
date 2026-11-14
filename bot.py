@@ -3,17 +3,20 @@ import json
 import threading
 import logging
 from http.server import HTTPServer, BaseHTTPRequestHandler
-from urllib.parse import urlparse
+from urllib.parse import urlparse, parse_qs
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 
 logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Global Leaderboard / Activity Store
+# Global Leaderboard & Referral Store
 global_leaderboard = [
     {"name": "KoteTrader 🐱", "score": "5.40 SOL"}
 ]
+
+users_db = set()
+referrals_db = {}  # {referrer_id: [referred_user_id, ...]}
 
 # --- 1. RENDER HEALTH CHECK & API SERVER ---
 class HealthHandler(BaseHTTPRequestHandler):
@@ -26,6 +29,23 @@ class HealthHandler(BaseHTTPRequestHandler):
             self.send_header("Access-Control-Allow-Origin", "*")
             self.end_headers()
             self.wfile.write(json.dumps(global_leaderboard).encode("utf-8"))
+            return
+            
+        if parsed_url.path == "/api/referrals":
+            query_params = parse_qs(parsed_url.query)
+            user_id = query_params.get("user_id", [None])[0]
+            count = len(referrals_db.get(user_id, [])) if user_id else 0
+            referred_list = referrals_db.get(user_id, [])
+            
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.end_headers()
+            self.wfile.write(json.dumps({
+                "user_id": user_id, 
+                "referral_count": count, 
+                "referred_users": referred_list
+            }).encode("utf-8"))
             return
             
         self.send_response(200)
@@ -81,6 +101,20 @@ def run_server():
 # --- 2. TELEGRAM BOT COMMAND HANDLERS ---
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.effective_user
+    user_id = str(user.id)
+    
+    # Instant Referral Tracking on bot load (t.me/bot?start=ref_12345678)
+    if context.args and context.args[0].startswith("ref_"):
+        referrer_id = context.args[0].replace("ref_", "")
+        if referrer_id != user_id:
+            if referrer_id not in referrals_db:
+                referrals_db[referrer_id] = []
+            if user_id not in referrals_db[referrer_id]:
+                referrals_db[referrer_id].append(user_id)
+                logger.info(f"Instant Referral Tracked: User {user_id} referred by {referrer_id}")
+
+    users_db.add(user_id)
+
     welcome_text = f"""<b>🐱 Welcome to Kote Trading & Sniper Bot, {user.first_name}!</b>
 
 Your ultimate companion for automated token sniping, wallet management, and decentralized trading on Telegram.
@@ -127,4 +161,5 @@ def main():
     logger.info("Starting Kote Trading & Sniper Bot polling...")
     application.run_polling()
 
-if __
+if __name__ == "__main__":
+    main()
