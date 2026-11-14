@@ -485,7 +485,7 @@
 
     <!-- --- CINEMATIC INTRO SCREEN --- -->
     <div id="intro-screen">
-        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v11.0</div>
+        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v11.1</div>
         <div class="intro-content">
             <div class="intro-logo-moon">🐱</div>
             <div style="font-size: 24px; font-weight: 900; color: #fff; letter-spacing: 0.5px;">GRAM & TOPBLAST MEMES</div>
@@ -709,7 +709,7 @@
                     </div>
 
                     <div style="background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 14px; padding: 14px; margin-bottom: 14px;">
-                        <div style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px;">🔗 Your Referral Link</div>
+                        <div style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px;">🔗 Your Referral Link (@KoteTrade_bot)</div>
                         <div style="display: flex; gap: 8px;">
                             <input type="text" id="refLinkInput" class="pro-input" style="font-size: 11px; width: 100%; background: #07070a; padding: 8px; border-radius: 8px;" readonly value="Connect wallet to generate">
                             <button class="btn-action btn-red" style="padding: 8px 14px; width: auto; font-size: 12px;" onclick="copyReferralLink()">Copy</button>
@@ -803,9 +803,8 @@
             document.getElementById('intro-screen').classList.add('hidden');
         };
 
-        // --- CONFIGURE YOUR TELEGRAM BOT USERNAME HERE ---
-        // Change "KoteTradingBot" to your exact bot username (without @) so referral links open your bot correctly.
-        const TELEGRAM_BOT_USERNAME = "KoteTradingBot";
+        // --- CONFIGURE YOUR EXACT TELEGRAM BOT USERNAME HERE ---
+        const TELEGRAM_BOT_USERNAME = "KoteTrade_bot";
 
         const dynamicManifestUrl = new URL('tonconnect-manifest.json', window.location.href).href;
         const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
@@ -1052,7 +1051,7 @@
                 userWalletAddress = wallet.account.address;
                 const shortAddr = userWalletAddress.slice(0, 4) + '...' + userWalletAddress.slice(-4);
                 
-                // Uses the configurable TELEGRAM_BOT_USERNAME constant
+                // Generated using TELEGRAM_BOT_USERNAME (@KoteTrade_bot)
                 document.getElementById('refLinkInput').value = `https://t.me/${TELEGRAM_BOT_USERNAME}/app?startapp=ref_${shortAddr}`;
                 document.getElementById('moonpayWalletTarget').innerText = shortAddr;
                 fetchRealWalletHoldings(userWalletAddress);
@@ -1303,7 +1302,7 @@
                 const data = await res.json();
                 const txs = data.transactions || [];
 
-                let confirmedFeeTotal = 0;
+                let confirmedReferralTotal = 0;
                 referredTradersSet.clear();
 
                 txs.forEach(tx => {
@@ -1311,27 +1310,13 @@
                     if (tx.in_msg && tx.in_msg.destination && tx.in_msg.destination.address === address) {
                         const valTon = parseFloat(tx.in_msg.value || 0) / 1e9;
                         if (valTon > 0 && tx.in_msg.source && tx.in_msg.source.address) {
-                            // If someone sent GRAM to this user, count as referral/earnings activity
                             referredTradersSet.add(tx.in_msg.source.address);
-                            confirmedFeeTotal += valTon;
+                            confirmedReferralTotal += valTon;
                         }
-                    }
-                    // Also check out_msgs for treasury routing
-                    if (tx.out_msgs && tx.out_msgs.length > 0) {
-                        tx.out_msgs.forEach(msg => {
-                            const valueTon = parseFloat(msg.value || 0) / 1e9;
-                            if (msg.destination && msg.destination.address === TREASURY_ADDRESS) {
-                                // outbound tracking if needed
-                            }
-                        });
                     }
                 });
 
-                if (referrerAddress) {
-                    referralEarnings = confirmedFeeTotal;
-                } else {
-                    referralEarnings = confirmedFeeTotal;
-                }
+                referralEarnings = confirmedReferralTotal;
 
                 document.getElementById('referralEarnings').innerText = referralEarnings.toFixed(2) + ' GRAM';
                 document.getElementById('referredCount').innerText = referredTradersSet.size + ' Users';
