@@ -486,7 +486,7 @@
 
     <!-- --- CINEMATIC INTRO SCREEN --- -->
     <div id="intro-screen">
-        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v11.8</div>
+        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v11.9</div>
         <div class="intro-content">
             <div class="intro-logo-moon">🐱</div>
             <div style="font-size: 24px; font-weight: 900; color: #fff; letter-spacing: 0.5px;">GRAM & TOPBLAST MEMES</div>
@@ -699,7 +699,7 @@
                     </div>
 
                     <div id="gramMemesList">
-                        <div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 12px;">Harvesting DeDust pools...</div>
+                        <div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 12px;">Tap tab to load Gram Memes pools...</div>
                     </div>
                 </div>
             </section>
@@ -1109,9 +1109,15 @@
             const targetId = pageId.startsWith('page-') ? pageId : 'page-' + pageId;
             document.getElementById(targetId).classList.add('active');
             if(navBtn) navBtn.classList.add('active');
+            
             if((targetId === 'page-active-trades' || targetId === 'page-profile') && userWalletAddress) {
                 fetchRealWalletHoldings(userWalletAddress);
                 verifyBlockchainTransactions(userWalletAddress);
+            }
+
+            // Lazy load Gram Memes pools only when user clicks the Gram Memes tab (prevents boot freeze)
+            if(targetId === 'page-gram-memes' && gramMemesTokens.length === 0) {
+                loadGramMemesTokens();
             }
         };
 
@@ -1675,9 +1681,10 @@
             });
         }
 
+        // --- BOOT INITIALIZATION (Optimized to prevent startup freeze) ---
         loadTopblastTokens();
-        loadGramMemesTokens();
         calculateSwapOutput();
     </script>
 </body>
 </html>
+
