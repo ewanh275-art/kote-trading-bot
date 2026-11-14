@@ -722,8 +722,8 @@
                         <div style="text-align: center; padding: 15px; color: var(--text-muted); font-size: 12px;">No active bot trades executed yet.</div>
                     </div>
 
-                    <!-- CONNECTED WALLET ACTUAL HOLDINGS (Filtered > $1) -->
-                    <div class="card-title" style="margin-bottom: 8px;">💎 Connected Wallet Actual Holdings <span style="font-size: 9px; color: var(--text-muted);">(> $1.00 Filtered)</span></div>
+                    <!-- CONNECTED WALLET ACTUAL HOLDINGS (All Tokens Displayed) -->
+                    <div class="card-title" style="margin-bottom: 8px;">💎 Connected Wallet Actual Holdings</div>
                     <div id="onChainWalletHoldings" style="display: flex; flex-direction: column; gap: 8px;">
                         <div style="text-align: center; padding: 15px; color: var(--text-muted); font-size: 12px;">Connect wallet via TonConnect to load live wallet assets.</div>
                     </div>
@@ -1262,7 +1262,7 @@
         }
         window.calculateSwapOutput = calculateSwapOutput;
 
-        // --- REAL WALLET HOLDINGS WITH DEXSCREENER PRICING & STRICT > $1 FILTER ---
+        // --- REAL WALLET HOLDINGS (SHOWS ALL TOKENS & REAL-TIME DEXSCREENER WORTH) ---
         async function fetchRealWalletHoldings(address) {
             const container = document.getElementById('onChainWalletHoldings');
             container.innerHTML = `<div style="text-align: center; padding: 15px; color: var(--text-muted); font-size: 12px;">Querying wallet holdings & fetching real-time prices...</div>`;
@@ -1279,8 +1279,6 @@
                 }
 
                 container.innerHTML = '';
-                let displayedCount = 0;
-
                 for (const b of balances) {
                     const rawBalance = parseFloat(b.balance || 0);
                     const decimals = b.jetton.decimals || 9;
@@ -1308,13 +1306,6 @@
 
                     const estUsdValue = amount * priceUSD;
 
-                    // STRICT FILTER: If worth $1.00 or less, skip showing it completely
-                    if (estUsdValue <= 1.0) {
-                        continue;
-                    }
-
-                    displayedCount++;
-
                     container.innerHTML += `
                         <div class="launch-card" onclick="selectTokenForTrade('${tokenAddress}', '${name.replace(/'/g, "\\'")}', '${symbol}', '${image}', 50000, 20000, 10000, ${priceUSD}, true, 'dedust')">
                             <div style="display:flex; align-items:center; gap:12px;">
@@ -1329,14 +1320,12 @@
                             </div>
                             <div style="text-align:right;">
                                 <div style="font-size:11px; color:var(--text-main); font-weight:800;">${amount.toLocaleString(undefined, {maximumFractionDigits: 4})} ${symbol}</div>
-                                <div style="font-size:12px; font-weight:900; color:var(--accent-green);">~$${estUsdValue.toFixed(2)}</div>
+                                <div style="font-size:12px; font-weight:900; color:${priceUSD > 0 ? 'var(--accent-green)' : 'var(--text-muted)'};">
+                                    ${priceUSD > 0 ? `~$${estUsdValue.toFixed(2)}` : 'Unpriced Token'}
+                                </div>
                             </div>
                         </div>
                     `;
-                }
-
-                if (displayedCount === 0) {
-                    container.innerHTML = `<div style="text-align: center; padding: 15px; color: var(--text-muted); font-size: 12px;">No token holdings worth over $1.00 found in this wallet.</div>`;
                 }
 
             } catch (e) {
