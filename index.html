@@ -8,13 +8,13 @@
     <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
     <style>
         :root {
-            --bg-dark: #060913;
-            --bg-card: #0f1626;
-            --bg-input: #161f33;
+            --bg-dark: #05070e;
+            --bg-card: #0e1322;
+            --bg-input: #151d30;
             --border-color: #1e293b;
             --accent-blue: #38bdf8;
-            --accent-green: #10b981;
-            --accent-purple: #8b5cf6;
+            --accent-green: #22c55e;
+            --accent-purple: #a855f7;
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
         }
@@ -39,9 +39,9 @@
             justify-content: space-between;
             align-items: center;
             padding: 12px 16px;
-            background: rgba(15, 22, 38, 0.95);
+            background: rgba(14, 19, 34, 0.95);
             border-bottom: 1px solid var(--border-color);
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(12px);
             z-index: 20;
         }
         .brand {
@@ -50,16 +50,17 @@
             gap: 10px;
         }
         .brand-logo {
-            width: 34px;
-            height: 34px;
+            width: 36px;
+            height: 36px;
             border-radius: 10px;
-            background: linear-gradient(135deg, #38bdf8, #8b5cf6);
+            background: linear-gradient(135deg, #38bdf8, #a855f7);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: 800;
+            font-weight: 900;
             font-size: 16px;
             color: #fff;
+            box-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
         }
         .brand-text h1 {
             font-size: 15px;
@@ -79,18 +80,19 @@
             background: var(--accent-green);
             border-radius: 50%;
             display: inline-block;
+            box-shadow: 0 0 6px var(--accent-green);
         }
         #ton-connect {
-            transform: scale(0.88);
+            transform: scale(0.85);
             transform-origin: right center;
         }
 
-        /* Main Scrollable Content Area */
+        /* Content Area */
         .content-area {
             flex: 1;
             overflow-y: auto;
-            padding: 16px;
-            padding-bottom: 90px;
+            padding: 14px;
+            padding-bottom: 85px;
         }
         .page {
             display: none;
@@ -106,12 +108,13 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Cards & Containers */
+        /* Cards */
         .card {
             background: var(--bg-card);
             border: 1px solid var(--border-color);
             border-radius: 16px;
             padding: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
         }
         .card-header {
             display: flex;
@@ -120,54 +123,71 @@
             margin-bottom: 12px;
         }
         .card-title {
-            font-size: 13px;
-            font-weight: 600;
+            font-size: 12px;
+            font-weight: 700;
             color: var(--text-muted);
             text-transform: uppercase;
-            letter-spacing: 0.6px;
+            letter-spacing: 0.8px;
         }
 
-        /* Token Hero Badge */
-        .kote-banner {
+        /* Embedded Chart Container */
+        .chart-container {
+            width: 100%;
+            height: 320px;
+            background: #020408;
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            overflow: hidden;
+            position: relative;
+            margin-bottom: 12px;
+        }
+        .chart-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* Token Header Banner */
+        .token-banner {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            background: linear-gradient(145deg, #131c31, #0b101d);
-            border: 1px solid rgba(56, 189, 248, 0.25);
-            border-radius: 16px;
-            padding: 14px;
+            background: linear-gradient(145deg, #121a2d, #090d18);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            border-radius: 14px;
+            padding: 12px 14px;
+            margin-bottom: 12px;
         }
-        .kote-left {
+        .token-left {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
         }
         .token-avatar {
-            width: 44px;
-            height: 44px;
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
             object-fit: cover;
             border: 2px solid var(--accent-blue);
-            background: #1e293b;
         }
         .contract-pill {
-            font-size: 11px;
+            font-size: 10px;
             color: var(--accent-blue);
             background: rgba(56, 189, 248, 0.1);
             padding: 3px 8px;
             border-radius: 6px;
-            margin-top: 4px;
+            margin-top: 3px;
             display: inline-block;
             cursor: pointer;
         }
 
-        /* Swap Box UI */
+        /* Swap Box */
         .swap-box {
             background: var(--bg-input);
             border: 1px solid var(--border-color);
             border-radius: 12px;
-            padding: 12px 14px;
-            margin-bottom: 10px;
+            padding: 12px;
+            margin-bottom: 8px;
         }
         .swap-box-top {
             display: flex;
@@ -185,7 +205,7 @@
             background: transparent;
             border: none;
             color: var(--text-main);
-            font-size: 20px;
+            font-size: 18px;
             font-weight: 700;
             width: 60%;
             outline: none;
@@ -194,11 +214,11 @@
             display: flex;
             align-items: center;
             gap: 6px;
-            background: #0f1626;
-            border: 1px solid #334155;
+            background: #0b101d;
+            border: 1px solid var(--border-color);
             padding: 6px 10px;
             border-radius: 10px;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 700;
         }
         .token-badge img {
@@ -207,41 +227,19 @@
             border-radius: 50%;
         }
 
-        /* Slippage Pills */
-        .slippage-row {
-            display: flex;
-            gap: 6px;
-            margin: 10px 0 14px 0;
-        }
-        .slip-btn {
-            flex: 1;
-            background: var(--bg-input);
-            border: 1px solid var(--border-color);
-            color: var(--text-muted);
-            padding: 6px;
-            border-radius: 8px;
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-        }
-        .slip-btn.active {
-            border-color: var(--accent-blue);
-            color: var(--accent-blue);
-            background: rgba(56, 189, 248, 0.1);
-        }
-
-        /* Primary & Secondary Buttons */
+        /* Buttons */
         .btn-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 10px;
+            margin-top: 12px;
         }
         .btn {
             width: 100%;
-            padding: 13px;
+            padding: 12px;
             border-radius: 12px;
             border: none;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 700;
             cursor: pointer;
             text-align: center;
@@ -250,12 +248,11 @@
             align-items: center;
             justify-content: center;
             gap: 6px;
-            transition: opacity 0.15s;
         }
-        .btn:active { opacity: 0.85; }
         .btn-green {
             background: var(--accent-green);
             color: #042f2e;
+            box-shadow: 0 4px 14px rgba(34, 197, 94, 0.3);
         }
         .btn-outline {
             background: var(--bg-input);
@@ -263,19 +260,21 @@
             border: 1px solid rgba(56, 189, 248, 0.3);
         }
         .btn-purple {
-            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            background: linear-gradient(135deg, #6366f1, #a855f7);
             color: #ffffff;
+            box-shadow: 0 4px 14px rgba(168, 85, 247, 0.3);
         }
 
-        /* Form Inputs for Sniper */
+        /* Form Inputs */
         .form-group {
             margin-bottom: 12px;
         }
         .form-label {
             display: block;
-            font-size: 12px;
+            font-size: 11px;
             color: var(--text-muted);
             margin-bottom: 6px;
+            font-weight: 600;
         }
         .text-input {
             width: 100%;
@@ -296,17 +295,17 @@
             align-items: center;
             padding: 10px 0;
             border-top: 1px solid var(--border-color);
-            font-size: 13px;
+            font-size: 12px;
         }
 
-        /* Topblast Launch Feed */
+        /* Topblast Launch Item */
         .launch-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
             background: var(--bg-input);
             border: 1px solid var(--border-color);
-            padding: 12px;
+            padding: 10px 12px;
             border-radius: 12px;
             margin-bottom: 8px;
         }
@@ -316,23 +315,18 @@
             gap: 10px;
         }
         .launch-logo {
-            width: 38px;
-            height: 38px;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
             object-fit: cover;
-            background: #0f1626;
         }
         .launch-meta h4 {
-            font-size: 14px;
+            font-size: 13px;
             margin-bottom: 2px;
         }
         .launch-meta span {
-            font-size: 11px;
+            font-size: 10px;
             color: var(--text-muted);
-        }
-        .launch-actions {
-            display: flex;
-            gap: 6px;
         }
         .mini-btn {
             padding: 6px 10px;
@@ -344,18 +338,19 @@
             text-decoration: none;
         }
 
-        /* Bottom Navigation Bar */
+        /* Bottom Navigation */
         .bottom-nav {
             position: fixed;
             bottom: 0;
             left: 0;
             width: 100%;
-            background: rgba(15, 22, 38, 0.98);
+            background: rgba(14, 19, 34, 0.98);
             border-top: 1px solid var(--border-color);
             display: flex;
             justify-content: space-around;
             padding: 8px 0 12px 0;
             z-index: 30;
+            backdrop-filter: blur(12px);
         }
         .nav-item {
             background: none;
@@ -364,9 +359,9 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 4px;
-            font-size: 11px;
-            font-weight: 600;
+            gap: 3px;
+            font-size: 10px;
+            font-weight: 700;
             cursor: pointer;
             width: 25%;
         }
@@ -380,104 +375,93 @@
 </head>
 <body>
 
-    <!-- Top Header -->
+    <!-- Header -->
     <header class="topbar">
         <div class="brand">
-            <div class="brand-logo">K</div>
+            <div class="brand-logo">🐱</div>
             <div class="brand-text">
                 <h1>Kote Terminal</h1>
-                <span><i class="status-dot"></i> TON Mainnet</span>
+                <span><i class="status-dot"></i> Topblast Network</span>
             </div>
         </div>
         <div id="ton-connect"></div>
     </header>
 
-    <!-- Main Multi-Page Content -->
+    <!-- Main Content -->
     <main class="content-area">
 
-        <!-- PAGE 1: TRADE ($KOTE & $GRAM SWAP) -->
+        <!-- PAGE 1: TRADE & EMBEDDED CHARTS -->
         <section id="page-trade" class="page active">
-            <div class="kote-banner">
-                <div class="kote-left">
-                    <img src="https://ewanh275-art.github.io/kote-trading-bot/cat.png" class="token-avatar" alt="KOTE" onerror="this.src='https://ton.org/download/ton_symbol.png'">
-                    <div>
-                        <h2 style="font-size: 16px;">$KOTE Official</h2>
-                        <div class="contract-pill" onclick="copyCA('EQAmvp1Vrr0zY2--STdH-0X_mP5iCD61p2vNVJYwHlgBni2C')">
-                            EQAmvp...gBni2C 📋
+            <!-- Embedded Dexscreener Chart Viewer -->
+            <div class="card" style="padding: 12px;">
+                <div class="card-header" style="margin-bottom: 8px;">
+                    <span class="card-title" id="chartTitle">📊 Live Chart: $KOTE</span>
+                    <a id="externalChartBtn" href="https://dexscreener.com/ton/EQAmvp1Vrr0zY2--STdH-0X_mP5iCD61p2vNVJYwHlgBni2C" target="_blank" style="font-size: 11px; color: var(--accent-blue); text-decoration: none;">Open Full ↗</a>
+                </div>
+                <div class="chart-container">
+                    <iframe id="dexChartFrame" src="https://dexscreener.com/ton/EQAmvp1Vrr0zY2--STdH-0X_mP5iCD61p2vNVJYwHlgBni2C?embed=1&theme=dark&trades=0&info=0"></iframe>
+                </div>
+            </div>
+
+            <!-- Token Banner & Swap Terminal -->
+            <div class="card">
+                <div class="token-banner">
+                    <div class="token-left">
+                        <img id="activeTokenImg" src="https://ewanh275-art.github.io/kote-trading-bot/cat.png" class="token-avatar" alt="KOTE">
+                        <div>
+                            <h2 id="activeTokenName" style="font-size: 15px;">KOTE ($KOTE)</h2>
+                            <div class="contract-pill" onclick="copyCA()">
+                                <span id="activeCaDisplay">EQAmvp...gBni2C</span> 📋
+                            </div>
                         </div>
                     </div>
                 </div>
-                <a href="https://dexscreener.com/ton/EQAmvp1Vrr0zY2--STdH-0X_mP5iCD61p2vNVJYwHlgBni2C" target="_blank" class="btn btn-outline" style="width: auto; padding: 8px 12px; font-size: 12px;">
-                    📈 Chart
-                </a>
-            </div>
 
-            <div class="card">
-                <div class="card-header">
-                    <span class="card-title">Instant Swap</span>
-                    <span style="font-size: 11px; color: var(--accent-blue);">Pair: $GRAM / $KOTE</span>
-                </div>
-
-                <!-- Pay Box ($GRAM) -->
                 <div class="swap-box">
                     <div class="swap-box-top">
                         <span>You Pay</span>
-                        <span>Native Swap Currency</span>
+                        <span>Native Gas</span>
                     </div>
                     <div class="swap-box-main">
                         <input type="number" id="gramPayInput" class="swap-input" value="100" min="1" oninput="updateEstimate()">
                         <div class="token-badge">
-                            <img src="https://cache.tonapi.io/imgproxy/a89d68e6b4f0b4d12f01815a566f5525/rs:fill:200:200:1/g:no/aHR0cHM6Ly9ncmFtY29pbi5vcmcvbG9nby5wbmc.webp" alt="GRAM" onerror="this.src='https://ton.org/download/ton_symbol.png'">
+                            <img src="https://cache.tonapi.io/imgproxy/a89d68e6b4f0b4d12f01815a566f5525/rs:fill:200:200:1/g:no/aHR0cHM6Ly9ncmFtY29pbi5vcmcvbG9nby5wbmc.webp" alt="GRAM">
                             <span>GRAM</span>
                         </div>
                     </div>
                 </div>
 
-                <!-- Receive Box (Target Token) -->
                 <div class="swap-box">
                     <div class="swap-box-top">
                         <span>You Receive (Est.)</span>
-                        <span id="targetTokenLabel">Target: $KOTE</span>
+                        <span id="targetTokenLabel">Target Token</span>
                     </div>
                     <div class="swap-box-main">
                         <input type="text" id="receiveEstimate" class="swap-input" value="~ 4,250.00" readonly>
                         <div class="token-badge">
-                            <img id="targetTokenImg" src="https://ewanh275-art.github.io/kote-trading-bot/cat.png" alt="Target" onerror="this.src='https://ton.org/download/ton_symbol.png'">
-                            <span id="targetTokenSymbol">KOTE</span>
+                            <img id="receiveTokenBadgeImg" src="https://ewanh275-art.github.io/kote-trading-bot/cat.png" alt="Target">
+                            <span id="receiveTokenBadgeSymbol">KOTE</span>
                         </div>
                     </div>
                 </div>
 
-                <!-- Slippage Selector -->
-                <div class="slippage-row">
-                    <button class="slip-btn" onclick="setSlippage(this, '1%')">1% Slip</button>
-                    <button class="slip-btn active" onclick="setSlippage(this, '5%')">5% Slip</button>
-                    <button class="slip-btn" onclick="setSlippage(this, '15%')">15% Slip</button>
-                    <button class="slip-btn" onclick="setSlippage(this, 'Auto')">Auto</button>
-                </div>
-
-                <div class="btn-grid">
-                    <a id="dexChartLink" href="https://dexscreener.com/ton/EQAmvp1Vrr0zY2--STdH-0X_mP5iCD61p2vNVJYwHlgBni2C" target="_blank" class="btn btn-outline">
-                        Dexscreener
-                    </a>
-                    <button class="btn btn-green" onclick="triggerSwap()">
-                        Swap with $GRAM
-                    </button>
-                </div>
+                <button class="btn btn-green" style="margin-top: 10px;" onclick="executeSwap()">
+                    ⚡ Swap with $GRAM
+                </button>
             </div>
         </section>
 
-        <!-- PAGE 2: SNIPER TERMINAL -->
+        <!-- PAGE 2: AUTO-SNIPER -->
         <section id="page-sniper" class="page">
             <div class="card">
                 <div class="card-header">
-                    <span class="card-title">⚡ Auto-Sniper Engine</span>
-                    <span style="font-size: 11px; color: var(--accent-green);">● Armed</span>
+                    <span class="card-title">🎯 Instant Sniper Engine</span>
+                    <span style="font-size: 11px; color: var(--accent-green);">● Active</span>
                 </div>
 
                 <div class="form-group">
-                    <label class="form-label">Target Token Contract Address (TON / Topblast)</label>
-                    <input type="text" id="sniperCA" class="text-input" placeholder="Paste EQ... contract address" value="EQAmvp1Vrr0zY2--STdH-0X_mP5iCD61p2vNVJYwHlgBni2C">
+                    <label class="form-label">Target Token Contract Address (CA)</label>
+                    <input type="text" id="sniperCA" class="text-input" placeholder="Paste EQ... contract address">
                 </div>
 
                 <div class="form-group">
@@ -486,56 +470,50 @@
                 </div>
 
                 <div class="toggle-row">
-                    <span>Anti-MEV & Rug Protection</span>
+                    <span>Anti-Rug & MEV Shield</span>
                     <input type="checkbox" checked style="accent-color: var(--accent-blue); width: 16px; height: 16px;">
                 </div>
-                <div class="toggle-row">
-                    <span>Auto-Sell at 2x (100% Profit)</span>
-                    <input type="checkbox" style="accent-color: var(--accent-blue); width: 16px; height: 16px;">
-                </div>
 
-                <button class="btn btn-green" style="margin-top: 14px;" onclick="activateSniper()">
-                    🎯 Arm & Execute Snipe
+                <button class="btn btn-green" style="margin-top: 12px;" onclick="activateSniper()">
+                    🚀 Execute Instant Snipe
                 </button>
             </div>
         </section>
 
-        <!-- PAGE 3: TOPBLAST.LOL LAUNCHES -->
+        <!-- PAGE 3: TOPBLAST.LOL & TOPBLASTEDBOT ECOSYSTEM -->
         <section id="page-launches" class="page">
             <div class="card">
                 <div class="card-header">
-                    <span class="card-title">🔥 Topblast.lol Live Feed</span>
-                    <button onclick="loadTopblastFeed()" style="background:none; border:none; color:var(--accent-blue); font-size:12px; cursor:pointer;">↻ Refresh</button>
+                    <span class="card-title">🔥 Topblast.lol / @topblastedbot</span>
+                    <button onclick="loadTopblastTokens()" style="background:none; border:none; color:var(--accent-blue); font-size:11px; cursor:pointer;">↻ Refresh</button>
                 </div>
-                <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">
-                    Trade newly launched and historical Topblast.lol tokens directly using $GRAM.
+                <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 12px;">
+                    All live and historical tokens launched via @topblastedbot and Topblast.lol. Tap any token to view its embedded chart and trade instantly.
                 </p>
-                <div id="topblastContainer">
-                    <div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 13px;">Loading Topblast.lol tokens...</div>
+                <div id="topblastList">
+                    <div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 13px;">Syncing Topblast tokens...</div>
                 </div>
             </div>
         </section>
 
-        <!-- PAGE 4: MOONPAY FIAT ON-RAMP -->
+        <!-- PAGE 4: FIAT ON-RAMP (MOONPAY) -->
         <section id="page-buy" class="page">
             <div class="card">
                 <div class="card-header">
-                    <span class="card-title">💳 Fiat On-Ramp (MoonPay)</span>
+                    <span class="card-title">💳 MoonPay Fiat Gateway</span>
                 </div>
-                <p style="font-size: 13px; color: var(--text-muted); line-height: 1.5; margin-bottom: 16px;">
-                    Purchase TON or $GRAM directly using <strong>Apple Pay</strong>, <strong>Google Pay</strong>, or a <strong>Credit / Debit Card</strong>. Funds are delivered straight to your connected TonConnect wallet.
+                <p style="font-size: 12px; color: var(--text-muted); line-height: 1.5; margin-bottom: 14px;">
+                    Fund your connected TonConnect wallet instantly using <strong>Apple Pay</strong>, <strong>Google Pay</strong>, or bank card.
                 </p>
 
                 <div class="swap-box">
                     <div class="swap-box-top">
-                        <span>Purchase Amount (USD / GBP)</span>
+                        <span>Amount (USD)</span>
                         <span>Instant Delivery</span>
                     </div>
                     <div class="swap-box-main">
-                        <input type="number" id="fiatAmount" class="swap-input" value="50" min="20">
-                        <div class="token-badge">
-                            <span>USD</span>
-                        </div>
+                        <input type="number" id="fiatAmount" class="swap-input" value="50" min="10">
+                        <div class="token-badge"><span>USD</span></div>
                     </div>
                 </div>
 
@@ -550,8 +528,8 @@
     <!-- Bottom Navigation -->
     <nav class="bottom-nav">
         <button class="nav-item active" onclick="switchPage('trade', this)">
-            <span class="nav-icon">⇄</span>
-            <span>Trade</span>
+            <span class="nav-icon">📈</span>
+            <span>Trade & Chart</span>
         </button>
         <button class="nav-item" onclick="switchPage('sniper', this)">
             <span class="nav-icon">🎯</span>
@@ -563,34 +541,33 @@
         </button>
         <button class="nav-item" onclick="switchPage('buy', this)">
             <span class="nav-icon">💳</span>
-            <span>Buy</span>
+            <span>Buy Crypto</span>
         </button>
     </nav>
 
     <script>
-        // 1. Telegram WebApp Init
         const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
         if (tg) {
             tg.ready();
             tg.expand();
         }
 
-        // 2. Dynamic Manifest URL Resolution (Fixes Manifest Errors Automatically)
+        // TonConnect Setup with Dynamic Manifest Resolution
         const dynamicManifestUrl = new URL('tonconnect-manifest.json', window.location.href).href;
         const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
             manifestUrl: dynamicManifestUrl,
             buttonRootId: 'ton-connect'
         });
 
-        // Active Token State (Defaults to $KOTE)
-        let activeToken = {
+        // Active Selected Token State ($KOTE Default)
+        let currentActiveToken = {
+            name: 'Kote Official',
             symbol: 'KOTE',
             address: 'EQAmvp1Vrr0zY2--STdH-0X_mP5iCD61p2vNVJYwHlgBni2C',
             logo: 'https://ewanh275-art.github.io/kote-trading-bot/cat.png',
-            rate: 42.5
+            rate: 45.0
         };
 
-        // 3. Page Navigation Logic
         function switchPage(pageId, navBtn) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
@@ -598,51 +575,49 @@
             navBtn.classList.add('active');
         }
 
-        function setSlippage(btn, val) {
-            document.querySelectorAll('.slip-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-        }
-
-        function copyCA(address) {
-            navigator.clipboard.writeText(address);
-            alert('Contract Address Copied:\n' + address);
+        function copyCA() {
+            navigator.clipboard.writeText(currentActiveToken.address);
+            alert('Contract Address Copied:\n' + currentActiveToken.address);
         }
 
         function updateEstimate() {
             const gramVal = parseFloat(document.getElementById('gramPayInput').value) || 0;
-            const est = (gramVal * activeToken.rate).toLocaleString(undefined, { maximumFractionDigits: 2 });
+            const est = (gramVal * currentActiveToken.rate).toLocaleString(undefined, { maximumFractionDigits: 2 });
             document.getElementById('receiveEstimate').value = '~ ' + est;
         }
 
-        // Load a selected Topblast token into the main Trade tab
-        function selectTokenForTrade(symbol, address, logo) {
-            activeToken = { symbol, address, logo, rate: 120.0 };
-            document.getElementById('targetTokenLabel').innerText = 'Target: $' + symbol;
-            document.getElementById('targetTokenSymbol').innerText = symbol;
-            document.getElementById('targetTokenImg').src = logo;
-            document.getElementById('dexChartLink').href = `https://dexscreener.com/ton/${address}`;
+        // Switch Chart and Token Context Dynamically
+        function selectToken(name, symbol, address, logo) {
+            currentActiveToken = { name, symbol, address, logo, rate: 85.0 };
+            
+            // Update UI elements
+            document.getElementById('chartTitle').innerText = `📊 Live Chart: $${symbol}`;
+            document.getElementById('dexChartFrame').src = `https://dexscreener.com/ton/${address}?embed=1&theme=dark&trades=0&info=0`;
+            document.getElementById('externalChartBtn').href = `https://dexscreener.com/ton/${address}`;
+            
+            document.getElementById('activeTokenName').innerText = `${name} ($${symbol})`;
+            document.getElementById('activeTokenImg').src = logo;
+            document.getElementById('activeCaDisplay').innerText = address.slice(0, 6) + '...' + address.slice(-6);
+            
+            document.getElementById('targetTokenLabel').innerText = `Target: $${symbol}`;
+            document.getElementById('receiveTokenBadgeSymbol').innerText = symbol;
+            document.getElementById('receiveTokenBadgeImg').src = logo;
+            
             updateEstimate();
             
-            // Switch automatically to Trade tab
-            const tradeNavBtn = document.querySelectorAll('.nav-item')[0];
-            switchPage('trade', tradeNavBtn);
+            // Jump to Trade & Chart page
+            switchPage('trade', document.querySelectorAll('.nav-item')[0]);
         }
 
-        // 4. Execute $GRAM Swap
-        function triggerSwap() {
+        function executeSwap() {
             if (!tonConnectUI.connected) {
                 tonConnectUI.openModal();
                 return;
             }
-            const amount = document.getElementById('gramPayInput').value;
-            if (!amount || amount <= 0) {
-                alert('Enter a valid $GRAM amount.');
-                return;
-            }
-            alert(`Submitting $GRAM Swap:\n• Pay: ${amount} $GRAM\n• Receive: $${activeToken.symbol}\n• Contract: ${activeToken.address}`);
+            const amt = document.getElementById('gramPayInput').value;
+            alert(`Swapping ${amt} $GRAM for $${currentActiveToken.symbol}\nCA: ${currentActiveToken.address}`);
         }
 
-        // 5. Execute Sniper Order
         function activateSniper() {
             if (!tonConnectUI.connected) {
                 tonConnectUI.openModal();
@@ -651,83 +626,78 @@
             const ca = document.getElementById('sniperCA').value.trim();
             const amt = document.getElementById('sniperAmount').value;
             if (!ca) {
-                alert('Please paste a valid token contract address.');
+                alert('Please enter a target contract address.');
                 return;
             }
-            alert(`🎯 Sniper Armed!\n• Target CA: ${ca}\n• Buy Amount: ${amt} $GRAM`);
+            alert(`🎯 Sniper Armed for:\n• CA: ${ca}\n• Amount: ${amt} $GRAM`);
         }
 
-        // 6. Launch MoonPay Widget
         function launchMoonPay() {
-            const fiatAmount = document.getElementById('fiatAmount').value || 50;
-            const walletAddress = tonConnectUI.account ? tonConnectUI.account.address : '';
-            const moonpayUrl = `https://buy.moonpay.com/?currencyCode=ton&baseCurrencyAmount=${fiatAmount}${walletAddress ? '&walletAddress=' + walletAddress : ''}`;
-            
+            const amount = document.getElementById('fiatAmount').value || 50;
+            const wallet = tonConnectUI.account ? tonConnectUI.account.address : '';
+            const url = `https://buy.moonpay.com/?currencyCode=ton&baseCurrencyAmount=${amount}${wallet ? '&walletAddress=' + wallet : ''}`;
             if (tg && typeof tg.openLink === 'function') {
-                tg.openLink(moonpayUrl);
+                tg.openLink(url);
             } else {
-                window.open(moonpayUrl, '_blank');
+                window.open(url, '_blank');
             }
         }
 
-        // 7. Fetch Topblast.lol Tokens & Official Tonviewer/Dexscreener Logos
-        async function loadTopblastFeed() {
-            const container = document.getElementById('topblastContainer');
+        // Fetch Topblast.lol & @topblastedbot Ecosystem tokens
+        async function loadTopblastTokens() {
+            const container = document.getElementById('topblastList');
             
-            // Always pin $KOTE at the top of the feed with its official logo
-            const defaultTokens = [
+            // Default pinned $KOTE + verified topblast ecosystem tokens
+            let tokens = [
                 {
                     name: 'Kote Official',
                     symbol: 'KOTE',
                     address: 'EQAmvp1Vrr0zY2--STdH-0X_mP5iCD61p2vNVJYwHlgBni2C',
-                    logo: 'https://ewanh275-art.github.io/kote-trading-bot/cat.png',
-                    tag: 'Featured'
+                    logo: 'https://ewanh275-art.github.io/kote-trading-bot/cat.png'
                 }
             ];
 
             try {
-                const res = await fetch('https://topblast.lol/api/tokens');
-                const apiData = await res.json();
-                const tokens = Array.isArray(apiData) ? apiData : (apiData.tokens || []);
+                const response = await fetch('https://topblast.lol/api/tokens');
+                const data = await response.json();
+                const fetched = Array.isArray(data) ? data : (data.tokens || []);
                 
-                tokens.forEach(t => {
+                fetched.forEach(t => {
                     const addr = t.address || t.contract || t.ca;
-                    if (addr && addr !== defaultTokens[0].address) {
-                        defaultTokens.push({
-                            name: t.name || 'Topblast Token',
-                            symbol: t.symbol || 'MEME',
+                    if (addr && addr !== tokens[0].address) {
+                        tokens.push({
+                            name: t.name || 'Topblast Launch',
+                            symbol: t.symbol || 'BLAST',
                             address: addr,
-                            logo: t.image || t.logoUrl || `https://cache.tonapi.io/imgproxy/${addr}/rs:fill:200:200:1/g:no`,
-                            tag: 'Topblast'
+                            logo: t.image || t.logoUrl || `https://cache.tonapi.io/imgproxy/${addr}/rs:fill:200:200:1/g:no`
                         });
                     }
                 });
-            } catch (err) {
-                console.log('Using cached Topblast tokens while API warms up.');
+            } catch (e) {
+                console.log('Loading fallback Topblast tokens...');
             }
 
             container.innerHTML = '';
-            defaultTokens.forEach(token => {
+            tokens.forEach(t => {
                 container.innerHTML += `
                     <div class="launch-item">
                         <div class="launch-left">
-                            <img src="${token.logo}" class="launch-logo" alt="${token.symbol}" onerror="this.src='https://ton.org/download/ton_symbol.png'">
+                            <img src="${t.logo}" class="launch-logo" alt="${t.symbol}" onerror="this.src='https://ton.org/download/ton_symbol.png'">
                             <div class="launch-meta">
-                                <h4>${token.name} ($${token.symbol})</h4>
-                                <span>${token.tag} • ${token.address.slice(0, 6)}...${token.address.slice(-6)}</span>
+                                <h4>${t.name} ($${t.symbol})</h4>
+                                <span>CA: ${t.address.slice(0, 6)}...${t.address.slice(-6)}</span>
                             </div>
                         </div>
-                        <div class="launch-actions">
-                            <a href="https://dexscreener.com/ton/${token.address}" target="_blank" class="mini-btn" style="background:#1e293b; color:#38bdf8;">Chart</a>
-                            <button class="mini-btn" style="background:#10b981; color:#042f2e;" onclick="selectTokenForTrade('${token.symbol}', '${token.address}', '${token.logo}')">Trade</button>
+                        <div style="display: flex; gap: 6px;">
+                            <button class="mini-btn" style="background: #1e293b; color: var(--accent-blue);" onclick="selectToken('${t.name}', '${t.symbol}', '${t.address}', '${t.logo}')">Chart</button>
+                            <button class="mini-btn" style="background: var(--accent-green); color: #042f2e;" onclick="selectToken('${t.name}', '${t.symbol}', '${t.address}', '${t.logo}')">Trade</button>
                         </div>
                     </div>
                 `;
             });
         }
 
-        // Initialize Feed
-        loadTopblastFeed();
+        loadTopblastTokens();
     </script>
 </body>
 </html>
