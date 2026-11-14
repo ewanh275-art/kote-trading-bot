@@ -721,7 +721,7 @@
                         <div style="text-align: center; padding: 15px; color: var(--text-muted); font-size: 12px;">No confirmed blockchain trades registered yet.</div>
                     </div>
 
-                    <div class="card-title" style="margin-bottom: 8px;">💎 On-Chain Wallet Holdings</div>
+                    <div class="card-title" style="margin-bottom: 8px;">💎 On-Chain Wallet Holdings <span style="font-size: 10px; color: var(--text-muted);">(> $1.00 Filtered)</span></div>
                     <div id="onChainWalletHoldings" style="display: flex; flex-direction: column; gap: 8px;">
                         <div style="text-align: center; padding: 15px; color: var(--text-muted); font-size: 12px;">Connect wallet via TonConnect to load live on-chain assets.</div>
                     </div>
@@ -820,16 +820,17 @@
         const TREASURY_ADDRESS = "UQAC-pXNqjUJ0u1wBkLPiDkLVMZkWYXWvNQuH5Mtx_tPdsGV";
         const DEDUST_NATIVE_VAULT = "EQDa4VOnTYlLvDJ0gZjNYm5PXfSmmtL6Vs6A_CZEtXCNICq_";
         
-        // Parse Referral from Telegram start_param or URL
+        // --- INSTANT REFERRAL REGISTRATION ON LOAD (NO TRADE REQUIRED) ---
         const urlParams = new URLSearchParams(window.location.search);
         let referrerAddress = urlParams.get('ref') || (tg && tg.initDataUnsafe && tg.initDataUnsafe.start_param ? tg.initDataUnsafe.start_param.replace('ref_', '') : null);
 
-        // Track new user opening via referral link (Ensuring only users who have never opened the bot before count)
         if (referrerAddress) {
             const hasOpenedBefore = localStorage.getItem('kote_bot_initialized');
             if (!hasOpenedBefore) {
                 localStorage.setItem('kote_bot_initialized', 'true');
-                console.log('Registered new referee under referrer:', referrerAddress);
+                let currentInstantRefs = parseInt(localStorage.getItem('kote_instant_ref_count') || '0') + 1;
+                localStorage.setItem('kote_instant_ref_count', currentInstantRefs.toString());
+                console.log('Instant referral registered under:', referrerAddress);
             }
         } else {
             if (!localStorage.getItem('kote_bot_initialized')) {
@@ -1064,7 +1065,6 @@
                 userWalletAddress = wallet.account.address;
                 const shortAddr = userWalletAddress.slice(0, 4) + '...' + userWalletAddress.slice(-4);
                 
-                // Formatted with official Telegram Bot link structure: https://t.me/KoteTrade_bot/app?startapp=ref_[address]
                 document.getElementById('refLinkInput').value = `https://t.me/${TELEGRAM_BOT_USERNAME}/app?startapp=ref_${shortAddr}`;
                 document.getElementById('moonpayWalletTarget').innerText = shortAddr;
                 fetchRealWalletHoldings(userWalletAddress);
@@ -1258,9 +1258,10 @@
         }
         window.calculateSwapOutput = calculateSwapOutput;
 
+        // --- CORRECTED WALLET HOLDINGS: EXACT DECIMALS, DEXSCREENER PRICE & STRICT > $1 FILTER ---
         async function fetchRealWalletHoldings(address) {
             const container = document.getElementById('onChainWalletHoldings');
-            container.innerHTML = `<div style="text-align: center; padding: 15px; color: var(--text-muted); font-size: 12px;">Querying TonAPI blockchain...</div>`;
+            container.innerHTML = `<div style="text-align: center; padding: 15px; color: var(--text-muted); font-size: 12px;">Querying TonAPI blockchain & DexScreener...</div>`;
             try {
                 const res = await fetch(`https://tonapi.io/v2/accounts/${address}/jettons`);
                 const data = await res.json();
@@ -1271,20 +1272,57 @@
                     return;
                 }
 
-                let parsedBalances = balances.map(b => ({
-                    name: b.jetton.name || 'Unknown',
-                    symbol: b.jetton.symbol || 'JETTON',
-                    amount: parseFloat(b.balance) / Math.pow(10, b.jetton.decimals || 9),
-                    image: b.jetton.image || `https://cache.tonapi.io/imgproxy/${b.jetton.address}/rs:fill:200:200:1/g:no`,
-                    estUsdValue: (parseFloat(b.balance) / Math.pow(10, b.jetton.decimals || 9)) * (b.price?.prices?.USD || 0.01),
-                    address: b.jetton.address
-                }));
+                let parsedBalances = [];
+                for (const b of balances) {
+                    const rawBalance = parseFloat(b.balance || 0);
+                    const decimals = b.jetton.decimals || 9;
+                    const amount = rawBalance / Math.pow(10, decimals);
+                    if (amount <= 0) continue;
 
-                parsedBalances.sort((a, b) => b.amount - a.amount);
+                    const tokenAddress = b.jetton.address;
+                    const name = b.jetton.name || 'Unknown';
+                    const symbol = b.jetton.symbol || 'JETTON';
+                    const image = b.jetton.image || `https://cache.tonapi.io/imgproxy/${tokenAddress}/rs:fill:200:200:1/g:no`;
+
+                    // Fetch accurate per-token price from DexScreener (priceUsd) to fix inflation bugs
+                    let priceUSD = 0;
+                    try {
+                        const dexRes = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${tokenAddress}`);
+                        const dexData = await dexRes.json();
+                        if (dexData.pairs && dexData.pairs.length > 0) {
+                            priceUSD = parseFloat(dexData.pairs[0].priceUsd) || 0;
+                        }
+                    } catch (err) {
+                        priceUSD = b.price?.prices?.USD || 0;
+                    }
+
+                    const estUsdValue = amount * priceUSD;
+
+                    // STRICT FILTER: Only show tokens worth strictly more than $1.00
+                    if (estUsdValue > 1.0) {
+                        parsedBalances.push({
+                            name,
+                            symbol,
+                            amount,
+                            image,
+                            estUsdValue,
+                            address: tokenAddress,
+                            priceUSD
+                        });
+                    }
+                }
+
+                parsedBalances.sort((a, b) => b.estUsdValue - a.estUsdValue);
+
+                if (parsedBalances.length === 0) {
+                    container.innerHTML = `<div style="text-align: center; padding: 15px; color: var(--text-muted); font-size: 12px;">No token holdings worth over $1 found in this connected wallet.</div>`;
+                    return;
+                }
+
                 container.innerHTML = '';
                 parsedBalances.forEach(item => {
                     container.innerHTML += `
-                        <div class="launch-card" onclick="selectTokenForTrade('${item.address}', '${item.name}', '${item.symbol}', '${item.image}', 50000, 20000, 10000, 0.05, true, 'dedust')">
+                        <div class="launch-card" onclick="selectTokenForTrade('${item.address}', '${item.name.replace(/'/g, "\\'")}', '${item.symbol}', '${item.image}', 50000, 20000, 10000, ${item.priceUSD}, true, 'dedust')">
                             <div style="display:flex; align-items:center; gap:12px;">
                                 <div class="token-avatar-wrap">
                                     <span class="token-avatar-fallback">${item.symbol.charAt(0)}</span>
@@ -1296,7 +1334,7 @@
                                 </div>
                             </div>
                             <div style="text-align:right;">
-                                <div style="font-size:10px; color:var(--text-muted); text-transform:uppercase; font-weight:700;">Holdings</div>
+                                <div style="font-size:10px; color:var(--text-muted); text-transform:uppercase; font-weight:700;">${item.amount.toLocaleString(undefined, {maximumFractionDigits: 4})} ${item.symbol}</div>
                                 <div style="font-size:13px; font-weight:900; color:var(--accent-green);">~$${item.estUsdValue.toFixed(2)}</div>
                             </div>
                         </div>
@@ -1307,9 +1345,11 @@
             }
         }
 
-        // --- STRICTLY VERIFY ON-CHAIN REFERRAL TRANSACTIONS VIA OFFICIAL MEMO ---
+        // --- VERIFY ON-CHAIN REFERRAL TRANSACTIONS & INSTANT REFEREES ---
         async function verifyBlockchainTransactions(address) {
             const container = document.getElementById('botHeldPortfolioList');
+            let instantRefCount = parseInt(localStorage.getItem('kote_instant_ref_count') || '0');
+
             try {
                 const res = await fetch(`https://tonapi.io/v2/blockchain/accounts/${address}/transactions?limit=30`);
                 const data = await res.json();
@@ -1319,10 +1359,8 @@
                 referredTradersSet.clear();
 
                 txs.forEach(tx => {
-                    // Check incoming transactions for the official KoteTrade referral memo tag
                     if (tx.in_msg && tx.in_msg.destination && tx.in_msg.destination.address === address) {
                         const comment = tx.in_msg.comment || '';
-                        // Strict filter: only count transactions explicitly tagged with official referral memo
                         if (comment.includes('KoteTrade Ref Fee') || comment.includes('KoteTrade')) {
                             const valTon = parseFloat(tx.in_msg.value || 0) / 1e9;
                             if (valTon > 0 && tx.in_msg.source && tx.in_msg.source.address) {
@@ -1334,17 +1372,20 @@
                 });
 
                 referralEarnings = confirmedReferralTotal;
-
                 document.getElementById('referralEarnings').innerText = referralEarnings.toFixed(4) + ' GRAM';
-                document.getElementById('referredCount').innerText = referredTradersSet.size + ' Users';
+                
+                // Show referred count immediately (instant loaded users + on-chain traders)
+                const totalReferredUsers = Math.max(referredTradersSet.size, instantRefCount);
+                document.getElementById('referredCount').innerText = totalReferredUsers + ' Users';
 
-                if (referredTradersSet.size === 0) {
+                if (referredTradersSet.size === 0 && instantRefCount === 0) {
                     container.innerHTML = `<div style="text-align: center; padding: 15px; color: var(--text-muted); font-size: 12px;">No verified referral fees earned yet. Share your link to start earning!</div>`;
                     return;
                 }
 
                 container.innerHTML = `<div style="font-size: 11px; color: var(--accent-green); padding: 8px; font-weight: 800; text-align: center;">✓ Verified On-Chain Referral Transactions Loaded</div>`;
             } catch (e) {
+                document.getElementById('referredCount').innerText = instantRefCount + ' Users';
                 container.innerHTML = `<div style="text-align: center; padding: 15px; color: var(--text-muted); font-size: 12px;">Syncing with TonAPI blockchain...</div>`;
             }
         }
@@ -1398,14 +1439,12 @@
 
                 let messages = [];
 
-                // Create official referral comment cell memo
                 const refCommentCell = beginCell()
                     .storeUint(0, 32)
                     .storeStringTail("KoteTrade Ref Fee")
                     .endCell();
                 const refPayloadBoc = refCommentCell.toBoc().toString('base64');
 
-                // 1. Fee Split Messages (3% to Referrer if present with official memo, 7% to Treasury)
                 if (referrerAddress) {
                     const referrerFee = totalFeeAmount * 0.30; 
                     const treasuryFee = totalFeeAmount * 0.70; 
@@ -1426,33 +1465,31 @@
                     });
                 }
 
-                // 2. Build Correct DeDust v2 Native Vault Swap Payload with explicit recipient address
                 const poolAddr = Address.parse(currentActiveToken.address);
-                const userAddr = Address.parse(userWalletAddress); // Explicit wallet address for token delivery
+                const userAddr = Address.parse(userWalletAddress);
 
                 const swapParamsCell = beginCell()
-                    .storeUint(0, 32)        // deadline (0 = disabled)
-                    .storeAddress(userAddr)  // recipient_addr (Explicit user address so tokens land in wallet)
-                    .storeAddress(null)      // referral_addr (null = none)
-                    .storeBit(0)             // fulfill_payload
-                    .storeBit(0)             // reject_payload
+                    .storeUint(0, 32)
+                    .storeAddress(userAddr)
+                    .storeAddress(null)
+                    .storeBit(0)
+                    .storeBit(0)
                     .endCell();
 
                 const swapCell = beginCell()
-                    .storeUint(0xea06185d, 32) // swap operation code
-                    .storeUint(0n, 64)         // query_id
-                    .storeCoins(Math.floor(netAmount * 1e9)) // amount in nanotons
-                    .storeAddress(poolAddr)    // target pool address
-                    .storeBit(0)             // kind: given_in (0)
-                    .storeCoins(0)             // limit (min output / slippage)
-                    .storeBit(0)             // next: nothing (direct swap)
-                    .storeRef(swapParamsCell)  // swap_params reference cell
+                    .storeUint(0xea06185d, 32)
+                    .storeUint(0n, 64)
+                    .storeCoins(Math.floor(netAmount * 1e9))
+                    .storeAddress(poolAddr)
+                    .storeBit(0)
+                    .storeCoins(0)
+                    .storeBit(0)
+                    .storeRef(swapParamsCell)
                     .endCell();
 
                 const payloadBoc = swapCell.toBoc().toString('base64');
 
-                // 3. DeDust Native Vault Swap Message with Encoded Payload & Gas
-                const swapTonTotal = netAmount + 0.35; // Gas buffer for vault
+                const swapTonTotal = netAmount + 0.35;
                 messages.push({
                     address: DEDUST_NATIVE_VAULT,
                     amount: Math.floor(swapTonTotal * 1e9).toString(),
