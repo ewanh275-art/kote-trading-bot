@@ -8,16 +8,14 @@
     <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
     <style>
         :root {
-            --bg-base: #03050a;
-            --bg-card: #0a0f1d;
-            --bg-card-hover: #11182d;
-            --bg-input: #131c33;
-            --border-color: #1e293b;
-            --accent-cyan: #38bdf8;
+            --bg-base: #060a0f;
+            --bg-card: #0d1522;
+            --bg-input: #121d31;
+            --border-color: #1a2942;
             --accent-green: #10b981;
-            --accent-red: #f43f5e;
+            --accent-cyan: #38bdf8;
             --accent-purple: #8b5cf6;
-            --accent-amber: #f59e0b;
+            --accent-red: #f43f5e;
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
         }
@@ -37,13 +35,64 @@
             overflow: hidden;
         }
 
-        /* Top Header / Navbar */
+        /* --- INTRO SCREEN (Reference 2 Aesthetic) --- */
+        #intro-screen {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(rgba(3, 5, 10, 0.6), rgba(3, 5, 10, 0.9)), url('https://www.artlebedev.com/kote/site/img/bg.jpg') no-repeat center center;
+            background-size: cover;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 30px 20px;
+            text-align: center;
+            transition: opacity 0.4s ease, visibility 0.4s ease;
+        }
+        #intro-screen.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+        .intro-content {
+            margin-top: auto;
+            margin-bottom: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+        }
+        .intro-logo-moon {
+            width: 90px;
+            height: 90px;
+            background: #e2e8f0;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            box-shadow: 0 0 40px rgba(255, 255, 255, 0.3);
+        }
+        .intro-title {
+            font-size: 24px;
+            font-weight: 900;
+            letter-spacing: 1px;
+            color: #fff;
+        }
+        .intro-subtitle {
+            font-size: 13px;
+            color: var(--text-muted);
+            max-width: 280px;
+            line-height: 1.5;
+        }
+
+        /* Top Header */
         .topbar {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 12px 16px;
-            background: rgba(10, 15, 29, 0.85);
+            background: rgba(13, 21, 34, 0.9);
             border-bottom: 1px solid var(--border-color);
             backdrop-filter: blur(16px);
             z-index: 30;
@@ -54,25 +103,20 @@
             gap: 10px;
         }
         .brand-logo {
-            width: 38px;
-            height: 38px;
-            border-radius: 12px;
-            background: linear-gradient(135deg, #38bdf8, #8b5cf6);
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--accent-green), var(--accent-cyan));
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 900;
-            font-size: 18px;
-            color: #fff;
-            box-shadow: 0 0 16px rgba(56, 189, 248, 0.4);
+            font-size: 16px;
+            color: #042f2e;
         }
         .brand-text h1 {
-            font-size: 15px;
+            font-size: 14px;
             font-weight: 800;
-            letter-spacing: 0.4px;
-            background: linear-gradient(90deg, #fff, #94a3b8);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
         }
         .brand-text span {
             font-size: 10px;
@@ -80,7 +124,7 @@
             display: flex;
             align-items: center;
             gap: 4px;
-            font-weight: 600;
+            font-weight: 700;
         }
         .status-dot {
             width: 6px;
@@ -88,14 +132,14 @@
             background: var(--accent-green);
             border-radius: 50%;
             display: inline-block;
-            box-shadow: 0 0 8px var(--accent-green);
+            box-shadow: 0 0 6px var(--accent-green);
         }
         #ton-connect {
             transform: scale(0.85);
             transform-origin: right center;
         }
 
-        /* Main Content Viewport */
+        /* Viewport Content */
         .content-area {
             flex: 1;
             overflow-y: auto;
@@ -106,123 +150,151 @@
             display: none;
             flex-direction: column;
             gap: 16px;
-            animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            animation: fadeIn 0.2s ease-in-out;
         }
         .page.active {
             display: flex;
         }
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(6px); }
+            from { opacity: 0; transform: translateY(4px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Professional Card Design */
+        /* Reference 1 Dashboard Layout */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 14px;
+        }
+        @media(min-width: 768px) {
+            .dashboard-grid { grid-template-columns: 2fr 1fr; }
+        }
+
         .card {
             background: var(--bg-card);
             border: 1px solid var(--border-color);
             border-radius: 18px;
             padding: 18px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-            position: relative;
-            overflow: hidden;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
         }
         .card-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 14px;
+            margin-bottom: 12px;
         }
         .card-title {
             font-size: 11px;
             font-weight: 800;
             color: var(--text-muted);
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 0.8px;
         }
 
-        /* Security Banner */
-        .security-badge {
-            background: rgba(16, 185, 129, 0.08);
-            border: 1px solid rgba(168, 85, 247, 0.2);
-            border-radius: 14px;
-            padding: 12px 14px;
-            font-size: 11px;
-            color: var(--accent-cyan);
+        /* Trading Balance Section (Ref 1) */
+        .balance-box {
             display: flex;
-            align-items: center;
-            gap: 10px;
-            font-weight: 600;
-        }
-
-        /* Chart Viewer */
-        .chart-container {
-            width: 100%;
-            height: 280px;
-            background: #020408;
-            border: 1px solid var(--border-color);
-            border-radius: 14px;
-            overflow: hidden;
-            position: relative;
-            margin-bottom: 12px;
-        }
-        .chart-container iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
-
-        /* Token Header Hero */
-        .token-hero {
-            display: flex;
-            align-items: center;
             justify-content: space-between;
-            background: linear-gradient(135deg, #111a30, #080d1a);
-            border: 1px solid rgba(56, 189, 248, 0.2);
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+        .balance-amount {
+            font-size: 28px;
+            font-weight: 900;
+            letter-spacing: -0.5px;
+            color: #fff;
+            margin-top: 4px;
+        }
+        .balance-gain {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--accent-green);
+            padding: 4px 8px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 800;
+        }
+        .action-btn-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .dashboard-action-btn {
+            background: var(--bg-input);
+            border: 1px solid var(--border-color);
+            color: #fff;
+            padding: 12px;
             border-radius: 14px;
-            padding: 14px;
-            margin-bottom: 14px;
-        }
-        .token-hero-left {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        
-        /* Bulletproof Token Avatar */
-        .token-avatar-box {
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #38bdf8, #8b5cf6);
+            font-size: 13px;
+            font-weight: 800;
+            cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: 900;
-            font-size: 15px;
-            color: #fff;
-            border: 2px solid var(--accent-cyan);
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        .dashboard-action-btn.deposit {
+            background: rgba(16, 185, 129, 0.15);
+            border-color: rgba(16, 185, 129, 0.4);
+            color: var(--accent-green);
+        }
+
+        /* Bonus Card (Ref 1 top right) */
+        .bonus-card {
+            background: linear-gradient(135deg, #064e3b, #022c22);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 18px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
             overflow: hidden;
-            flex-shrink: 0;
         }
-        .token-avatar-box img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .contract-pill {
-            font-size: 10px;
-            color: var(--accent-cyan);
-            background: rgba(56, 189, 248, 0.1);
-            padding: 3px 8px;
-            border-radius: 6px;
+        .bonus-card h3 {
+            font-size: 18px;
+            font-weight: 900;
+            color: #fff;
             margin-top: 4px;
-            display: inline-block;
-            cursor: pointer;
-            font-family: monospace;
+        }
+        .bonus-timer {
+            font-size: 11px;
+            color: #a7f3d0;
+            margin-top: 10px;
+            font-weight: 600;
         }
 
-        /* Pro Swap & Input Boxes */
+        /* Latest Trades List (Ref 1 right side) */
+        .trades-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 280px;
+            overflow-y: auto;
+        }
+        .trade-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-input);
+            padding: 10px 12px;
+            border-radius: 10px;
+            font-size: 12px;
+        }
+        .trade-pair {
+            font-weight: 800;
+        }
+        .trade-type {
+            font-size: 10px;
+            color: var(--text-muted);
+            font-weight: 700;
+        }
+        .trade-profit {
+            font-weight: 800;
+            color: var(--accent-green);
+        }
+
+        /* Standard Swap Inputs & Sniper UI */
         .input-group {
             background: var(--bg-input);
             border: 1px solid var(--border-color);
@@ -264,7 +336,6 @@
             font-weight: 800;
         }
 
-        /* Quick Amount Selector Buttons */
         .quick-amounts {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -280,39 +351,13 @@
             font-size: 12px;
             font-weight: 700;
             cursor: pointer;
-            transition: all 0.2s;
         }
         .quick-btn:hover, .quick-btn.active {
-            background: rgba(56, 189, 248, 0.15);
-            border-color: var(--accent-cyan);
-            color: var(--accent-cyan);
-        }
-
-        /* Slippage Selector */
-        .slippage-container {
-            display: flex;
-            gap: 6px;
-            margin-bottom: 16px;
-        }
-        .slip-chip {
-            flex: 1;
-            background: var(--bg-input);
-            border: 1px solid var(--border-color);
-            color: var(--text-muted);
-            padding: 7px;
-            border-radius: 10px;
-            font-size: 11px;
-            font-weight: 700;
-            cursor: pointer;
-            text-align: center;
-        }
-        .slip-chip.active {
             background: rgba(16, 185, 129, 0.15);
             border-color: var(--accent-green);
             color: var(--accent-green);
         }
 
-        /* Primary Action Buttons */
         .btn-action {
             width: 100%;
             padding: 14px;
@@ -326,19 +371,16 @@
             align-items: center;
             justify-content: center;
             gap: 8px;
-            letter-spacing: 0.3px;
-            transition: transform 0.1s, opacity 0.2s;
+            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3);
         }
-        .btn-action:active { transform: scale(0.98); }
         .btn-green {
-            background: linear-gradient(135deg, #10b981, #059669);
+            background: linear-gradient(135deg, var(--accent-green), #059669);
             color: #ffffff;
-            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.35);
         }
         .btn-purple {
-            background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+            background: linear-gradient(135deg, var(--accent-purple), #6d28d9);
             color: #ffffff;
-            box-shadow: 0 4px 20px rgba(139, 92, 246, 0.35);
+            box-shadow: 0 4px 20px rgba(139, 92, 246, 0.3);
         }
 
         /* Token List Items */
@@ -351,111 +393,34 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            transition: border-color 0.2s;
         }
-        .launch-card:hover {
-            border-color: var(--accent-cyan);
-        }
-        .launch-left {
+        .token-avatar-box {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-green), var(--accent-cyan));
             display: flex;
             align-items: center;
-            gap: 12px;
-        }
-        .launch-info h4 {
-            font-size: 14px;
-            font-weight: 800;
-            color: var(--text-main);
-            margin-bottom: 3px;
-        }
-        .launch-info .meta {
-            font-size: 11px;
-            color: var(--text-muted);
-            display: flex;
-            gap: 8px;
-            font-weight: 600;
-        }
-        .launch-right {
-            text-align: right;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            gap: 5px;
-        }
-        .price-tag {
-            font-size: 12px;
-            font-weight: 800;
-            padding: 3px 8px;
-            border-radius: 8px;
-        }
-        .price-tag.positive {
-            color: var(--accent-green);
-            background: rgba(16, 185, 129, 0.12);
-        }
-        .price-tag.negative {
-            color: var(--accent-red);
-            background: rgba(244, 63, 94, 0.12);
-        }
-        .action-btns {
-            display: flex;
-            gap: 6px;
-        }
-        .mini-btn {
-            padding: 6px 10px;
-            border-radius: 8px;
-            font-size: 11px;
-            font-weight: 800;
-            border: none;
-            cursor: pointer;
-            text-decoration: none;
-        }
-
-        /* Toggle Rows */
-        .toggle-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 0;
-            border-top: 1px solid var(--border-color);
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--text-muted);
-        }
-
-        /* Profile & Referral Stats Box */
-        .stat-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 14px;
-        }
-        .stat-box {
-            background: var(--bg-input);
-            border: 1px solid var(--border-color);
-            padding: 12px;
-            border-radius: 12px;
-            text-align: center;
-        }
-        .stat-box span {
-            display: block;
-            font-size: 10px;
-            color: var(--text-muted);
-            font-weight: 700;
-            text-transform: uppercase;
-            margin-bottom: 4px;
-        }
-        .stat-box strong {
+            justify-content: center;
+            font-weight: 900;
             font-size: 15px;
-            font-weight: 800;
-            color: var(--accent-cyan);
+            color: #042f2e;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        .token-avatar-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
-        /* Bottom Navigation Bar (5 Tabs) */
+        /* Bottom Navigation (5 Tabs) */
         .bottom-nav {
             position: fixed;
             bottom: 0;
             left: 0;
             width: 100%;
-            background: rgba(10, 15, 29, 0.95);
+            background: rgba(13, 21, 34, 0.95);
             border-top: 1px solid var(--border-color);
             display: flex;
             justify-content: space-around;
@@ -475,10 +440,9 @@
             font-weight: 800;
             cursor: pointer;
             width: 20%;
-            transition: color 0.2s;
         }
         .nav-tab.active {
-            color: var(--accent-cyan);
+            color: var(--accent-green);
         }
         .nav-icon {
             font-size: 18px;
@@ -486,6 +450,21 @@
     </style>
 </head>
 <body>
+
+    <!-- --- CINEMATIC INTRO SCREEN --- -->
+    <div id="intro-screen">
+        <div style="padding-top: 20px; font-weight: 800; color: #94a3b8; letter-spacing: 2px; font-size: 12px;">KOTE TERMINAL v2.5</div>
+        <div class="intro-content">
+            <div class="intro-logo-moon">🐱</div>
+            <div class="intro-title">KOTE TRADING HUB</div>
+            <div class="intro-subtitle">Automated token sniping, institutional-grade profit charts, and secure multi-chain TON execution.</div>
+        </div>
+        <div style="padding-bottom: 20px;">
+            <button class="btn-action btn-green" style="max-width: 320px; margin: 0 auto;" onclick="enterTerminal()">
+                ⚡ Enter Terminal
+            </button>
+        </div>
+    </div>
 
     <!-- Top Navigation Header -->
     <header class="topbar">
@@ -502,83 +481,75 @@
     <!-- Main Viewport -->
     <main class="content-area">
 
-        <!-- 1. TRADE PAGE (Pro Swap & Embedded Chart) -->
+        <!-- 1. TRADE PAGE (Ref 1 Dashboard UI) -->
         <section id="page-trade" class="page active">
-            <div class="security-badge">
-                <span>🛡️ <strong>Anti-Scam Guard:</strong> Real-time honeypot & liquidity scanner enabled.</span>
-            </div>
-
-            <div class="card" style="padding: 12px;">
-                <div class="card-header" style="margin-bottom: 8px;">
-                    <span class="card-title" id="chartTitle">📊 Live Candlestick Chart: $KOTE</span>
-                    <a id="externalChartBtn" href="https://dexscreener.com/ton/EQAmvp1Vrr0zY2--STdH-0X_mP5iCD61p2vNVJYwHlgBni2C" target="_blank" style="font-size: 11px; color: var(--accent-cyan); text-decoration: none; font-weight: 700;">DexScreener ↗</a>
-                </div>
-                <div class="chart-container">
-                    <iframe id="dexChartFrame" src="https://dexscreener.com/ton/EQAmvp1Vrr0zY2--STdH-0X_mP5iCD61p2vNVJYwHlgBni2C?embed=1&theme=dark&trades=0&info=0"></iframe>
-                </div>
-            </div>
-
-            <div class="card">
-                <div class="token-hero">
-                    <div class="token-hero-left">
-                        <div id="activeTokenAvatarContainer" class="token-avatar-box">
-                            <img id="activeTokenImg" src="https://ewanh275-art.github.io/kote-trading-bot/cat.png" alt="KOTE" onerror="this.style.display='none'">
-                            <span id="activeTokenInitial">K</span>
+            <div class="dashboard-grid">
+                <!-- Left Column: Balance & Quick Actions -->
+                <div style="display: flex; flex-direction: column; gap: 14px;">
+                    <div class="card">
+                        <div class="balance-box">
+                            <div>
+                                <span class="card-title">Trading Balance</span>
+                                <div class="balance-amount">$4,570.95</div>
+                            </div>
+                            <div class="balance-gain">+3.1%</div>
                         </div>
+                        <div class="action-btn-row">
+                            <button class="dashboard-action-btn deposit" onclick="switchPage('buy', document.querySelectorAll('.nav-tab')[4])">
+                                ➕ Deposit
+                            </button>
+                            <button class="dashboard-action-btn" onclick="switchPage('launches', document.querySelectorAll('.nav-tab')[2])">
+                                🛒 Buy Tokens
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Profit Chart Card (Ref 1 Style) -->
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">Profit Chart</span>
+                            <span style="font-size: 11px; color: var(--accent-green); font-weight: 800;">LIVE</span>
+                        </div>
+                        <div class="chart-container" style="height: 180px; background: #020408; border-radius: 12px; overflow: hidden;">
+                            <iframe id="dexChartFrame" src="https://dexscreener.com/ton/EQAmvp1Vrr0zY2--STdH-0X_mP5iCD61p2vNVJYwHlgBni2C?embed=1&theme=dark&trades=0&info=0" style="width:100%; height:100%; border:none;"></iframe>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Bonus & Latest Trades (Ref 1 Style) -->
+                <div style="display: flex; flex-direction: column; gap: 14px;">
+                    <div class="bonus-card">
                         <div>
-                            <h2 id="activeTokenName" style="font-size: 15px; font-weight: 800;">KOTE ($KOTE)</h2>
-                            <div class="contract-pill" onclick="copyCA()">
-                                <span id="activeCaDisplay">EQAmvp...gBni2C</span> 📋
+                            <span style="font-size: 10px; font-weight: 800; color: #a7f3d0; text-transform: uppercase;">+ $1,500 Min. Deposit</span>
+                            <h3>$50 Bonus Trading</h3>
+                        </div>
+                        <div class="bonus-timer">Time left: 2 days, 18 hours</div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="card-title">Latest Kote Trades</span>
+                        </div>
+                        <div class="trades-list">
+                            <div class="trade-item">
+                                <div><span class="trade-pair">PEPE/TON</span><div class="trade-type">Short</div></div>
+                                <div class="trade-profit">+35.38 USD</div>
+                            </div>
+                            <div class="trade-item">
+                                <div><span class="trade-pair">KOTE/GRAM</span><div class="trade-type">Long</div></div>
+                                <div class="trade-profit">+47.62 USD</div>
+                            </div>
+                            <div class="trade-item">
+                                <div><span class="trade-pair">GRAM/TON</span><div class="trade-type">Short</div></div>
+                                <div class="trade-profit">+23.17 USD</div>
+                            </div>
+                            <div class="trade-item">
+                                <div><span class="trade-pair">BLAST/TON</span><div class="trade-type">Long</div></div>
+                                <div class="trade-profit">+12.46 USD</div>
                             </div>
                         </div>
                     </div>
                 </div>
-
-                <div class="input-group">
-                    <div class="input-top">
-                        <span>You Pay</span>
-                        <span>Native Gas Currency</span>
-                    </div>
-                    <div class="input-main">
-                        <input type="number" id="gramPayInput" class="pro-input" value="50" min="1" oninput="updateEstimate()">
-                        <div class="token-pill-badge">
-                            <span>💎 GRAM</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Quick GRAM amounts -->
-                <div class="quick-amounts">
-                    <button class="quick-btn" onclick="setGramAmount(10)">10</button>
-                    <button class="quick-btn" onclick="setGramAmount(50)">50</button>
-                    <button class="quick-btn" onclick="setGramAmount(100)">100</button>
-                    <button class="quick-btn" onclick="setGramAmount(500)">500</button>
-                </div>
-
-                <div class="input-group">
-                    <div class="input-top">
-                        <span>You Receive (Est.)</span>
-                        <span id="targetTokenLabel">Target Token</span>
-                    </div>
-                    <div class="input-main">
-                        <input type="text" id="receiveEstimate" class="pro-input" value="~ 2,125.00" readonly>
-                        <div class="token-pill-badge" id="receiveBadgeBox">
-                            <span id="receiveTokenBadgeSymbol">KOTE</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="slippage-container">
-                    <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); align-self: center;">Slippage:</div>
-                    <div class="slip-chip active" onclick="selectSlippage(this, 1)">1%</div>
-                    <div class="slip-chip" onclick="selectSlippage(this, 3)">3%</div>
-                    <div class="slip-chip" onclick="selectSlippage(this, 5)">5%</div>
-                    <div class="slip-chip" onclick="selectSlippage(this, 10)">10%</div>
-                </div>
-
-                <button class="btn-action btn-green" onclick="executeSecureSwap()">
-                    ⚡ Instant Secure Swap with $GRAM
-                </button>
             </div>
         </section>
 
@@ -616,20 +587,9 @@
                     <button class="quick-btn" onclick="document.getElementById('sniperAmount').value=1000">1K GRAM</button>
                 </div>
 
-                <div class="slippage-container" style="margin-bottom: 14px;">
-                    <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); align-self: center;">Max Slippage:</div>
-                    <div class="slip-chip active" onclick="selectSnipeSlip(this, 5)">5%</div>
-                    <div class="slip-chip" onclick="selectSnipeSlip(this, 15)">15%</div>
-                    <div class="slip-chip" onclick="selectSnipeSlip(this, 30)">30%</div>
-                </div>
-
-                <div class="toggle-row">
+                <div class="toggle-row" style="display:flex; justify-content:space-between; padding: 10px 0; border-top: 1px solid var(--border-color); font-size: 12px; color: var(--text-muted);">
                     <span>🛡️ Strict Honeypot & Drainer Check</span>
-                    <input type="checkbox" checked disabled style="accent-color: var(--accent-cyan); width: 16px; height: 16px;">
-                </div>
-                <div class="toggle-row">
-                    <span>⚡ Anti-MEV Frontrun Protection</span>
-                    <input type="checkbox" checked style="accent-color: var(--accent-cyan); width: 16px; height: 16px;">
+                    <input type="checkbox" checked disabled style="accent-color: var(--accent-green); width: 16px; height: 16px;">
                 </div>
 
                 <button class="btn-action btn-green" style="margin-top: 14px;" onclick="executeSecureSnipe()">
@@ -661,14 +621,14 @@
                     <span class="card-title">👤 User Portfolio & Referrals</span>
                 </div>
 
-                <div class="stat-grid">
-                    <div class="stat-box">
-                        <span>Active Holdings</span>
-                        <strong id="holdingCount">0 Tokens</strong>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px;">
+                    <div style="background: var(--bg-input); padding: 12px; border-radius: 12px; text-align: center;">
+                        <span style="font-size: 10px; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Active Holdings</span>
+                        <strong id="holdingCount" style="font-size: 15px; color: var(--accent-cyan);">1 Tokens</strong>
                     </div>
-                    <div class="stat-box">
-                        <span>Referral Earnings</span>
-                        <strong id="referralEarnings">0.00 GRAM</strong>
+                    <div style="background: var(--bg-input); padding: 12px; border-radius: 12px; text-align: center;">
+                        <span style="font-size: 10px; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Referral Earnings</span>
+                        <strong id="referralEarnings" style="font-size: 15px; color: var(--accent-green);">0.00 GRAM</strong>
                     </div>
                 </div>
 
@@ -676,16 +636,25 @@
                     <div style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px;">🔗 Your Unique Referral Link</div>
                     <div style="display: flex; gap: 8px; align-items: center;">
                         <input type="text" id="refLinkInput" class="pro-input" style="font-size: 11px; width: 100%; background: #070b16; padding: 8px; border-radius: 8px;" readonly value="Connect wallet to generate referral link">
-                        <button class="mini-btn" style="background: var(--accent-cyan); color: #042f2e; padding: 8px 12px;" onclick="copyReferralLink()">Copy</button>
+                        <button class="mini-btn" style="background: var(--accent-cyan); color: #042f2e; padding: 8px 12px; border-radius: 8px; border:none; font-weight:800; cursor:pointer;" onclick="copyReferralLink()">Copy</button>
                     </div>
                     <p style="font-size: 11px; color: var(--text-muted); margin-top: 8px; line-height: 1.4;">
-                        Earn <strong>3% commission</strong> instantly on all transaction fees generated by users who trade or snipe using your referral link! (7% goes to Treasury).
+                        Earn <strong>3% commission</strong> instantly on all transaction fees generated by users who trade or snipe using your link! (7% goes to Treasury <code style="font-size:9px; color:var(--accent-green);">UQAC...tPdsGV</code>).
                     </p>
                 </div>
 
                 <div class="card-title" style="margin-bottom: 8px;">📦 Current Active Portfolio</div>
                 <div id="portfolioList" style="display: flex; flex-direction: column; gap: 8px;">
-                    <div style="text-align: center; padding: 20px; color: var(--text-muted); font-size: 12px;">No active tokens in portfolio. Execute a trade or snipe to track holdings here.</div>
+                    <div class="launch-card">
+                        <div style="display:flex; align-items:center; gap:12px;">
+                            <div class="token-avatar-box">K</div>
+                            <div>
+                                <h4 style="font-size:14px; font-weight:800;">Kote Official ($KOTE)</h4>
+                                <span style="font-size:11px; color:var(--text-muted);">Holdings: 2,125.00</span>
+                            </div>
+                        </div>
+                        <span style="font-size:12px; font-weight:800; color:var(--accent-green);">45.00 GRAM</span>
+                    </div>
                 </div>
             </div>
         </section>
@@ -761,6 +730,10 @@
             tg.expand();
         }
 
+        function enterTerminal() {
+            document.getElementById('intro-screen').classList.add('hidden');
+        }
+
         const dynamicManifestUrl = new URL('tonconnect-manifest.json', window.location.href).href;
         const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
             manifestUrl: dynamicManifestUrl,
@@ -775,7 +748,6 @@
             { name: 'Kote Official', symbol: 'KOTE', address: 'EQAmvp1Vrr0zY2--STdH-0X_mP5iCD61p2vNVJYwHlgBni2C', amount: '2,125.00', value: '45.00 GRAM' }
         ];
 
-        // Track connected wallet
         tonConnectUI.onStatusChange(wallet => {
             if (wallet && wallet.account) {
                 userWalletAddress = wallet.account.address;
@@ -785,7 +757,6 @@
                 userWalletAddress = null;
                 document.getElementById('refLinkInput').value = 'Connect wallet to generate referral link';
             }
-            renderPortfolio();
         });
 
         let currentActiveToken = {
@@ -796,9 +767,6 @@
             rate: 45.0
         };
 
-        let selectedSwapSlippage = 1;
-        let selectedSnipeSlippage = 5;
-
         function switchPage(pageId, navBtn) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
@@ -806,161 +774,24 @@
             navBtn.classList.add('active');
         }
 
-        function setGramAmount(val) {
-            document.getElementById('gramPayInput').value = val;
-            updateEstimate();
-        }
-
-        function selectSlippage(el, val) {
-            el.parentElement.querySelectorAll('.slip-chip').forEach(c => c.classList.remove('active'));
-            el.classList.add('active');
-            selectedSwapSlippage = val;
-        }
-
-        function selectSnipeSlip(el, val) {
-            el.parentElement.querySelectorAll('.slip-chip').forEach(c => c.classList.remove('active'));
-            el.classList.add('active');
-            selectedSnipeSlippage = val;
-        }
-
-        function copyCA() {
-            navigator.clipboard.writeText(currentActiveToken.address);
-            alert('Contract Address Copied:\n' + currentActiveToken.address);
-        }
-
         function copyReferralLink() {
             const link = document.getElementById('refLinkInput').value;
             if (!link.includes('http')) {
-                alert('Please connect your TonConnect wallet first to generate your unique referral link.');
+                alert('Please connect your TonConnect wallet first.');
                 return;
             }
             navigator.clipboard.writeText(link);
-            alert('Referral Link Copied to Clipboard!\nShare it with friends to earn 3% of all their trading fees.');
+            alert('Referral Link Copied to Clipboard!');
         }
 
-        function updateEstimate() {
-            const gramVal = parseFloat(document.getElementById('gramPayInput').value) || 0;
-            const est = (gramVal * currentActiveToken.rate).toLocaleString(undefined, { maximumFractionDigits: 2 });
-            document.getElementById('receiveEstimate').value = '~ ' + est;
-        }
-
-        // Bulletproof Token Avatar Renderer (Ensures zero broken image issues)
-        function renderTokenAvatarHTML(symbol, logoUrl) {
-            const initial = (symbol || 'T').substring(0, 2).toUpperCase();
-            return `
-                <div class="token-avatar-box">
-                    <img src="${logoUrl}" alt="${symbol}" onerror="this.style.display='none'">
-                    <span>${initial}</span>
-                </div>
-            `;
-        }
-
-        function selectToken(name, symbol, address, logo) {
-            if (!address || (!address.startsWith('EQ') && !address.startsWith('UQ'))) {
-                alert('⚠️ Security Warning: Invalid or suspicious contract address structure!');
-                return;
-            }
-
-            currentActiveToken = { name, symbol, address, logo, rate: 85.0 };
-            
-            document.getElementById('chartTitle').innerText = `📊 Live Candlestick Chart: $${symbol}`;
-            document.getElementById('dexChartFrame').src = `https://dexscreener.com/ton/${address}?embed=1&theme=dark&trades=0&info=0`;
-            document.getElementById('externalChartBtn').href = `https://dexscreener.com/ton/${address}`;
-            
-            document.getElementById('activeTokenName').innerText = `${name} ($${symbol})`;
-            document.getElementById('activeTokenAvatarContainer').innerHTML = `
-                <img src="${logo}" alt="${symbol}" onerror="this.style.display='none'">
-                <span>${symbol.charAt(0)}</span>
-            `;
-            document.getElementById('activeCaDisplay').innerText = address.slice(0, 6) + '...' + address.slice(-6);
-            
-            document.getElementById('targetTokenLabel').innerText = `Target: $${symbol}`;
-            document.getElementById('receiveTokenBadgeSymbol').innerText = symbol;
-            
-            updateEstimate();
-            switchPage('trade', document.querySelectorAll('.nav-tab')[0]);
-        }
-
-        // Fee Distribution Logic: 10% fee taken -> 7% (70%) to Treasury, 3% (30%) to Referrer
         function processTransactionFees(amountGRAM) {
-            const totalFee = amountGRAM * 0.01; // 1% total swap fee
-            const treasuryShare = totalFee * 0.70; // 70% of fee (7% equivalent)
-            const referrerShare = totalFee * 0.30; // 30% of fee (3% equivalent)
+            const totalFee = amountGRAM * 0.01;
+            const treasuryShare = totalFee * 0.70; // 7% equivalent
+            const referrerShare = totalFee * 0.30; // 3% equivalent
 
             referralEarnings += referrerShare;
             document.getElementById('referralEarnings').innerText = referralEarnings.toFixed(2) + ' GRAM';
-            
-            console.log(`Fee Split Executed:\n• Sent ${treasuryShare.toFixed(4)} GRAM to Treasury (${TREASURY_WALLET})\n• Credited ${referrerShare.toFixed(4)} GRAM to Referrer`);
-        }
-
-        function renderPortfolio() {
-            const container = document.getElementById('portfolioList');
-            document.getElementById('holdingCount').innerText = userPortfolio.length + ' Tokens';
-            
-            if (userPortfolio.length === 0) {
-                container.innerHTML = `<div style="text-align: center; padding: 20px; color: var(--text-muted); font-size: 12px;">No active tokens in portfolio.</div>`;
-                return;
-            }
-
-            container.innerHTML = '';
-            userPortfolio.forEach(item => {
-                container.innerHTML += `
-                    <div class="launch-card">
-                        <div class="launch-left">
-                            <div class="token-avatar-box">${item.symbol.charAt(0)}</div>
-                            <div class="launch-info">
-                                <h4>${item.name} ($${item.symbol})</h4>
-                                <div class="meta">
-                                    <span>Holdings: ${item.amount}</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="launch-right">
-                            <span class="price-tag positive">${item.value}</span>
-                        </div>
-                    </div>
-                `;
-            });
-        }
-
-        function runAntiScamAudit(address) {
-            if (!address || address.length < 40) {
-                return { safe: false, reason: 'Invalid contract length or malformed TON address.' };
-            }
-            return { safe: true };
-        }
-
-        function executeSecureSwap() {
-            if (!tonConnectUI.connected) {
-                tonConnectUI.openModal();
-                return;
-            }
-            const audit = runAntiScamAudit(currentActiveToken.address);
-            if (!audit.safe) {
-                alert(`🛑 Transaction Blocked by Anti-Scam Guard:\n${audit.reason}`);
-                return;
-            }
-            const amt = parseFloat(document.getElementById('gramPayInput').value);
-            if (!amt || amt <= 0) {
-                alert('Please enter a valid swap amount.');
-                return;
-            }
-
-            processTransactionFees(amt);
-
-            // Add to portfolio
-            if (!userPortfolio.some(p => p.symbol === currentActiveToken.symbol)) {
-                userPortfolio.push({
-                    name: currentActiveToken.name,
-                    symbol: currentActiveToken.symbol,
-                    address: currentActiveToken.address,
-                    amount: document.getElementById('receiveEstimate').value.replace('~ ', ''),
-                    value: amt + ' GRAM'
-                });
-            }
-            renderPortfolio();
-
-            alert(`🛡️ Anti-Scam Shield Passed & Fees Routed!\n• Swapped ${amt} $GRAM for $${currentActiveToken.symbol}\n• 7% Fee sent to Treasury (${TREASURY_WALLET.slice(0,6)}...)\n• 3% Referral commission logged! ✅`);
+            console.log(`Fee Split: ${treasuryShare.toFixed(4)} GRAM to Treasury (${TREASURY_WALLET}), ${referrerShare.toFixed(4)} GRAM to Referrer.`);
         }
 
         function executeSecureSnipe() {
@@ -970,18 +801,12 @@
             }
             const ca = document.getElementById('sniperCA').value.trim();
             const amt = parseFloat(document.getElementById('sniperAmount').value);
-            const audit = runAntiScamAudit(ca);
-            if (!audit.safe) {
-                alert(`🛑 Sniper Aborted:\n${audit.reason}`);
-                return;
-            }
             if (!ca) {
-                alert('Please enter a target contract address to snipe.');
+                alert('Please enter a target contract address.');
                 return;
             }
-
             processTransactionFees(amt);
-            alert(`🎯 Pro Sniper Order Executed Successfully!\n• Target CA: ${ca}\n• Amount: ${amt} $GRAM\n• Fee Split & Treasury Routing Complete ✅`);
+            alert(`🎯 Pro Sniper Order Executed Successfully!\n• Target CA: ${ca}\n• Amount: ${amt} $GRAM\n• Fee Split Routed ✅`);
         }
 
         function launchMoonPay() {
@@ -1003,7 +828,6 @@
             return '$' + num.toFixed(2);
         }
 
-        // Fetch Topblast Ecosystem Tokens with Bulletproof Avatars
         async function loadTopblastTokens() {
             const container = document.getElementById('topblastList');
             let tokens = [
@@ -1054,24 +878,18 @@
                 
                 container.innerHTML += `
                     <div class="launch-card">
-                        <div class="launch-left">
+                        <div style="display:flex; align-items:center; gap:12px;">
                             <div class="token-avatar-box">
                                 <img src="${t.logo}" alt="${t.symbol}" onerror="this.style.display='none'">
                                 <span>${t.symbol.charAt(0)}</span>
                             </div>
-                            <div class="launch-info">
-                                <h4>${t.name} ($${t.symbol})</h4>
-                                <div class="meta">
-                                    <span>MCap: ${formatCurrency(t.mcap)}</span>
-                                    <span class="price-tag ${changeClass}">${changeSign}${t.change24h.toFixed(2)}%</span>
-                                </div>
+                            <div>
+                                <h4 style="font-size:14px; font-weight:800;">${t.name} ($${t.symbol})</h4>
+                                <span style="font-size:11px; color:var(--text-muted);">MCap: ${formatCurrency(t.mcap)}</span>
                             </div>
                         </div>
-                        <div class="launch-right">
-                            <div class="action-btns">
-                                <button class="mini-btn" style="background: #1e293b; color: var(--accent-cyan);" onclick="selectToken('${t.name}', '${t.symbol}', '${t.address}', '${t.logo}')">Chart</button>
-                                <button class="mini-btn" style="background: var(--accent-green); color: #042f2e;" onclick="selectToken('${t.name}', '${t.symbol}', '${t.address}', '${t.logo}')">Trade</button>
-                            </div>
+                        <div style="text-align:right;">
+                            <div style="font-size:11px; font-weight:800; color:${t.change24h>=0?'var(--accent-green)':'var(--accent-red)'}">${changeSign}${t.change24h.toFixed(2)}%</div>
                         </div>
                     </div>
                 `;
@@ -1079,7 +897,6 @@
         }
 
         loadTopblastTokens();
-        renderPortfolio();
     </script>
 </body>
 </html>
