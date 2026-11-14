@@ -113,7 +113,7 @@
         }
         .brand-text span {
             font-size: 10px;
-            color: var(--accent-red);
+            color: var(--accent-green);
             font-weight: 800;
             text-transform: uppercase;
         }
@@ -372,11 +372,6 @@
             font-weight: 800;
             margin-bottom: 10px;
         }
-        .audit-badge.warning {
-            background: rgba(239, 68, 68, 0.12);
-            border-color: rgba(239, 68, 68, 0.3);
-            color: var(--accent-red);
-        }
 
         /* Token Avatar */
         .token-avatar-wrap {
@@ -498,7 +493,7 @@
 
     <!-- --- CINEMATIC INTRO SCREEN --- -->
     <div id="intro-screen">
-        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v7.8</div>
+        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v7.9</div>
         <div class="intro-content">
             <div class="intro-logo-moon">🐱</div>
             <div style="font-size: 25px; font-weight: 900; color: #fff; letter-spacing: 0.5px;">KOTE TRADE/SNIPER BOT</div>
@@ -517,7 +512,7 @@
                 <div class="brand-logo-box">🐱</div>
                 <div class="brand-text">
                     <h1>Kote Pro Terminal</h1>
-                    <span>● Live Bonded Stream Active</span>
+                    <span>● Topblast Bonded Sync Active</span>
                 </div>
             </div>
             <div id="ton-connect"></div>
@@ -554,7 +549,7 @@
                     </div>
 
                     <div class="tokenomics-grid">
-                        <div class="stat-card"><span>Market Cap</span><strong id="tokMcap">$36.0K</strong></div>
+                        <div class="stat-card"><span>Market Cap</span><strong id="tokMcap">$37.5K</strong></div>
                         <div class="stat-card"><span>24h Volume</span><strong id="tokVol">$12.4K</strong></div>
                         <div class="stat-card"><span>Liquidity</span><strong id="tokLiq">$18.2K</strong></div>
                         <div class="stat-card"><span>Status</span><strong style="color:var(--accent-green)">Bonded</strong></div>
@@ -792,7 +787,23 @@
         let userWalletAddress = null;
         let referralEarnings = 0;
         let selectedSnipeSlippage = 0.5;
-        let allTopblastTokens = [];
+        let allTopblastTokens = [
+            { name: 'Long Capital', symbol: 'LNG', address: 'EQC_LongCapital_Topblast_TON', logo: 'https://cache.tonapi.io/imgproxy/EQC_LongCapital_Topblast_TON/rs:fill:200:200:1/g:no', mcap: 157500, liq: 52000, vol: 34000, priceUSD: 0.12 },
+            { name: 'PYONYA', symbol: 'PYONYA', address: 'EQB_Pyonya_Topblast_TON', logo: 'https://cache.tonapi.io/imgproxy/EQB_Pyonya_Topblast_TON/rs:fill:200:200:1/g:no', mcap: 87600, liq: 31000, vol: 19000, priceUSD: 0.09 },
+            { name: 'Honk Honkler', symbol: 'HONK', address: 'EQD_HonkHonkler_Topblast_TON', logo: 'https://cache.tonapi.io/imgproxy/EQD_HonkHonkler_Topblast_TON/rs:fill:200:200:1/g:no', mcap: 68400, liq: 22000, vol: 15500, priceUSD: 0.05 },
+            { name: 'Pepe Grinch', symbol: 'GRINCH', address: 'EQB_PepeGrinch_Topblast_TON', logo: 'https://cache.tonapi.io/imgproxy/EQB_PepeGrinch_Topblast_TON/rs:fill:200:200:1/g:no', mcap: 60500, liq: 31000, vol: 19000, priceUSD: 0.08 },
+            { name: 'PeepoPepe', symbol: 'PEEPO', address: 'EQC_PeepoPepe_Topblast_TON', logo: 'https://cache.tonapi.io/imgproxy/EQC_PeepoPepe_Topblast_TON/rs:fill:200:200:1/g:no', mcap: 49800, liq: 25000, vol: 14000, priceUSD: 0.04 },
+            { name: 'Gramming', symbol: 'GRAMMING', address: 'EQD_Gramming_Topblast_TON', logo: 'https://cache.tonapi.io/imgproxy/EQD_Gramming_Topblast_TON/rs:fill:200:200:1/g:no', mcap: 43500, liq: 19000, vol: 11000, priceUSD: 0.035 },
+            { name: 'FAST', symbol: 'FAST', address: 'EQB_Fast_Topblast_TON', logo: 'https://cache.tonapi.io/imgproxy/EQB_Fast_Topblast_TON/rs:fill:200:200:1/g:no', mcap: 38700, liq: 16000, vol: 9500, priceUSD: 0.03 },
+            { name: 'Kote Official', symbol: 'KOTÉ', address: 'EQAmvp1Vrr0zY2--STdH-0X_mP5iCD61p2vNVJYwHlgBni2C', logo: 'https://ewanh275-art.github.io/kote-trading-bot/cat.png', mcap: 37500, liq: 18200, vol: 12400, priceUSD: 0.042 },
+            { name: 'EGOR', symbol: 'EGOR', address: 'EQD_Egor_Topblast_TON', logo: 'https://cache.tonapi.io/imgproxy/EQD_Egor_Topblast_TON/rs:fill:200:200:1/g:no', mcap: 29200, liq: 12000, vol: 8000, priceUSD: 0.025 },
+            { name: 'Uta the duck', symbol: 'SUTIA', address: 'EQB_Sutia_Topblast_TON', logo: 'https://cache.tonapi.io/imgproxy/EQB_Sutia_Topblast_TON/rs:fill:200:200:1/g:no', mcap: 27600, liq: 11000, vol: 7500, priceUSD: 0.022 },
+            { name: 'Merlin the Cat', symbol: 'MERLIN', address: 'EQC_Merlin_Topblast_TON', logo: 'https://cache.tonapi.io/imgproxy/EQC_Merlin_Topblast_TON/rs:fill:200:200:1/g:no', mcap: 21500, liq: 9500, vol: 6000, priceUSD: 0.018 },
+            { name: 'LOCKIN', symbol: 'LOCKIN', address: 'EQD_Lockin_Topblast_TON', logo: 'https://cache.tonapi.io/imgproxy/EQD_Lockin_Topblast_TON/rs:fill:200:200:1/g:no', mcap: 10600, liq: 5000, vol: 3000, priceUSD: 0.012 },
+            { name: 'BABEL of the INTERNET', symbol: 'BABEL', address: 'EQB_Babel_Topblast_TON', logo: 'https://cache.tonapi.io/imgproxy/EQB_Babel_Topblast_TON/rs:fill:200:200:1/g:no', mcap: 10500, liq: 4800, vol: 2900, priceUSD: 0.011 },
+            { name: 'Make Gram Great Again', symbol: 'MGGA', address: 'EQC_Mgga_Topblast_TON', logo: 'https://cache.tonapi.io/imgproxy/EQC_Mgga_Topblast_TON/rs:fill:200:200:1/g:no', mcap: 10000, liq: 4500, vol: 2700, priceUSD: 0.01 },
+            { name: 'Vampire Pepe', symbol: 'VAMPEPE', address: 'EQD_Vampepe_Topblast_TON', logo: 'https://cache.tonapi.io/imgproxy/EQD_Vampepe_Topblast_TON/rs:fill:200:200:1/g:no', mcap: 8500, liq: 3800, vol: 2200, priceUSD: 0.009 }
+        ];
         let currentTopblastPage = 1;
         const pageSize = 10;
         let currentTradeMode = 'buy';
@@ -1190,40 +1201,6 @@
             if (tg && typeof tg.openLink === 'function') { tg.openLink(url); } else { window.open(url, '_blank'); }
         }
 
-        // Full Bonded Topblast Registry from video stream
-        const topblastRegistry = [
-            { name: 'Long Capital', symbol: 'LNG', address: 'EQC_LongCapital_Topblast_TON', logo: 'https://cache.tonapi.io/imgproxy/EQC_LongCapital_Topblast_TON/rs:fill:200:200:1/g:no', mcap: 157500, liq: 52000, vol: 34000, priceUSD: 0.12 },
-            { name: 'PYONYA', symbol: 'PYONYA', address: 'EQB_Pyonya_Topblast_TON', logo: 'https://cache.tonapi.io/imgproxy/EQB_Pyonya_Topblast_TON/rs:fill:200:200:1/g:no', mcap: 87600, liq: 31000, vol: 19000, priceUSD: 0.09 },
-            { name: 'Honk Honkler', symbol: 'HONK', address: 'EQD_HonkHonkler_Topblast_TON', logo: 'https://cache.tonapi.io/imgproxy/EQD_HonkHonkler_Topblast_TON/rs:fill:200:200:1/g:no', mcap: 68400, liq: 22000, vol: 15500, priceUSD: 0.05 },
-            { name: 'Pepe Grinch', symbol: 'GRINCH', address: 'EQB_PepeGrinch_Topblast_TON', logo: 'https://cache.tonapi.io/imgproxy/EQB_PepeGrinch_Topblast_TON/rs:fill:200:200:1/g:no', mcap: 60500, liq: 31000, vol: 19000, priceUSD: 0.08 },
-            { name: 'PeepoPepe', symbol: 'PEEPO', address: 'EQC_PeepoPepe_Topblast_TON', logo: 'https://cache.tonapi.io/imgproxy/EQC_PeepoPepe_Topblast_TON/rs:fill:200:200:1/g:no', mcap: 49800, liq: 25000, vol: 14000, priceUSD: 0.04 },
-            { name: 'Gramming', symbol: 'GRAMMING', address: 'EQD_Gramming_Topblast_TON', logo: 'https://cache.tonapi.io/imgproxy/EQD_Gramming_Topblast_TON/rs:fill:200:200:1/g:no', mcap: 43500, liq: 19000, vol: 11000, priceUSD: 0.035 },
-            { name: 'FAST', symbol: 'FAST', address: 'EQB_Fast_Topblast_TON', logo: 'https://cache.tonapi.io/imgproxy/EQB_Fast_Topblast_TON/rs:fill:200:200:1/g:no', mcap: 38700, liq: 16000, vol: 9500, priceUSD: 0.03 },
-            { name: 'Kote Official', symbol: 'KOTÉ', address: 'EQAmvp1Vrr0zY2--STdH-0X_mP5iCD61p2vNVJYwHlgBni2C', logo: 'https://ewanh275-art.github.io/kote-trading-bot/cat.png', mcap: 37500, liq: 18200, vol: 12400, priceUSD: 0.042 },
-            { name: 'EGOR', symbol: 'EGOR', address: 'EQD_Egor_Topblast_TON', logo: 'https://cache.tonapi.io/imgproxy/EQD_Egor_Topblast_TON/rs:fill:200:200:1/g:no', mcap: 29200, liq: 12000, vol: 8000, priceUSD: 0.025 },
-            { name: 'Uta the duck', symbol: 'SUTIA', address: 'EQB_Sutia_Topblast_TON', logo: 'https://cache.tonapi.io/imgproxy/EQB_Sutia_Topblast_TON/rs:fill:200:200:1/g:no', mcap: 27600, liq: 11000, vol: 7500, priceUSD: 0.022 },
-            { name: 'Merlin the Cat', symbol: 'MERLIN', address: 'EQC_Merlin_Topblast_TON', logo: 'https://cache.tonapi.io/imgproxy/EQC_Merlin_Topblast_TON/rs:fill:200:200:1/g:no', mcap: 21500, liq: 9500, vol: 6000, priceUSD: 0.018 },
-            { name: 'LOCKIN', symbol: 'LOCKIN', address: 'EQD_Lockin_Topblast_TON', logo: 'https://cache.tonapi.io/imgproxy/EQD_Lockin_Topblast_TON/rs:fill:200:200:1/g:no', mcap: 10600, liq: 5000, vol: 3000, priceUSD: 0.012 },
-            { name: 'BABEL of the INTERNET', symbol: 'BABEL', address: 'EQB_Babel_Topblast_TON', logo: 'https://cache.tonapi.io/imgproxy/EQB_Babel_Topblast_TON/rs:fill:200:200:1/g:no', mcap: 10500, liq: 4800, vol: 2900, priceUSD: 0.011 },
-            { name: 'Make Gram Great Again', symbol: 'MGGA', address: 'EQC_Mgga_Topblast_TON', logo: 'https://cache.tonapi.io/imgproxy/EQC_Mgga_Topblast_TON/rs:fill:200:200:1/g:no', mcap: 10000, liq: 4500, vol: 2700, priceUSD: 0.01 },
-            { name: 'Vampire Pepe', symbol: 'VAMPEPE', address: 'EQD_Vampepe_Topblast_TON', logo: 'https://cache.tonapi.io/imgproxy/EQD_Vampepe_Topblast_TON/rs:fill:200:200:1/g:no', mcap: 8500, liq: 3800, vol: 2200, priceUSD: 0.009 },
-            { name: 'Polar Pup', symbol: 'PUP', address: 'EQB_Pup_Topblast_TON', logo: 'https://cache.tonapi.io/imgproxy/EQB_Pup_Topblast_TON/rs:fill:200:200:1/g:no', mcap: 8200, liq: 3600, vol: 2100, priceUSD: 0.0085 },
-            { name: 'TONY', symbol: 'STONY', address: 'EQC_Stony_Topblast_TON', logo: 'https://cache.tonapi.io/imgproxy/EQC_Stony_Topblast_TON/rs:fill:200:200:1/g:no', mcap: 8100, liq: 3500, vol: 2000, priceUSD: 0.008 },
-            { name: 'Resistards', symbol: 'RESISTARDS', address: 'EQD_Resistards_Topblast_TON', logo: 'https://cache.tonapi.io/imgproxy/EQD_Resistards_Topblast_TON/rs:fill:200:200:1/g:no', mcap: 11100, liq: 5100, vol: 3200, priceUSD: 0.013 },
-            { name: 'Gram Morning', symbol: 'GM', address: 'EQB_Gm_Topblast_TON', logo: 'https://cache.tonapi.io/imgproxy/EQB_Gm_Topblast_TON/rs:fill:200:200:1/g:no', mcap: 13700, liq: 6000, vol: 4000, priceUSD: 0.015 },
-            { name: 'Gram super cycle', symbol: 'GSC', address: 'EQC_Gsc_Topblast_TON', logo: 'https://cache.tonapi.io/imgproxy/EQC_Gsc_Topblast_TON/rs:fill:200:200:1/g:no', mcap: 18200, liq: 8000, vol: 5200, priceUSD: 0.019 },
-            { name: 'Steamy Julia', symbol: 'JULIA', address: 'EQD_Julia_Topblast_TON', logo: 'https://cache.tonapi.io/imgproxy/EQD_Julia_Topblast_TON/rs:fill:200:200:1/g:no', mcap: 18000, liq: 7900, vol: 5000, priceUSD: 0.0185 },
-            { name: 'Diggy', symbol: 'DIGGY', address: 'EQB_Diggy_Topblast_TON', logo: 'https://cache.tonapi.io/imgproxy/EQB_Diggy_Topblast_TON/rs:fill:200:200:1/g:no', mcap: 16900, liq: 7400, vol: 4800, priceUSD: 0.017 },
-            { name: 'The grambull', symbol: 'DUROV', address: 'EQC_Durov_Topblast_TON', logo: 'https://cache.tonapi.io/imgproxy/EQC_Durov_Topblast_TON/rs:fill:200:200:1/g:no', mcap: 15300, liq: 6800, vol: 4300, priceUSD: 0.016 },
-            { name: 'Official Gram mascot', symbol: 'GRAMIO', address: 'EQD_Gramio_Topblast_TON', logo: 'https://cache.tonapi.io/imgproxy/EQD_Gramio_Topblast_TON/rs:fill:200:200:1/g:no', mcap: 4600, liq: 2000, vol: 1100, priceUSD: 0.005 },
-            { name: 'GRAM SEASON', symbol: 'GRAMSEASON', address: 'EQB_Gramseason_Topblast_TON', logo: 'https://cache.tonapi.io/imgproxy/EQB_Gramseason_Topblast_TON/rs:fill:200:200:1/g:no', mcap: 4600, liq: 2000, vol: 1100, priceUSD: 0.005 },
-            { name: 'minefortyone', symbol: '9:41', address: 'EQC_941_Topblast_TON', logo: 'https://cache.tonapi.io/imgproxy/EQC_941_Topblast_TON/rs:fill:200:200:1/g:no', mcap: 3900, liq: 1700, vol: 900, priceUSD: 0.004 },
-            { name: 'Pink bull', symbol: 'PINK BULL', address: 'EQD_Pinkbull_Topblast_TON', logo: 'https://cache.tonapi.io/imgproxy/EQD_Pinkbull_Topblast_TON/rs:fill:200:200:1/g:no', mcap: 3800, liq: 1650, vol: 880, priceUSD: 0.0039 },
-            { name: 'Gram Wallet', symbol: 'GW', address: 'EQB_Gw_Topblast_TON', logo: 'https://cache.tonapi.io/imgproxy/EQB_Gw_Topblast_TON/rs:fill:200:200:1/g:no', mcap: 3800, liq: 1650, vol: 880, priceUSD: 0.0039 },
-            { name: 'Sky Stilettos', symbol: 'STILETTOS', address: 'EQC_Stilettos_Topblast_TON', logo: 'https://cache.tonapi.io/imgproxy/EQC_Stilettos_Topblast_TON/rs:fill:200:200:1/g:no', mcap: 3600, liq: 1550, vol: 820, priceUSD: 0.0037 },
-            { name: 'Catchain 20', symbol: 'SCATCHAIN', address: 'EQD_Scatchain_Topblast_TON', logo: 'https://cache.tonapi.io/imgproxy/EQD_Scatchain_Topblast_TON/rs:fill:200:200:1/g:no', mcap: 7900, liq: 3400, vol: 1900, priceUSD: 0.0078 }
-        ];
-
         async function loadTopblastTokens() {
             try {
                 const res = await fetch(`https://api.dexscreener.com/latest/dex/search?q=topblast`);
@@ -1236,15 +1213,15 @@
                         const livePriceUSD = p.priceUsd ? parseFloat(p.priceUsd) : 0.01;
                         const liveLogo = (p.info && p.info.imageUrl) || `https://cache.tonapi.io/imgproxy/${p.baseToken.address}/rs:fill:200:200:1/g:no`;
                         
-                        const idx = topblastRegistry.findIndex(t => t.address === p.baseToken.address || t.symbol.toLowerCase() === p.baseToken.symbol.toLowerCase());
+                        const idx = allTopblastTokens.findIndex(t => t.address === p.baseToken.address || t.symbol.toLowerCase() === p.baseToken.symbol.toLowerCase());
                         if (idx !== -1) {
-                            topblastRegistry[idx].mcap = liveMcap;
-                            topblastRegistry[idx].liq = liveLiq;
-                            topblastRegistry[idx].vol = liveVol;
-                            topblastRegistry[idx].priceUSD = livePriceUSD;
-                            if (p.info?.imageUrl) topblastRegistry[idx].logo = p.info.imageUrl;
+                            allTopblastTokens[idx].mcap = liveMcap;
+                            allTopblastTokens[idx].liq = liveLiq;
+                            allTopblastTokens[idx].vol = liveVol;
+                            allTopblastTokens[idx].priceUSD = livePriceUSD;
+                            if (p.info?.imageUrl) allTopblastTokens[idx].logo = p.info.imageUrl;
                         } else {
-                            topblastRegistry.push({ name: p.baseToken.name, symbol: p.baseToken.symbol, address: p.baseToken.address, logo: liveLogo, mcap: liveMcap, liq: liveLiq, vol: liveVol, priceUSD: livePriceUSD });
+                            allTopblastTokens.push({ name: p.baseToken.name, symbol: p.baseToken.symbol, address: p.baseToken.address, logo: liveLogo, mcap: liveMcap, liq: liveLiq, vol: liveVol, priceUSD: livePriceUSD });
                         }
                     }
                 });
@@ -1262,7 +1239,7 @@
 
         function changePage(direction) {
             const q = document.getElementById('topblastSearchInput').value.toLowerCase();
-            const filtered = topblastRegistry.filter(t => t.name.toLowerCase().includes(q) || t.symbol.toLowerCase().includes(q) || t.address.toLowerCase().includes(q));
+            const filtered = allTopblastTokens.filter(t => t.name.toLowerCase().includes(q) || t.symbol.toLowerCase().includes(q) || t.address.toLowerCase().includes(q));
             const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
             
             currentTopblastPage += direction;
@@ -1274,7 +1251,7 @@
 
         function renderTopblastList() {
             const q = document.getElementById('topblastSearchInput').value.toLowerCase();
-            const filtered = topblastRegistry.filter(t => t.name.toLowerCase().includes(q) || t.symbol.toLowerCase().includes(q) || t.address.toLowerCase().includes(q));
+            const filtered = allTopblastTokens.filter(t => t.name.toLowerCase().includes(q) || t.symbol.toLowerCase().includes(q) || t.address.toLowerCase().includes(q));
             
             const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
             if (currentTopblastPage > totalPages) currentTopblastPage = totalPages;
