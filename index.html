@@ -722,8 +722,8 @@
                         <div style="text-align: center; padding: 15px; color: var(--text-muted); font-size: 12px;">No active bot trades executed yet.</div>
                     </div>
 
-                    <!-- CONNECTED WALLET ACTUAL HOLDINGS (All Tokens Displayed) -->
-                    <div class="card-title" style="margin-bottom: 8px;">💎 Connected Wallet Actual Holdings</div>
+                    <!-- CONNECTED WALLET ACTUAL HOLDINGS (Sorted Highest to Lowest Value) -->
+                    <div class="card-title" style="margin-bottom: 8px;">💎 Connected Wallet Actual Holdings <span style="font-size: 9px; color: var(--text-muted);">(Highest to Lowest)</span></div>
                     <div id="onChainWalletHoldings" style="display: flex; flex-direction: column; gap: 8px;">
                         <div style="text-align: center; padding: 15px; color: var(--text-muted); font-size: 12px;">Connect wallet via TonConnect to load live wallet assets.</div>
                     </div>
@@ -1262,10 +1262,10 @@
         }
         window.calculateSwapOutput = calculateSwapOutput;
 
-        // --- REAL WALLET HOLDINGS (SHOWS ALL TOKENS & REAL-TIME DEXSCREENER WORTH) ---
+        // --- REAL WALLET HOLDINGS (DUAL-PRICING & SORTED HIGHEST TO LOWEST USD) ---
         async function fetchRealWalletHoldings(address) {
             const container = document.getElementById('onChainWalletHoldings');
-            container.innerHTML = `<div style="text-align: center; padding: 15px; color: var(--text-muted); font-size: 12px;">Querying wallet holdings & fetching real-time prices...</div>`;
+            container.innerHTML = `<div style="text-align: center; padding: 15px; color: var(--text-muted); font-size: 12px;">Querying wallet holdings & sorting by highest value...</div>`;
             
             try {
                 const res = await fetch(`https://tonapi.io/v2/accounts/${address}/jettons`);
@@ -1278,7 +1278,8 @@
                     return;
                 }
 
-                container.innerHTML = '';
+                let holdingsList = [];
+
                 for (const b of balances) {
                     const rawBalance = parseFloat(b.balance || 0);
                     const decimals = b.jetton.decimals || 9;
@@ -1290,38 +1291,65 @@
                     const symbol = b.jetton.symbol || 'JETTON';
                     const image = b.jetton.image || `https://cache.tonapi.io/imgproxy/${tokenAddress}/rs:fill:200:200:1/g:no`;
 
-                    // Fetch exact real-time price using the contract address via DexScreener
+                    // 1. Check TonAPI built-in price first
                     let priceUSD = 0;
-                    try {
-                        const dexRes = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${tokenAddress}`);
-                        const dexData = await dexRes.json();
-                        if (dexData.pairs && dexData.pairs.length > 0) {
-                            const bestPair = dexData.pairs.reduce((prev, curr) => (curr.liquidity?.usd || 0) > (prev.liquidity?.usd || 0) ? curr : prev);
-                            priceUSD = parseFloat(bestPair.priceUsd) || 0;
+                    if (b.price && b.price.prices && b.price.prices.USD) {
+                        priceUSD = parseFloat(b.price.prices.USD) || 0;
+                    }
+
+                    // 2. Fallback: Fetch live price from DexScreener using the contract address if TonAPI price is 0
+                    if (priceUSD <= 0) {
+                        try {
+                            const dexRes = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${tokenAddress}`);
+                            const dexData = await dexRes.json();
+                            if (dexData.pairs && dexData.pairs.length > 0) {
+                                const bestPair = dexData.pairs.reduce((prev, curr) => (curr.liquidity?.usd || 0) > (prev.liquidity?.usd || 0) ? curr : prev);
+                                priceUSD = parseFloat(bestPair.priceUsd) || 0;
+                            }
+                        } catch (err) {
+                            console.error(`DexScreener price fetch failed for ${symbol}:`, err);
                         }
-                    } catch (err) {
-                        console.error(`DexScreener price fetch error for ${symbol}:`, err);
-                        priceUSD = b.price?.prices?.USD || 0;
                     }
 
                     const estUsdValue = amount * priceUSD;
 
+                    holdingsList.push({
+                        tokenAddress,
+                        name,
+                        symbol,
+                        image,
+                        amount,
+                        priceUSD,
+                        estUsdValue
+                    });
+                }
+
+                // Sort holdings from highest to lowest USD value
+                holdingsList.sort((a, b) => b.estUsdValue - a.estUsdValue);
+
+                container.innerHTML = '';
+                if (holdingsList.length === 0) {
+                    container.innerHTML = `<div style="text-align: center; padding: 15px; color: var(--text-muted); font-size: 12px;">No active token balances found.</div>`;
+                    return;
+                }
+
+                for (const h of holdingsList) {
                     container.innerHTML += `
-                        <div class="launch-card" onclick="selectTokenForTrade('${tokenAddress}', '${name.replace(/'/g, "\\'")}', '${symbol}', '${image}', 50000, 20000, 10000, ${priceUSD}, true, 'dedust')">
+                        <div class="launch-card" onclick="selectTokenForTrade('${h.tokenAddress}', '${h.name.replace(/'/g, "\\'")}', '${h.symbol}', '${h.image}', 50000, 20000, 10000, ${h.priceUSD}, true, 'dedust')">
                             <div style="display:flex; align-items:center; gap:12px;">
                                 <div class="token-avatar-wrap">
-                                    <span class="token-avatar-fallback">${symbol.charAt(0)}</span>
-                                    <img src="${image}" onerror="this.style.display='none';">
+                                    <span class="token-avatar-fallback">${h.symbol.charAt(0)}</span>
+                                    <img src="${h.image}" onerror="this.style.display='none';">
                                 </div>
                                 <div>
-                                    <h4 style="font-size:13px; font-weight:800;">$${symbol}</h4>
-                                    <span style="font-size:11px; color:var(--text-muted);">${name}</span>
+                                    <h4 style="font-size:13px; font-weight:800;">$${h.symbol}</h4>
+                                    <span style="font-size:11px; color:var(--text-muted);">${h.name}</span>
                                 </div>
                             </div>
                             <div style="text-align:right;">
-                                <div style="font-size:11px; color:var(--text-main); font-weight:800;">${amount.toLocaleString(undefined, {maximumFractionDigits: 4})} ${symbol}</div>
-                                <div style="font-size:12px; font-weight:900; color:${priceUSD > 0 ? 'var(--accent-green)' : 'var(--text-muted)'};">
-                                    ${priceUSD > 0 ? `~$${estUsdValue.toFixed(2)}` : 'Unpriced Token'}
+                                <div style="font-size:11px; color:var(--text-main); font-weight:800;">${h.amount.toLocaleString(undefined, {maximumFractionDigits: 4})} ${h.symbol}</div>
+                                <div style="font-size:12px; font-weight:900; color:${h.priceUSD > 0 ? 'var(--accent-green)' : 'var(--text-muted)'};">
+                                    ${h.priceUSD > 0 ? `~$${h.estUsdValue.toFixed(2)}` : 'Unpriced Token'}
                                 </div>
                             </div>
                         </div>
