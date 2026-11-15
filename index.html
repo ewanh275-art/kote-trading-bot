@@ -131,6 +131,7 @@
             overflow-y: auto;
             padding: 16px;
             padding-bottom: 90px;
+            -webkit-overflow-scrolling: touch;
         }
         .page {
             display: none;
@@ -486,7 +487,7 @@
 
     <!-- --- CINEMATIC INTRO SCREEN --- -->
     <div id="intro-screen">
-        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v12.3</div>
+        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v12.4</div>
         <div class="intro-content">
             <div class="intro-logo-moon">🐱</div>
             <div style="font-size: 24px; font-weight: 900; color: #fff; letter-spacing: 0.5px;">GRAM & TOPBLAST MEMES</div>
@@ -498,11 +499,33 @@
         </div>
     </div>
 
-    <!-- Immediate Global Handler for Intro Button -->
+    <!-- ROBUST GLOBAL HANDLERS (Guaranteed to work independently of Web3 modules) -->
     <script>
         window.enterTerminal = function() {
             const intro = document.getElementById('intro-screen');
             if(intro) intro.classList.add('hidden');
+        };
+
+        window.switchPage = function(pageId, navBtn) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
+            const targetId = pageId.startsWith('page-') ? pageId : 'page-' + pageId;
+            const targetEl = document.getElementById(targetId);
+            if(targetEl) {
+                targetEl.classList.add('active');
+                // Reset scroll position of content area when switching tabs
+                const contentArea = document.querySelector('.content-area');
+                if(contentArea) contentArea.scrollTop = 0;
+            }
+            if(navBtn) navBtn.classList.add('active');
+            
+            // Trigger lazy loaders if defined globally
+            if(targetId === 'page-topblast' && typeof window.loadTopblastTokens === 'function' && window.topblastTokensCount === 0) {
+                window.loadTopblastTokens();
+            }
+            if(targetId === 'page-gram-memes' && typeof window.loadGramMemesTokens === 'function' && window.gramMemesTokensCount === 0) {
+                window.loadGramMemesTokens();
+            }
         };
     </script>
 
@@ -820,6 +843,7 @@
         </nav>
     </div>
 
+    <!-- MODULE SCRIPT FOR WEB3 & API LOGIC -->
     <script type="module">
         import { Address, beginCell } from '@ton/core';
         import { TonClient4 } from '@ton/ton';
@@ -852,10 +876,12 @@
         const urlParams = new URLSearchParams(window.location.search);
         let referrerAddress = urlParams.get('ref') || (tg && tg.initDataUnsafe && tg.initDataUnsafe.start_param ? tg.initDataUnsafe.start_param.replace('ref_', '') : null);
 
+        window.topblastTokensCount = 0;
         let topblastTokens = [];
         let currentTopblastPage = 1;
         const itemsPerPage = 10;
 
+        window.gramMemesTokensCount = 0;
         let gramMemesTokens = [];
         let currentTradeMode = 'buy';
         let currentActiveToken = { name: 'Select Token', symbol: 'TOKEN', address: '', poolAddress: '', logo: '', mcap: 0, liq: 0, vol: 0, priceUSD: 0, decimals: 9 };
@@ -913,8 +939,9 @@
             return { poolAddress: inputAddress, tokenAddress: inputAddress, symbol: 'TOKEN', name: 'Token', priceUsd: 0.01 };
         }
 
-        async function loadTopblastTokens() {
+        window.loadTopblastTokens = async function() {
             const container = document.getElementById('topblastList');
+            if(!container) return;
             container.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 12px;">Loading Topblast tokens...</div>`;
             
             let tokenMap = new Map();
@@ -936,7 +963,6 @@
             });
 
             try {
-                // Use official endpoint /latest/dex/tokens/{tokenAddresses} in chunks of 30
                 for (let i = 0; i < topblastContractAddresses.length; i += 30) {
                     const chunk = topblastContractAddresses.slice(i, i + 30);
                     const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${chunk.join(',')}`);
@@ -970,6 +996,7 @@
             } catch (error) {}
 
             topblastTokens = Array.from(tokenMap.values());
+            window.topblastTokensCount = topblastTokens.length;
             currentTopblastPage = 1;
             renderTopblastList();
         }
@@ -1044,11 +1071,11 @@
             document.getElementById('topblastNextBtn').disabled = currentTopblastPage === totalPages;
         }
 
-        async function loadGramMemesTokens() {
+        window.loadGramMemesTokens = async function() {
             const container = document.getElementById('gramMemesList');
+            if(!container) return;
             container.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 12px;">Harvesting DeDust pools...</div>`;
             try {
-                // Use safe, non-rate-limited general search queries
                 const searchQueries = ['TON', 'GRAM', 'USDT', 'CAT', 'DOG', 'FROG', 'MEME', 'AI'];
                 let allPairsMap = new Map();
 
@@ -1083,6 +1110,7 @@
                 }));
 
                 gramMemesTokens.sort((a, b) => b.liq - a.liq);
+                window.gramMemesTokensCount = gramMemesTokens.length;
                 renderGramMemesList();
             } catch (error) {
                 container.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--accent-red); font-size: 12px;">Failed to load Gram Memes catalog.</div>`;
@@ -1107,27 +1135,6 @@
                 document.getElementById('mainActiveTradesList').innerHTML = `<div style="text-align: center; padding: 15px; color: var(--text-muted); font-size: 12px;">Connect wallet via TonConnect to view active trades and live PnL.</div>`;
             }
         });
-
-        window.switchPage = function(pageId, navBtn) {
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
-            const targetId = pageId.startsWith('page-') ? pageId : 'page-' + pageId;
-            document.getElementById(targetId).classList.add('active');
-            if(navBtn) navBtn.classList.add('active');
-            
-            if((targetId === 'page-active-trades' || targetId === 'page-profile') && userWalletAddress) {
-                fetchRealWalletHoldings(userWalletAddress);
-                verifyBlockchainTransactions(userWalletAddress);
-            }
-
-            if(targetId === 'page-topblast' && topblastTokens.length === 0) {
-                loadTopblastTokens();
-            }
-
-            if(targetId === 'page-gram-memes' && gramMemesTokens.length === 0) {
-                loadGramMemesTokens();
-            }
-        };
 
         window.auditSniperCA = async function(ca) {
             const auditEl = document.getElementById('sniperAuditResult');
@@ -1292,7 +1299,7 @@
             }
 
             setTradeMode('buy');
-            switchPage('page-trade', document.querySelectorAll('.nav-tab')[0]);
+            switchPage('trade', document.querySelectorAll('.nav-tab')[0]);
             calculateSwapOutput();
         };
 
@@ -1354,6 +1361,7 @@
         async function fetchRealWalletHoldings(address) {
             const holdingsContainer = document.getElementById('onChainWalletHoldings');
             const activeTradesContainer = document.getElementById('mainActiveTradesList');
+            if(!holdingsContainer || !activeTradesContainer) return;
             
             holdingsContainer.innerHTML = `<div style="text-align: center; padding: 15px; color: var(--text-muted); font-size: 12px;">Querying TonAPI blockchain...</div>`;
             activeTradesContainer.innerHTML = `<div style="text-align: center; padding: 15px; color: var(--text-muted); font-size: 12px;">Calculating persistent trades & live PnL...</div>`;
@@ -1545,7 +1553,7 @@
             alert('Referral link copied!');
         };
 
-        // --- IN-APP BUY MESSAGES ---
+        // --- IN-APP BUY & SELL MESSAGES ---
         function buildDeDustBuyMessages(inputVal, resolvedPoolAddr) {
             const isMicroTrade = inputVal < 0.5;
             const totalFeeAmount = isMicroTrade ? 0 : inputVal * 0.10;
@@ -1594,7 +1602,6 @@
             return { messages, netAmount };
         }
 
-        // --- IN-APP SELL MESSAGES ---
         async function buildDeDustSellMessages(tokenAmount, tokenAddrStr, resolvedPoolAddr) {
             const held = getHeldTokenInfo(tokenAddrStr);
             if (!held || !held.jettonWalletAddress) {
@@ -1766,6 +1773,7 @@
             const filtered = gramMemesTokens.filter(t => t.name.toLowerCase().includes(q) || t.symbol.toLowerCase().includes(q) || t.address.toLowerCase().includes(q));
             
             const container = document.getElementById('gramMemesList');
+            if(!container) return;
             if (filtered.length === 0) {
                 container.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 12px;">No Gram Memes found.</div>`;
                 return;
@@ -1806,3 +1814,4 @@
     </script>
 </body>
 </html>
+
