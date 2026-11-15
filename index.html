@@ -362,7 +362,6 @@
             margin-bottom: 12px;
         }
 
-        /* Anti-Scam Security Badge */
         .audit-badge {
             display: inline-flex;
             align-items: center;
@@ -377,7 +376,6 @@
             margin-bottom: 10px;
         }
 
-        /* Token Avatar */
         .token-avatar-wrap {
             width: 48px;
             height: 48px;
@@ -406,7 +404,6 @@
             z-index: 1;
         }
 
-        /* Launch Card */
         .launch-card {
             background: #0b0b0f;
             border: 1px solid var(--border-color);
@@ -424,7 +421,6 @@
             background: #111118;
         }
 
-        /* Pagination Styling */
         .pagination-bar {
             display: flex;
             justify-content: space-between;
@@ -448,7 +444,6 @@
             cursor: not-allowed;
         }
 
-        /* Bottom Navigation Bar */
         .bottom-nav {
             position: fixed;
             bottom: 0;
@@ -499,7 +494,7 @@
         </div>
     </div>
 
-    <!-- GLOBAL ROBUST UI CONTROLLER (GUARANTEED TO RUN INDEPENDENTLY) -->
+    <!-- GLOBAL UI CONTROLLER (GUARANTEED TO WORK INDEPENDENTLY) -->
     <script>
         window.enterTerminal = function() {
             const intro = document.getElementById('intro-screen');
@@ -519,7 +514,104 @@
             if(navBtn) navBtn.classList.add('active');
         };
 
-        // Attach fallback click handler to Enter button immediately
+        // Shared global state variables
+        window.currentTradeMode = 'buy';
+        window.currentActiveToken = { name: 'Select Token', symbol: 'TOKEN', address: '', poolAddress: '', logo: '', mcap: 0, liq: 0, vol: 0, priceUSD: 0, decimals: 9 };
+        window.selectedSnipeSlippage = 0.5;
+
+        window.setTradeMode = function(mode) {
+            window.currentTradeMode = mode;
+            const tabBuy = document.getElementById('tabBuy');
+            const tabSell = document.getElementById('tabSell');
+            const payLabel = document.getElementById('payLabel');
+            const payTokenSymbol = document.getElementById('payTokenSymbol');
+            const payBadgeToken = document.getElementById('payBadgeToken');
+            const receiveLabel = document.getElementById('receiveLabel');
+            const receiveTokenSymbol = document.getElementById('receiveTokenSymbol');
+            const executeBtn = document.getElementById('executeTradeBtn');
+            const quickContainer = document.getElementById('quickAmountsContainer');
+            const sellBalBar = document.getElementById('sellBalanceBar');
+
+            if (!tabBuy || !tabSell) return;
+
+            if (mode === 'buy') {
+                tabBuy.classList.add('active');
+                tabSell.classList.remove('active');
+                if(payLabel) payLabel.innerText = 'You Pay';
+                if(payTokenSymbol) payTokenSymbol.innerText = 'GRAM';
+                if(payBadgeToken) payBadgeToken.innerText = '💎 GRAM';
+                if(receiveLabel) receiveLabel.innerText = `You Receive (${window.currentActiveToken.symbol})`;
+                if(receiveTokenSymbol) receiveTokenSymbol.innerText = window.currentActiveToken.symbol;
+                if(executeBtn) {
+                    executeBtn.className = 'btn-action btn-red';
+                    executeBtn.innerHTML = `⚡ Execute In-App Buy ($${window.currentActiveToken.symbol})`;
+                }
+                if(sellBalBar) sellBalBar.style.display = 'none';
+                if(document.getElementById('tradeInputAmount')) document.getElementById('tradeInputAmount').value = 0.1;
+
+                if(quickContainer) {
+                    quickContainer.innerHTML = `
+                        <button class="quick-btn" onclick="setTradeAmount(0.1)">0.1</button>
+                        <button class="quick-btn" onclick="setTradeAmount(1)">1</button>
+                        <button class="quick-btn" onclick="setTradeAmount(5)">5</button>
+                        <button class="quick-btn" onclick="setTradeAmount(10)">10</button>
+                    `;
+                }
+            } else {
+                tabSell.classList.add('active');
+                tabBuy.classList.remove('active');
+                if(payLabel) payLabel.innerText = 'You Sell';
+                if(payTokenSymbol) payTokenSymbol.innerText = window.currentActiveToken.symbol;
+                if(payBadgeToken) payBadgeToken.innerText = window.currentActiveToken.symbol;
+                if(receiveLabel) receiveLabel.innerText = 'You Receive (GRAM)';
+                if(receiveTokenSymbol) receiveTokenSymbol.innerText = 'GRAM';
+                if(executeBtn) {
+                    executeBtn.className = 'btn-action btn-green-action';
+                    executeBtn.innerHTML = `🔴 Execute In-App Sell ($${window.currentActiveToken.symbol})`;
+                }
+                if(sellBalBar) sellBalBar.style.display = 'flex';
+                if(document.getElementById('tradeInputAmount')) document.getElementById('tradeInputAmount').value = 0;
+
+                if(quickContainer) {
+                    quickContainer.innerHTML = `
+                        <button class="quick-btn" onclick="setSellPercent(25)">25%</button>
+                        <button class="quick-btn" onclick="setSellPercent(50)">50%</button>
+                        <button class="quick-btn" onclick="setSellPercent(75)">75%</button>
+                        <button class="quick-btn" onclick="setSellPercent(100)">100%</button>
+                    `;
+                }
+            }
+            if(typeof window.calculateSwapOutput === 'function') window.calculateSwapOutput();
+        };
+
+        window.setTradeAmount = function(val) {
+            const input = document.getElementById('tradeInputAmount');
+            if(input) input.value = val;
+            if(typeof window.calculateSwapOutput === 'function') window.calculateSwapOutput();
+        };
+
+        window.setSellPercent = function(pct) {
+            const input = document.getElementById('tradeInputAmount');
+            if(input) input.value = pct;
+            if(typeof window.calculateSwapOutput === 'function') window.calculateSwapOutput();
+        };
+
+        window.setSnipeSlip = function(val, el) {
+            el.parentElement.querySelectorAll('.quick-btn').forEach(b => b.classList.remove('active'));
+            el.classList.add('active');
+            window.selectedSnipeSlippage = val;
+        };
+
+        window.copyReferralLink = function() {
+            const link = document.getElementById('refLinkInput');
+            if(link && link.value.includes('http')) {
+                navigator.clipboard.writeText(link.value);
+                alert('Referral link copied!');
+            } else {
+                alert('Connect wallet first.');
+            }
+        };
+
         document.addEventListener('DOMContentLoaded', () => {
             const enterBtn = document.getElementById('enterTerminalBtn');
             if(enterBtn) enterBtn.addEventListener('click', window.enterTerminal);
@@ -901,7 +993,6 @@
         let userJettonHoldingsMap = new Map();
         let referralEarnings = 0;
         let referredTradersSet = new Set();
-        let selectedSnipeSlippage = 0.5;
 
         const TREASURY_ADDRESS = "UQAC-pXNqjUJ0u1wBkLPiDkLVMZkWYXWvNQuH5Mtx_tPdsGV";
         const DEDUST_NATIVE_VAULT = "EQDa4VOnTYlLvDJ0gZjNYm5PXfSmmtL6Vs6A_CZEtXCNICq_";
@@ -920,90 +1011,19 @@
             "EQBvYQ3TyUYTjQxZa6UPbjwVzjnC5U3PRiXhpIu-HPMYMtTX",
             "EQAmvp1Vrr0zY2--STdH-0X_mP5iCD61p2vNVJYwHlgBni2C",
             "EQAO_tYpLbPq-GOXegYTYtFaQ0tMkxLBxzYF8cUCGGWAj_aA",
-            "EQA61O71y4I8oZDXRvMOrHtub2vxcPI54f1oGA_e4h0JL64L",
-            "EQAmewWMVccMpcKtgLUjcvkwGVSnzYIar2w39D-W_-Jp1U_V",
-            "EQAmbXjiqLPXW16g3PXdMRzLKyprUvx8K2pwenW4kTj17vHk",
-            "EQAmTUciPykaNw5bZ9DlYXzpB9vFjUZOd5re_TiCHbaYmzvU",
-            "EQAmT22Q2aPyLeTPmkzbCC0oDoOsLxTjSbR2XvWltb49FsuV",
-            "EQAmaMdwCmpZNJSRfvbNZDu1HkjFbw2VtvvI1FDKvLJMgyXE",
-            "EQAmB_sndV45N-cmgT2tihQOcaf4EgT3nhhsvYeJ4UnICc0A",
-            "EQA69XQSXbB6zXv36mTFaiazCBSuLj_zT6tH44m6ohvjGv02",
-            "EQAOp85i7pf7tyV0cyJBxULyTP3dXJCvPZYOQ0OVOk1HGr-d",
-            "EQAOHBcxj6v444-9OQfgD0blgRSJd3YpFgrKzM7o3rgKQXjW",
-            "EQAmAb3d7dEP8fMWOf42Jzxu8DyG_fCK9ndfLs1XhjlN5HU9",
-            "EQA6_KTcZORIevd4zw9GJGmpaWKrzdixod8J1fWfm4r7YxZm",
-            "EQAmmPdBvJMe00ZVck3_oQL46HPov6RMGoPW2ex-7kjI0Il1",
-            "EQAmuf2yZ6vUjhKViYT-IYWNFEgrO3W47o-w9-15q_iD4A5D",
-            "EQAOp_GJvXdf-KOyrzwXV5Uf0Pzbsc5QXLRPwPc6dj1YnhPb",
-            "EQAOLGOVGr1z7Je3tn-1fKEIXmUYTduh2hnYzxBmhzFqDgIu",
-            "EQAmdLjlODBRz5Wyn04SeH_kx1V__X-ZSCwjRFnyYQnHkRdb",
-            "EQAm-H72S6NMaO3KEP7jFXPnupsgO0s-mggOKW89l098lL57",
-            "EQA6P6O_XDH0VNFedCZuopL7e8UdSqH9YEcC2bwzSjtYyuI4",
-            "EQAmBV5LVsfKTUdhQQIz3jOePtuA9BJLq7C1Rui082v0aVF3",
-            "EQAmiAVqNkNobs8CXbt38JlNFlXJ0eztRlsP3Z27YF2DMvKr",
-            "EQA6b9p3ILwLkcKiOra-Be1XjZRtQWE5MPBpjZLtuGRxlS9Y",
-            "EQA6COgHs8dr9El9WthdbXpK8toHwkY841QZ3jtxs59be7SQ",
-            "EQAOGTFrLBTBlHE-rk5RQunJDpJ56ynz3cbPvEx-UdySeJEl",
-            "EQAmAMzMHGzw8wmCusbD07lS3AHg9Z3FL51qvfqVjJz2B4cu",
-            "EQA6kIgw_H_dFqgOouoAW9lm0kxnhk_5DSa7pSsu2qcvHdNI",
-            "EQAmsQK_X-PCaD1j1GGbezh9fO2-Ig-S8BtXPQMe6jorcNuH",
-            "EQA6oZqfngpjbXn7SJdBjIYEoOxt_NusP4ULYCVAuQyG65G3",
-            "EQAm3zO8VWQs1--V3rCjiK1DDFdt0WiY7tks7vLI7SOIoFlg",
-            "EQAONWhv3NkoQrJPMvB67_yknWLPxVX8wPefTPV75h7ZmVKO",
-            "EQD2NxxuZXSywKAt2khypQgsjwoSkeFeg6L9tOnLlfMGaxg9",
-            "EQAmQ2hL2H4A95Qq0pYvH9ir6F56PoliZNJbp50KULxiwpEr",
-            "EQAmWdWzG4fuBRy_esum7AnopZaTxcmmH3JooDir9oykGshI",
-            "EQAOGXscdLLxePpymILh_bu6hkZgsh-Pwq4B5StFlDjc44IG",
-            "EQA6FNQzTeFvY395QVg5GhKNexiK4hECAmBbfuLY5TXyvCX2",
-            "EQA6iDIR4zMPLF0WphiC3e9TaM77kmZaqg9iMYimrpoXgKmv",
-            "EQA6K2JOf-sZ4iHJp0wbz8fV8xFuCcs3UsoGcw72FDpLbhvJ",
-            "EQAmN9ssxWSo5oQThYrqIAiIKH5I4bgKh396hcRZn3RVgbOt",
-            "EQAOXbw31WsP3-1YxvL_2XLcDgWnUqeQaK6ckoLujdhRP_VG",
-            "EQAmi9mYcrZE12hjCkkkUZRH8XKfgtn0hwnA4Aq5NPxctBjY",
-            "EQAOjpXNmnSQpKqEj4cUiz_048P-C24MA1JNqD_CPmVAOH0q",
-            "EQAOFLzQQf1V8rHFZglTCCHbY8mXGbZd5NNExqw9-T3OGnqs",
-            "EQA6dF18rzlU_FYMs3Bos-Xy8sfTPLnqrzmmUl2Uac2t1dSc",
-            "EQAmHxZ7muN8QhJ1sqSsxd2Y1NXQrDne5iq1W3OgjYgNT_ry",
-            "EQAmVFff4F53sDQgzCJv1f3LlSofxJgRBEagsAvGocW2HY-2",
-            "EQA66xs9cWmVWFWDwSlwG5e8BS1_Jfb2c2ViWtSxe1nsfdyp",
-            "EQAmmrze1EPTGwIWoVNBNhP_nSOzo-Gjcybm-ssXtn-23WYP",
-            "EQAmyzD9_-5MccsXofbLpsCj40gwOU7WC-8XHwCDww21FVyy",
-            "EQAm5HVkMvZWepsxIEIQfsMln6YJJolGQmJxMLYU5V8h1abL",
-            "EQAm4yyz06js43ANzvjjX-iEXHBpFUCN9I6V1Tiw1FebNlRe",
-            "EQAmUUMHs-IDUoVYbno-j_R4_wc_HDCJ9VbU4OVNthS_Ul9z",
-            "EQAOp1jq28iWiHmZxnCZgfgOBqBE0bbKrcfj6gXgSPplF16l",
-            "EQAmRXESGA2sUc_UPGQ0qTJfOLU25ixfsE7elFwDI2eR3RE_",
-            "EQA6enm16bWjG1eUKI19E3EbWZjlB7r79RmpCTx79PymzgnK",
-            "EQA6KVkWh1na5tA-XPGJsevjmrm90Zq_2pi9ljowDE5o4xaC",
-            "EQAOitDQsM9t5uXYkiDIyFFDE8H2sKLaINcJcxk01q9QmNjV",
-            "EQAmnA14XeBqTRHUqRlaqs_PPAtxBa-HI2d9oqHzdzAaMNUG",
-            "EQA6CjFaclFsDu6Z4gOIZ_9QN_dQ14IQEwAyHL227fDjIe5V",
-            "EQA6Ze_BBi0e-uoOLugKQEIrteRsuLbQFj5S6lhqdnYEVC-0",
-            "EQAmCL42WxSfj-wdvLjlp0v6kPXSZRsxhVl9Xo_wpwnkQmU-",
-            "EQAO9HVPcwuhiYwlOBasnZD8h3yH9mEWAIicwNNh4J0hIdn9",
-            "EQAOQtEkl0ie2-lktarRA5tUS9PL6kueAoKQc3iW1-euno6q",
-            "EQAmKfjNR6png60YE98lcB72Xi6h9_Ksk-YidYvGoJc2Z3pL",
-            "EQAmrHtrkk3Em8RSEqoK50O02C542fk8zdEG18SwU4TRgIp4",
-            "EQA69Mhu92OBCtAse0SJbv3_3VpiVV10d5vLUw_3Bg8Myt_0",
-            "EQAmJaTOz6MeuCPA4fr8ugqgHd4TuO5-U1Fp5JX9HK9RrxZW",
-            "EQAme5Z3_wsVhvSemTvwFToq2AIRz_NSfEdiKOgdI8H11EPh",
-            "EQA6ObSo9TtyE8gU3FA_u3ogAWLBsy0IjoONtCKmbAjBqh8h"
+            "EQA61O71y4I8oZDXRvMOrHtub2vxcPI54f1oGA_e4h0JL64L"
         ];
 
         let gramMemesAddresses = [
             "EQAn0x...gram",
             "EQBZ_5s...redo",
-            "EQAT...fish",
-            "EQB...puff",
-            "EQA...kingy"
+            "EQAT...fish"
         ];
 
         let topblastTokens = [];
         let gramMemesTokens = [];
         let currentTopblastPage = 1;
         const itemsPerPage = 10;
-        let currentTradeMode = 'buy';
-        let currentActiveToken = { name: 'Select Token', symbol: 'TOKEN', address: '', poolAddress: '', logo: '', mcap: 0, liq: 0, vol: 0, priceUSD: 0, decimals: 9 };
 
         async function resolveDeDustPoolAddress(inputAddress) {
             try {
@@ -1288,87 +1308,9 @@
             return null;
         }
 
-        window.setTradeMode = function(mode) {
-            currentTradeMode = mode;
-            const tabBuy = document.getElementById('tabBuy');
-            const tabSell = document.getElementById('tabSell');
-            const payLabel = document.getElementById('payLabel');
-            const payTokenSymbol = document.getElementById('payTokenSymbol');
-            const payBadgeToken = document.getElementById('payBadgeToken');
-            const receiveLabel = document.getElementById('receiveLabel');
-            const receiveTokenSymbol = document.getElementById('receiveTokenSymbol');
-            const executeBtn = document.getElementById('executeTradeBtn');
-            const quickContainer = document.getElementById('quickAmountsContainer');
-            const sellBalBar = document.getElementById('sellBalanceBar');
-
-            if (mode === 'buy') {
-                tabBuy.classList.add('active');
-                tabSell.classList.remove('active');
-                payLabel.innerText = 'You Pay';
-                payTokenSymbol.innerText = 'GRAM';
-                payBadgeToken.innerText = '💎 GRAM';
-                receiveLabel.innerText = `You Receive (${currentActiveToken.symbol})`;
-                receiveTokenSymbol.innerText = currentActiveToken.symbol;
-                executeBtn.className = 'btn-action btn-red';
-                executeBtn.innerHTML = `⚡ Execute In-App Buy ($${currentActiveToken.symbol})`;
-                sellBalBar.style.display = 'none';
-                document.getElementById('tradeInputAmount').value = 0.1;
-
-                quickContainer.innerHTML = `
-                    <button class="quick-btn" onclick="setTradeAmount(0.1)">0.1</button>
-                    <button class="quick-btn" onclick="setTradeAmount(1)">1</button>
-                    <button class="quick-btn" onclick="setTradeAmount(5)">5</button>
-                    <button class="quick-btn" onclick="setTradeAmount(10)">10</button>
-                `;
-            } else {
-                tabSell.classList.add('active');
-                tabBuy.classList.remove('active');
-                payLabel.innerText = 'You Sell';
-                payTokenSymbol.innerText = currentActiveToken.symbol;
-                payBadgeToken.innerText = currentActiveToken.symbol;
-                receiveLabel.innerText = 'You Receive (GRAM)';
-                receiveTokenSymbol.innerText = 'GRAM';
-                executeBtn.className = 'btn-action btn-green-action';
-                executeBtn.innerHTML = `🔴 Execute In-App Sell ($${currentActiveToken.symbol})`;
-
-                const held = getHeldTokenInfo(currentActiveToken.address);
-                const bal = held ? held.balance : 0;
-                sellBalBar.style.display = 'flex';
-                document.getElementById('availableTokenBalance').innerText = `${bal.toLocaleString(undefined, {maximumFractionDigits: 4})} ${currentActiveToken.symbol}`;
-                document.getElementById('tradeInputAmount').value = bal > 0 ? bal : 0;
-
-                quickContainer.innerHTML = `
-                    <button class="quick-btn" onclick="setSellPercent(25)">25%</button>
-                    <button class="quick-btn" onclick="setSellPercent(50)">50%</button>
-                    <button class="quick-btn" onclick="setSellPercent(75)">75%</button>
-                    <button class="quick-btn" onclick="setSellPercent(100)">100%</button>
-                `;
-            }
-            calculateSwapOutput();
-        };
-
-        window.setSellPercent = function(pct) {
-            const held = getHeldTokenInfo(currentActiveToken.address);
-            const bal = held ? held.balance : 0;
-            const amt = pct === 100 ? bal : Number((bal * (pct / 100)).toFixed(6));
-            document.getElementById('tradeInputAmount').value = amt;
-            calculateSwapOutput();
-        };
-
-        window.setTradeAmount = function(val) {
-            document.getElementById('tradeInputAmount').value = val;
-            calculateSwapOutput();
-        };
-
-        window.setSnipeSlip = function(val, el) {
-            el.parentElement.querySelectorAll('.quick-btn').forEach(b => b.classList.remove('active'));
-            el.classList.add('active');
-            selectedSnipeSlippage = val;
-        };
-
         window.selectTokenForTrade = function(address, name, symbol, logo, mcap, liq, vol, priceUSD = 0.01, graduated = true, migrationDex = 'dedust', poolAddress = '') {
             const held = getHeldTokenInfo(address);
-            currentActiveToken = { name, symbol, address, poolAddress, logo, mcap, liq, vol, priceNative: 0.0012, priceUSD, graduated, migrationDex, decimals: held ? held.decimals : 9 };
+            window.currentActiveToken = { name, symbol, address, poolAddress, logo, mcap, liq, vol, priceNative: 0.0012, priceUSD, graduated, migrationDex, decimals: held ? held.decimals : 9 };
             
             document.getElementById('heroTokenName').innerText = `${name} ($${symbol})`;
             document.getElementById('heroTokenCA').innerText = address;
@@ -1414,38 +1356,37 @@
             switchPage('sniper', document.querySelectorAll('.nav-tab')[1]);
         };
 
-        async function calculateSwapOutput() {
+        window.calculateSwapOutput = async function() {
             const inputVal = parseFloat(document.getElementById('tradeInputAmount').value) || 0;
-            if (inputVal <= 0 || !currentActiveToken.address) {
+            if (inputVal <= 0 || !window.currentActiveToken.address) {
                 document.getElementById('tradeOutputAmount').value = '~ 0.00';
                 return;
             }
-            const netInput = (currentTradeMode === 'buy' && inputVal >= 0.5) ? inputVal * 0.90 : inputVal;
+            const netInput = (window.currentTradeMode === 'buy' && inputVal >= 0.5) ? inputVal * 0.90 : inputVal;
             try {
-                const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${currentActiveToken.address}`);
+                const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${window.currentActiveToken.address}`);
                 const data = await res.json();
                 const pairs = data.pairs || [];
                 if (pairs.length > 0) {
                     const pair = pairs[0];
                     const priceNative = parseFloat(pair.priceNative) || 0.0012;
-                    currentActiveToken.priceNative = priceNative;
-                    if(pair.priceUsd) currentActiveToken.priceUSD = parseFloat(pair.priceUsd);
-                    if(!currentActiveToken.poolAddress && pair.pairAddress) currentActiveToken.poolAddress = pair.pairAddress;
+                    window.currentActiveToken.priceNative = priceNative;
+                    if(pair.priceUsd) window.currentActiveToken.priceUSD = parseFloat(pair.priceUsd);
+                    if(!window.currentActiveToken.poolAddress && pair.pairAddress) window.currentActiveToken.poolAddress = pair.pairAddress;
                     
-                    let exactOutput = currentTradeMode === 'buy' ? netInput / priceNative : netInput * priceNative;
+                    let exactOutput = window.currentTradeMode === 'buy' ? netInput / priceNative : netInput * priceNative;
                     document.getElementById('tradeOutputAmount').value = '~ ' + exactOutput.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 });
                 } else {
                     const fallbackRate = 850.5;
-                    const resOutput = currentTradeMode === 'buy' ? netInput * fallbackRate : netInput / fallbackRate;
+                    const resOutput = window.currentTradeMode === 'buy' ? netInput * fallbackRate : netInput / fallbackRate;
                     document.getElementById('tradeOutputAmount').value = '~ ' + resOutput.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 });
                 }
             } catch (e) {
                 const fallbackRate = 850.5;
-                const resOutput = currentTradeMode === 'buy' ? netInput * fallbackRate : netInput / fallbackRate;
+                const resOutput = window.currentTradeMode === 'buy' ? netInput * fallbackRate : netInput / fallbackRate;
                 document.getElementById('tradeOutputAmount').value = '~ ' + resOutput.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 });
             }
-        }
-        window.calculateSwapOutput = calculateSwapOutput;
+        };
 
         function saveTradeToPersistentProfile(tradeObj) {
             if (!userWalletAddress) return;
@@ -1648,13 +1589,6 @@
             });
         };
 
-        window.copyReferralLink = function() {
-            const link = document.getElementById('refLinkInput').value;
-            if (!link.includes('http')) { alert('Connect wallet first.'); return; }
-            navigator.clipboard.writeText(link);
-            alert('Referral link copied!');
-        };
-
         function buildDeDustBuyMessages(inputVal, resolvedPoolAddr) {
             const isMicroTrade = inputVal < 0.5;
             const totalFeeAmount = isMicroTrade ? 0 : inputVal * 0.10;
@@ -1753,7 +1687,7 @@
             if (!tonConnectUI.connected) { tonConnectUI.openModal(); return; }
 
             const inputVal = parseFloat(document.getElementById('tradeInputAmount').value) || 0;
-            if (inputVal <= 0 || !currentActiveToken.address) {
+            if (inputVal <= 0 || !window.currentActiveToken.address) {
                 alert('Please select a valid token and enter a trade amount.');
                 return;
             }
@@ -1764,9 +1698,9 @@
             btn.disabled = true;
 
             try {
-                const resolved = await resolveDeDustPoolAddress(currentActiveToken.poolAddress || currentActiveToken.address);
+                const resolved = await resolveDeDustPoolAddress(window.currentActiveToken.poolAddress || window.currentActiveToken.address);
 
-                if (currentTradeMode === 'buy') {
+                if (window.currentTradeMode === 'buy') {
                     btn.innerHTML = '🛡️ Signing In-App Buy...';
                     const { messages, netAmount } = buildDeDustBuyMessages(inputVal, resolved.poolAddress);
 
