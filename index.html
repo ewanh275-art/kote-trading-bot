@@ -529,7 +529,6 @@
                     <h1>Kote Trade Terminal</h1>
                 </div>
             </div>
-            <!-- TonConnect UI Widget Root -->
             <div id="ton-connect"></div>
         </header>
 
@@ -737,7 +736,6 @@
                 <div class="card" style="max-width: 550px; margin: 0 auto; width: 100%;">
                     <div class="card-header">
                         <span class="card-title">👤 Verified On-Chain Portfolio & Earnings</span>
-                        <!-- Re-Integrated Profile Connect Wallet Button -->
                         <button id="profileConnectBtn" onclick="openWalletModal()" style="background: rgba(239,68,68,0.18); border: 1px solid var(--accent-red); color: var(--accent-red); padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 800; cursor: pointer;">
                             🔗 Connect Wallet
                         </button>
@@ -841,7 +839,7 @@
         </nav>
     </div>
 
-    <!-- MAIN SCRIPT MODULE WITH RE-INTEGRATED WALLET CONNECT -->
+    <!-- MAIN SCRIPT MODULE WITH LAZY WALLET CONNECT INITIALIZER -->
     <script type="module">
         import { Address, beginCell } from '@ton/core';
         import { TonClient4 } from '@ton/ton';
@@ -853,21 +851,46 @@
         const TELEGRAM_BOT_USERNAME = "KoteTrade_bot";
 
         const dynamicManifestUrl = new URL('tonconnect-manifest.json', window.location.href).href;
-        let tonConnectUI;
+        let tonConnectUI = null;
+
         try {
-            tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
-                manifestUrl: dynamicManifestUrl,
-                buttonRootId: 'ton-connect'
-            });
+            if (window.TON_CONNECT_UI && window.TON_CONNECT_UI.TonConnectUI) {
+                tonConnectUI = new window.TON_CONNECT_UI.TonConnectUI({
+                    manifestUrl: dynamicManifestUrl,
+                    buttonRootId: 'ton-connect',
+                    actionsConfiguration: {
+                        twaReturnUrl: 'https://t.me/KoteTrade_bot/app'
+                    }
+                });
+            }
         } catch (e) {
             console.error("TonConnect init error:", e);
         }
 
-        window.openWalletModal = function() {
-            if (tonConnectUI && tonConnectUI.connected) {
-                tonConnectUI.disconnect();
-            } else if (tonConnectUI) {
-                tonConnectUI.openModal();
+        // Robust Lazy Initializer for Click Handler
+        window.openWalletModal = async function() {
+            try {
+                if (!tonConnectUI && window.TON_CONNECT_UI && window.TON_CONNECT_UI.TonConnectUI) {
+                    tonConnectUI = new window.TON_CONNECT_UI.TonConnectUI({
+                        manifestUrl: dynamicManifestUrl,
+                        buttonRootId: 'ton-connect',
+                        actionsConfiguration: {
+                            twaReturnUrl: 'https://t.me/KoteTrade_bot/app'
+                        }
+                    });
+                }
+
+                if (tonConnectUI) {
+                    if (tonConnectUI.connected) {
+                        await tonConnectUI.disconnect();
+                    } else {
+                        await tonConnectUI.openModal();
+                    }
+                } else {
+                    alert("TonConnect library failed to load. Check your internet connection or manifest URL.");
+                }
+            } catch (err) {
+                alert("Wallet connection error: " + (err.message || err));
             }
         };
 
@@ -887,9 +910,6 @@
         const urlParams = new URLSearchParams(window.location.search);
         let referrerAddress = urlParams.get('ref') || (tg && tg.initDataUnsafe && tg.initDataUnsafe.start_param ? tg.initDataUnsafe.start_param.replace('ref_', '') : null);
 
-        // =========================================================================
-        // 🔥 CLEANED TOPBLAST CONTRACT ADDRESSES (Truncated EQA6LO removed)
-        // =========================================================================
         let topblastAddresses = [
             "EQAOY0xbKV1g3e2V7jdo5erF5u-5h19qB4IpPkK0RPy0RKGV",
             "EQAOyf4n-7wTtTI45LGQwfacEfnkpOa9v6bjpwgeCHX5WW8y",
@@ -1181,7 +1201,6 @@
             });
         }
 
-        // --- TONCONNECT STATUS LISTENER & WALLET INTEGRATION ---
         if (tonConnectUI) {
             tonConnectUI.onStatusChange(wallet => {
                 const profileBtn = document.getElementById('profileConnectBtn');
