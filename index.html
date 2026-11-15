@@ -493,13 +493,13 @@
             <div style="font-size: 24px; font-weight: 900; color: #fff; letter-spacing: 0.5px;">GRAM & TOPBLAST MEMES</div>
         </div>
         <div style="padding-bottom: 20px;">
-            <button class="btn-action btn-red" style="max-width: 300px; margin: 0 auto;" onclick="enterTerminal()">
+            <button class="btn-action btn-red" id="enterTerminalBtn" style="max-width: 300px; margin: 0 auto;">
                 ⚡ Enter Terminal
             </button>
         </div>
     </div>
 
-    <!-- GLOBAL INDEPENDENT UI HANDLERS (GUARANTEED TO WORK INSTANTLY) -->
+    <!-- GLOBAL ROBUST UI CONTROLLER (GUARANTEED TO RUN INDEPENDENTLY) -->
     <script>
         window.enterTerminal = function() {
             const intro = document.getElementById('intro-screen');
@@ -518,6 +518,12 @@
             }
             if(navBtn) navBtn.classList.add('active');
         };
+
+        // Attach fallback click handler to Enter button immediately
+        document.addEventListener('DOMContentLoaded', () => {
+            const enterBtn = document.getElementById('enterTerminalBtn');
+            if(enterBtn) enterBtn.addEventListener('click', window.enterTerminal);
+        });
     </script>
 
     <div class="main-container">
@@ -840,7 +846,7 @@
         </nav>
     </div>
 
-    <!-- MAIN SCRIPT MODULE FOR BLOCKCHAIN & WALLET LOGIC -->
+    <!-- MODULE SCRIPT FOR BLOCKCHAIN & WALLET LOGIC -->
     <script type="module">
         import { Address, beginCell } from '@ton/core';
         import { TonClient4 } from '@ton/ton';
