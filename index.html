@@ -486,7 +486,7 @@
 
     <!-- --- CINEMATIC INTRO SCREEN --- -->
     <div id="intro-screen">
-        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v12.2</div>
+        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v12.3</div>
         <div class="intro-content">
             <div class="intro-logo-moon">🐱</div>
             <div style="font-size: 24px; font-weight: 900; color: #fff; letter-spacing: 0.5px;">GRAM & TOPBLAST MEMES</div>
@@ -498,7 +498,7 @@
         </div>
     </div>
 
-    <!-- Immediate Global Handler for Intro Button so it never fails -->
+    <!-- Immediate Global Handler for Intro Button -->
     <script>
         window.enterTerminal = function() {
             const intro = document.getElementById('intro-screen');
@@ -652,7 +652,7 @@
                 </div>
             </section>
 
-            <!-- 3. ACTIVE TRADES (DEDICATED MAIN SECTION) -->
+            <!-- 3. ACTIVE TRADES -->
             <section id="page-active-trades" class="page">
                 <div class="card" style="max-width: 650px; margin: 0 auto; width: 100%;">
                     <div class="card-header">
@@ -674,7 +674,7 @@
                 <div class="card" style="max-width: 650px; margin: 0 auto; width: 100%;">
                     <div class="card-header">
                         <div>
-                            <span class="card-title" style="color: var(--accent-green);">🔥 Topblast Memes (All 116 CAs)</span>
+                            <span class="card-title" style="color: var(--accent-green);">🔥 Topblast Memes Catalog</span>
                             <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Showing 10 tokens per page (Clean Pagination)</div>
                         </div>
                         <button onclick="loadTopblastTokens()" style="background: rgba(16,185,129,0.15); border: 1px solid var(--accent-green); color: var(--accent-green); padding: 6px 10px; border-radius: 8px; font-size: 11px; cursor: pointer; font-weight: 800;">↻ Refresh</button>
@@ -685,7 +685,7 @@
                     </div>
 
                     <div id="topblastList">
-                        <div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 12px;">Tap tab to load Topblast tokens...</div>
+                        <div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 12px;">Loading Topblast tokens...</div>
                     </div>
 
                     <div class="pagination-bar" id="topblastPaginationBar" style="display: none;">
@@ -701,18 +701,18 @@
                 <div class="card" style="max-width: 650px; margin: 0 auto; width: 100%;">
                     <div class="card-header">
                         <div>
-                            <span class="card-title" style="color: var(--accent-green);">🪙 Gram Memes (All DeDust Pools - 694+ Catalog)</span>
-                            <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Unlimited pages & highest-liquidity deduplication</div>
+                            <span class="card-title" style="color: var(--accent-green);">🪙 Gram Memes Catalog (DeDust Pools)</span>
+                            <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Highest liquidity DEX pools & meme tokens</div>
                         </div>
                         <button onclick="loadGramMemesTokens()" style="background: rgba(16,185,129,0.15); border: 1px solid var(--accent-green); color: var(--accent-green); padding: 6px 10px; border-radius: 8px; font-size: 11px; cursor: pointer; font-weight: 800;">↻ Refresh</button>
                     </div>
 
                     <div class="input-group" style="padding: 8px 12px; margin-bottom: 12px;">
-                        <input type="text" id="gramMemesSearchInput" class="pro-input" style="width: 100%; font-size: 13px;" placeholder="🔍 Search 694+ Gram Memes..." oninput="filterGramMemesList()">
+                        <input type="text" id="gramMemesSearchInput" class="pro-input" style="width: 100%; font-size: 13px;" placeholder="🔍 Search Gram Memes..." oninput="filterGramMemesList()">
                     </div>
 
                     <div id="gramMemesList">
-                        <div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 12px;">Tap tab to load Gram Memes pools...</div>
+                        <div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 12px;">Loading Gram Memes pools...</div>
                     </div>
                 </div>
             </section>
@@ -909,24 +909,13 @@
                         };
                     }
                 }
-                const pairRes = await fetch(`https://api.dexscreener.com/latest/dex/pairs/ton/${inputAddress}`);
-                const pairData = await pairRes.json();
-                if (pairData.pair && pairData.pair.dexId?.toLowerCase() === 'dedust') {
-                    return {
-                        poolAddress: pairData.pair.pairAddress,
-                        tokenAddress: pairData.pair.baseToken?.address || inputAddress,
-                        symbol: pairData.pair.baseToken?.symbol || 'TOKEN',
-                        name: pairData.pair.baseToken?.name || 'Token',
-                        priceUsd: parseFloat(pairData.pair.priceUsd) || 0.01
-                    };
-                }
             } catch (e) {}
             return { poolAddress: inputAddress, tokenAddress: inputAddress, symbol: 'TOKEN', name: 'Token', priceUsd: 0.01 };
         }
 
         async function loadTopblastTokens() {
             const container = document.getElementById('topblastList');
-            container.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 12px;">Loading 116 Topblast tokens & metrics...</div>`;
+            container.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 12px;">Loading Topblast tokens...</div>`;
             
             let tokenMap = new Map();
             topblastContractAddresses.forEach((ca, idx) => {
@@ -947,37 +936,37 @@
             });
 
             try {
-                let allPairs = [];
+                // Use official endpoint /latest/dex/tokens/{tokenAddresses} in chunks of 30
                 for (let i = 0; i < topblastContractAddresses.length; i += 30) {
                     const chunk = topblastContractAddresses.slice(i, i + 30);
-                    const res = await fetch(`https://api.dexscreener.com/tokens/v1/ton/${chunk.join(',')}`);
-                    const pairs = await res.json();
-                    if (Array.isArray(pairs)) allPairs = allPairs.concat(pairs);
-                }
+                    const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${chunk.join(',')}`);
+                    const data = await res.json();
+                    const pairs = data.pairs || [];
 
-                allPairs.forEach(p => {
-                    const tokenAddr = p.baseToken?.address || p.pairAddress;
-                    if (tokenMap.has(tokenAddr)) {
-                        const currentLiq = p.liquidity?.usd || 0;
-                        const existing = tokenMap.get(tokenAddr);
-                        if (!existing.graduated || existing.liq < currentLiq) {
-                            tokenMap.set(tokenAddr, {
-                                name: p.baseToken?.name || existing.name,
-                                symbol: p.baseToken?.symbol || existing.symbol,
-                                address: tokenAddr,
-                                poolAddress: p.pairAddress || '',
-                                graduated: true,
-                                migrationDex: p.dexId || 'dedust',
-                                logo: p.info?.imageUrl || p.baseToken?.logoURI || existing.logo,
-                                mcap: p.marketCap || p.fdv || existing.mcap,
-                                liq: currentLiq || existing.liq,
-                                vol: p.volume?.h24 || existing.vol,
-                                priceUSD: parseFloat(p.priceUsd) || existing.priceUSD,
-                                statusText: `Graduated (${(p.dexId || 'dedust').toUpperCase()})`
-                            });
+                    pairs.forEach(p => {
+                        const tokenAddr = p.baseToken?.address || p.pairAddress;
+                        if (tokenMap.has(tokenAddr)) {
+                            const currentLiq = p.liquidity?.usd || 0;
+                            const existing = tokenMap.get(tokenAddr);
+                            if (!existing.graduated || existing.liq < currentLiq) {
+                                tokenMap.set(tokenAddr, {
+                                    name: p.baseToken?.name || existing.name,
+                                    symbol: p.baseToken?.symbol || existing.symbol,
+                                    address: tokenAddr,
+                                    poolAddress: p.pairAddress || '',
+                                    graduated: true,
+                                    migrationDex: p.dexId || 'dedust',
+                                    logo: p.info?.imageUrl || p.baseToken?.logoURI || existing.logo,
+                                    mcap: p.marketCap || p.fdv || existing.mcap,
+                                    liq: currentLiq || existing.liq,
+                                    vol: p.volume?.h24 || existing.vol,
+                                    priceUSD: parseFloat(p.priceUsd) || existing.priceUSD,
+                                    statusText: `Graduated (${(p.dexId || 'dedust').toUpperCase()})`
+                                });
+                            }
                         }
-                    }
-                });
+                    });
+                }
             } catch (error) {}
 
             topblastTokens = Array.from(tokenMap.values());
@@ -1059,7 +1048,8 @@
             const container = document.getElementById('gramMemesList');
             container.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 12px;">Harvesting DeDust pools...</div>`;
             try {
-                const searchQueries = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'TON', 'GRAM', 'USDT', 'NOT', 'CAT', 'DOG', 'FROG', 'MOON'];
+                // Use safe, non-rate-limited general search queries
+                const searchQueries = ['TON', 'GRAM', 'USDT', 'CAT', 'DOG', 'FROG', 'MEME', 'AI'];
                 let allPairsMap = new Map();
 
                 for (const q of searchQueries) {
@@ -1555,7 +1545,7 @@
             alert('Referral link copied!');
         };
 
-        // --- IN-APP BUY MESSAGES (Native TON/GRAM -> Token via VaultNative) ---
+        // --- IN-APP BUY MESSAGES ---
         function buildDeDustBuyMessages(inputVal, resolvedPoolAddr) {
             const isMicroTrade = inputVal < 0.5;
             const totalFeeAmount = isMicroTrade ? 0 : inputVal * 0.10;
@@ -1604,7 +1594,7 @@
             return { messages, netAmount };
         }
 
-        // --- IN-APP SELL MESSAGES (Jetton -> TON/GRAM via VaultJetton) ---
+        // --- IN-APP SELL MESSAGES ---
         async function buildDeDustSellMessages(tokenAmount, tokenAddrStr, resolvedPoolAddr) {
             const held = getHeldTokenInfo(tokenAddrStr);
             if (!held || !held.jettonWalletAddress) {
