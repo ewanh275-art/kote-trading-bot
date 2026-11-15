@@ -688,7 +688,7 @@
                 <div class="card" style="max-width: 650px; margin: 0 auto; width: 100%;">
                     <div class="card-header">
                         <div>
-                            <span class="card-title" style="color: var(--accent-green);">🔥 Topblast Memes Catalog (78 Tokens)</span>
+                            <span class="card-title" style="color: var(--accent-green);">🔥 Topblast Memes Catalog</span>
                             <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Loaded with live DexScreener & DeDust Data</div>
                         </div>
                         <button onclick="loadTopblastTokens()" style="background: rgba(16,185,129,0.15); border: 1px solid var(--accent-green); color: var(--accent-green); padding: 6px 10px; border-radius: 8px; font-size: 11px; cursor: pointer; font-weight: 800;">↻ Refresh</button>
@@ -839,7 +839,7 @@
         </nav>
     </div>
 
-    <!-- SCRIPT WITH ALL 78 TOPBLAST CONTRACT ADDRESSES -->
+    <!-- MAIN SCRIPT MODULE -->
     <script type="module">
         import { Address, beginCell } from '@ton/core';
         import { TonClient4 } from '@ton/ton';
@@ -851,15 +851,20 @@
         const TELEGRAM_BOT_USERNAME = "KoteTrade_bot";
 
         const dynamicManifestUrl = new URL('tonconnect-manifest.json', window.location.href).href;
-        const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
-            manifestUrl: dynamicManifestUrl,
-            buttonRootId: 'ton-connect'
-        });
+        let tonConnectUI;
+        try {
+            tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
+                manifestUrl: dynamicManifestUrl,
+                buttonRootId: 'ton-connect'
+            });
+        } catch (e) {
+            console.error("TonConnect init error:", e);
+        }
 
         window.openWalletModal = function() {
-            if (tonConnectUI.connected) {
+            if (tonConnectUI && tonConnectUI.connected) {
                 tonConnectUI.disconnect();
-            } else {
+            } else if (tonConnectUI) {
                 tonConnectUI.openModal();
             }
         };
@@ -881,7 +886,7 @@
         let referrerAddress = urlParams.get('ref') || (tg && tg.initDataUnsafe && tg.initDataUnsafe.start_param ? tg.initDataUnsafe.start_param.replace('ref_', '') : null);
 
         // =========================================================================
-        // 🔥 ALL 78 TOPBLAST CONTRACT ADDRESSES
+        // 🔥 CLEANED TOPBLAST CONTRACT ADDRESSES
         // =========================================================================
         let topblastAddresses = [
             "EQAOY0xbKV1g3e2V7jdo5erF5u-5h19qB4IpPkK0RPy0RKGV",
@@ -960,13 +965,9 @@
             "EQA69Mhu92OBCtAse0SJbv3_3VpiVV10d5vLUw_3Bg8Myt_0",
             "EQAmJaTOz6MeuCPA4fr8ugqgHd4TuO5-U1Fp5JX9HK9RrxZW",
             "EQAme5Z3_wsVhvSemTvwFToq2AIRz_NSfEdiKOgdI8H11EPh",
-            "EQA6ObSo9TtyE8gU3FA_u3ogAWLBsy0IjoONtCKmbAjBqh8h",
-            "EQA6LO"
+            "EQA6ObSo9TtyE8gU3FA_u3ogAWLBsy0IjoONtCKmbAjBqh8h"
         ];
 
-        // =========================================================================
-        // 🪙 GRAM MEMES / DEDUST CONTRACT ADDRESSES
-        // =========================================================================
         let gramMemesAddresses = [
             "EQAn0x...gram",
             "EQBZ_5s...redo",
@@ -1004,28 +1005,28 @@
         }
 
         async function hydrateTokenCatalog(addresses, targetArray, renderCallback) {
-            targetArray.length = 0;
-            addresses.forEach((ca, idx) => {
-                targetArray.push({
-                    name: `Topblast Token #${idx + 1}`,
-                    symbol: `TB${idx + 1}`,
-                    address: ca,
-                    poolAddress: '',
-                    graduated: true,
-                    migrationDex: 'dedust',
-                    logo: 'https://topblastv2.lol/favicon.png',
-                    mcap: 50000 + (idx * 15000),
-                    liq: 20000 + (idx * 5000),
-                    vol: 10000 + (idx * 2000),
-                    priceUSD: 0.01 + (idx * 0.005),
-                    statusText: 'Graduated (DEDUST)'
-                });
-            });
-            renderCallback();
-
-            if (addresses.length === 0) return;
             try {
-                // Query DexScreener in batches of up to 30 addresses
+                targetArray.length = 0;
+                addresses.forEach((ca, idx) => {
+                    targetArray.push({
+                        name: `Topblast Token #${idx + 1}`,
+                        symbol: `TB${idx + 1}`,
+                        address: ca,
+                        poolAddress: '',
+                        graduated: true,
+                        migrationDex: 'dedust',
+                        logo: 'https://topblastv2.lol/favicon.png',
+                        mcap: 50000 + (idx * 15000),
+                        liq: 20000 + (idx * 5000),
+                        vol: 10000 + (idx * 2000),
+                        priceUSD: 0.01 + (idx * 0.005),
+                        statusText: 'Graduated (DEDUST)'
+                    });
+                });
+                renderCallback();
+
+                if (addresses.length === 0) return;
+
                 for (let i = 0; i < addresses.length; i += 30) {
                     const chunk = addresses.slice(i, i + 30).join(',');
                     const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${chunk}`);
@@ -1049,7 +1050,9 @@
                     });
                     renderCallback();
                 }
-            } catch (e) {}
+            } catch (err) {
+                console.error("Hydration error:", err);
+            }
         }
 
         window.loadTopblastTokens = function() {
@@ -1176,41 +1179,42 @@
             });
         }
 
-        // --- WALLET CONNECTION & PROFILE SYNC ---
-        tonConnectUI.onStatusChange(wallet => {
-            const profileBtn = document.getElementById('profileConnectBtn');
-            if (wallet && wallet.account) {
-                userWalletAddress = wallet.account.address;
-                const shortAddr = userWalletAddress.slice(0, 4) + '...' + userWalletAddress.slice(-4);
-                
-                if (profileBtn) {
-                    profileBtn.innerText = `🟢 ${shortAddr} (Disconnect)`;
-                    profileBtn.style.background = 'rgba(16,185,129,0.15)';
-                    profileBtn.style.borderColor = 'var(--accent-green)';
-                    profileBtn.style.color = 'var(--accent-green)';
-                }
+        if (tonConnectUI) {
+            tonConnectUI.onStatusChange(wallet => {
+                const profileBtn = document.getElementById('profileConnectBtn');
+                if (wallet && wallet.account) {
+                    userWalletAddress = wallet.account.address;
+                    const shortAddr = userWalletAddress.slice(0, 4) + '...' + userWalletAddress.slice(-4);
+                    
+                    if (profileBtn) {
+                        profileBtn.innerText = `🟢 ${shortAddr} (Disconnect)`;
+                        profileBtn.style.background = 'rgba(16,185,129,0.15)';
+                        profileBtn.style.borderColor = 'var(--accent-green)';
+                        profileBtn.style.color = 'var(--accent-green)';
+                    }
 
-                document.getElementById('refLinkInput').value = `https://t.me/${TELEGRAM_BOT_USERNAME}/app?startapp=ref_${shortAddr}`;
-                document.getElementById('moonpayWalletTarget').innerText = shortAddr;
-                fetchRealWalletHoldings(userWalletAddress);
-                verifyBlockchainTransactions(userWalletAddress);
-            } else {
-                userWalletAddress = null;
-                userJettonHoldingsMap.clear();
-                
-                if (profileBtn) {
-                    profileBtn.innerText = '🔗 Connect Wallet';
-                    profileBtn.style.background = 'rgba(239,68,68,0.18)';
-                    profileBtn.style.borderColor = 'var(--accent-red)';
-                    profileBtn.style.color = 'var(--accent-red)';
-                }
+                    document.getElementById('refLinkInput').value = `https://t.me/${TELEGRAM_BOT_USERNAME}/app?startapp=ref_${shortAddr}`;
+                    document.getElementById('moonpayWalletTarget').innerText = shortAddr;
+                    fetchRealWalletHoldings(userWalletAddress);
+                    verifyBlockchainTransactions(userWalletAddress);
+                } else {
+                    userWalletAddress = null;
+                    userJettonHoldingsMap.clear();
+                    
+                    if (profileBtn) {
+                        profileBtn.innerText = '🔗 Connect Wallet';
+                        profileBtn.style.background = 'rgba(239,68,68,0.18)';
+                        profileBtn.style.borderColor = 'var(--accent-red)';
+                        profileBtn.style.color = 'var(--accent-red)';
+                    }
 
-                document.getElementById('refLinkInput').value = 'Connect wallet to generate';
-                document.getElementById('moonpayWalletTarget').innerText = 'Connect Wallet First';
-                document.getElementById('onChainWalletHoldings').innerHTML = `<div style="text-align: center; padding: 15px; color: var(--text-muted); font-size: 12px;">Connect wallet via TonConnect to load live on-chain assets.</div>`;
-                document.getElementById('mainActiveTradesList').innerHTML = `<div style="text-align: center; padding: 15px; color: var(--text-muted); font-size: 12px;">Connect wallet via TonConnect to view active trades and live PnL.</div>`;
-            }
-        });
+                    document.getElementById('refLinkInput').value = 'Connect wallet to generate';
+                    document.getElementById('moonpayWalletTarget').innerText = 'Connect Wallet First';
+                    document.getElementById('onChainWalletHoldings').innerHTML = `<div style="text-align: center; padding: 15px; color: var(--text-muted); font-size: 12px;">Connect wallet via TonConnect to load live on-chain assets.</div>`;
+                    document.getElementById('mainActiveTradesList').innerHTML = `<div style="text-align: center; padding: 15px; color: var(--text-muted); font-size: 12px;">Connect wallet via TonConnect to view active trades and live PnL.</div>`;
+                }
+            });
+        }
 
         window.auditSniperCA = async function(ca) {
             const auditEl = document.getElementById('sniperAuditResult');
