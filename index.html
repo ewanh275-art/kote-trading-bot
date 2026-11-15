@@ -494,7 +494,7 @@
         </div>
     </div>
 
-    <!-- GLOBAL UI CONTROLLER (GUARANTEED TO WORK INDEPENDENTLY) -->
+    <!-- GLOBAL ROBUST UI & HELPER CONTROLLER -->
     <script>
         window.enterTerminal = function() {
             const intro = document.getElementById('intro-screen');
@@ -518,6 +518,43 @@
         window.currentTradeMode = 'buy';
         window.currentActiveToken = { name: 'Select Token', symbol: 'TOKEN', address: '', poolAddress: '', logo: '', mcap: 0, liq: 0, vol: 0, priceUSD: 0, decimals: 9 };
         window.selectedSnipeSlippage = 0.5;
+
+        // Safe global wrapper for selecting tokens from dynamic lists
+        window.handleTokenCardClick = function(address, symbol, poolAddress) {
+            const found = (window.topblastTokens || []).concat(window.gramMemesTokens || []).find(t => t.address.toLowerCase() === address.toLowerCase());
+            if (found && typeof window.selectTokenForTrade === 'function') {
+                window.selectTokenForTrade(
+                    found.address, 
+                    found.name, 
+                    found.symbol, 
+                    found.logo, 
+                    found.mcap, 
+                    found.liq, 
+                    found.vol, 
+                    found.priceUSD, 
+                    found.graduated, 
+                    found.migrationDex, 
+                    found.poolAddress
+                );
+            } else {
+                if (typeof window.selectTokenForTrade === 'function') {
+                    window.selectTokenForTrade(address, symbol, symbol, '', 50000, 20000, 10000, 0.01, true, 'dedust', poolAddress);
+                }
+            }
+        };
+
+        // Safe global wrapper for active trades actions
+        window.handleActiveTradeAction = function(address, symbol, name, image, priceUSD, poolAddress, mode) {
+            if (typeof window.selectTokenForTrade === 'function') {
+                window.selectTokenForTrade(address, name, symbol, image, 50000, 20000, 10000, priceUSD, true, 'dedust', poolAddress);
+            }
+            if (typeof window.setTradeMode === 'function') {
+                window.setTradeMode(mode);
+            }
+            if (typeof window.switchPage === 'function') {
+                window.switchPage('trade', document.querySelectorAll('.nav-tab')[0]);
+            }
+        };
 
         window.setTradeMode = function(mode) {
             window.currentTradeMode = mode;
@@ -1020,8 +1057,9 @@
             "EQAT...fish"
         ];
 
-        let topblastTokens = [];
-        let gramMemesTokens = [];
+        // Expose lists globally so wrapper functions can access them
+        window.topblastTokens = [];
+        window.gramMemesTokens = [];
         let currentTopblastPage = 1;
         const itemsPerPage = 10;
 
@@ -1098,16 +1136,16 @@
         }
 
         window.loadTopblastTokens = function() {
-            hydrateTokenCatalog(topblastAddresses, topblastTokens, renderTopblastList);
+            hydrateTokenCatalog(topblastAddresses, window.topblastTokens, renderTopblastList);
         };
 
         window.loadGramMemesTokens = function() {
-            hydrateTokenCatalog(gramMemesAddresses, gramMemesTokens, renderGramMemesList);
+            hydrateTokenCatalog(gramMemesAddresses, window.gramMemesTokens, renderGramMemesList);
         };
 
         window.changeTopblastPage = function(direction) {
             const searchVal = document.getElementById('topblastSearchInput').value.toLowerCase();
-            const filtered = topblastTokens.filter(t => t.name.toLowerCase().includes(searchVal) || t.symbol.toLowerCase().includes(searchVal) || t.address.toLowerCase().includes(searchVal));
+            const filtered = window.topblastTokens.filter(t => t.name.toLowerCase().includes(searchVal) || t.symbol.toLowerCase().includes(searchVal) || t.address.toLowerCase().includes(searchVal));
             const totalPages = Math.ceil(filtered.length / itemsPerPage) || 1;
             currentTopblastPage = Math.min(Math.max(1, currentTopblastPage + direction), totalPages);
             renderTopblastList();
@@ -1120,7 +1158,7 @@
 
         function renderTopblastList() {
             const q = document.getElementById('topblastSearchInput').value.toLowerCase();
-            const filtered = topblastTokens.filter(t => t.name.toLowerCase().includes(q) || t.symbol.toLowerCase().includes(q) || t.address.toLowerCase().includes(q));
+            const filtered = window.topblastTokens.filter(t => t.name.toLowerCase().includes(q) || t.symbol.toLowerCase().includes(q) || t.address.toLowerCase().includes(q));
             const container = document.getElementById('topblastList');
             const paginationBar = document.getElementById('topblastPaginationBar');
             if(!container) return;
@@ -1143,7 +1181,7 @@
                 const badgeColor = t.graduated ? 'var(--accent-green)' : 'var(--accent-red)';
 
                 container.innerHTML += `
-                    <div class="launch-card" onclick="selectTokenForTrade('${t.address}', '${t.name.replace(/'/g, "\\'")}', '${t.symbol}', '${t.logo}', ${t.mcap}, ${t.liq}, ${t.vol}, ${t.priceUSD}, ${t.graduated}, '${t.migrationDex}', '${t.poolAddress}')">
+                    <div class="launch-card" onclick="handleTokenCardClick('${t.address}', '${t.symbol}', '${t.poolAddress || ''}')">
                         <div style="display:flex; align-items:center; gap:12px;">
                             <div class="token-avatar-wrap">
                                 <span class="token-avatar-fallback">${t.symbol.charAt(0)}</span>
@@ -1182,7 +1220,7 @@
 
         function renderGramMemesList() {
             const q = document.getElementById('gramMemesSearchInput').value.toLowerCase();
-            const filtered = gramMemesTokens.filter(t => t.name.toLowerCase().includes(q) || t.symbol.toLowerCase().includes(q) || t.address.toLowerCase().includes(q));
+            const filtered = window.gramMemesTokens.filter(t => t.name.toLowerCase().includes(q) || t.symbol.toLowerCase().includes(q) || t.address.toLowerCase().includes(q));
             
             const container = document.getElementById('gramMemesList');
             if(!container) return;
@@ -1195,7 +1233,7 @@
             filtered.forEach(t => {
                 const formattedMcap = t.mcap >= 1e6 ? '$' + (t.mcap/1e6).toFixed(2) + 'M' : '$' + (t.mcap/1e3).toFixed(1) + 'K';
                 container.innerHTML += `
-                    <div class="launch-card" onclick="selectTokenForTrade('${t.address}', '${t.name.replace(/'/g, "\\'")}', '${t.symbol}', '${t.logo}', ${t.mcap}, ${t.liq}, ${t.vol}, ${t.priceUSD}, true, 'dedust', '${t.poolAddress}')">
+                    <div class="launch-card" onclick="handleTokenCardClick('${t.address}', '${t.symbol}', '${t.poolAddress || ''}')">
                         <div style="display:flex; align-items:center; gap:12px;">
                             <div class="token-avatar-wrap">
                                 <span class="token-avatar-fallback">${t.symbol.charAt(0)}</span>
@@ -1479,9 +1517,10 @@
                 parsedBalances.forEach(item => {
                     const pnlColor = item.pnlPercent >= 0 ? 'var(--accent-green)' : 'var(--accent-red)';
                     const pnlSign = item.pnlPercent >= 0 ? '+' : '';
+                    const safeName = item.name.replace(/'/g, "\\'");
 
                     holdingsContainer.innerHTML += `
-                        <div class="launch-card" onclick="selectTokenForTrade('${item.address}', '${item.name.replace(/'/g, "\\'")}', '${item.symbol}', '${item.image}', 50000, 20000, 10000, ${item.priceUSD}, true, 'dedust', '${item.poolAddress}')">
+                        <div class="launch-card" onclick="handleTokenCardClick('${item.address}', '${item.symbol}', '${item.poolAddress}')">
                             <div style="display:flex; align-items:center; gap:12px;">
                                 <div class="token-avatar-wrap">
                                     <span class="token-avatar-fallback">${item.symbol.charAt(0)}</span>
@@ -1524,8 +1563,8 @@
                             </div>
 
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                                <button onclick="selectTokenForTrade('${item.address}', '${item.name.replace(/'/g, "\\'")}', '${item.symbol}', '${item.image}', 50000, 20000, 10000, ${item.priceUSD}, true, 'dedust', '${item.poolAddress}'); setTradeMode('buy'); switchPage('trade', document.querySelectorAll('.nav-tab')[0]);" style="background: rgba(16,185,129,0.15); border: 1px solid var(--accent-green); color: var(--accent-green); padding: 10px; border-radius: 8px; font-size: 12px; font-weight: 900; cursor: pointer;">🟢 Buy More</button>
-                                <button onclick="selectTokenForTrade('${item.address}', '${item.name.replace(/'/g, "\\'")}', '${item.symbol}', '${item.image}', 50000, 20000, 10000, ${item.priceUSD}, true, 'dedust', '${item.poolAddress}'); setTradeMode('sell'); switchPage('trade', document.querySelectorAll('.nav-tab')[0]);" style="background: rgba(239,68,68,0.15); border: 1px solid var(--accent-red); color: var(--accent-red); padding: 10px; border-radius: 8px; font-size: 12px; font-weight: 900; cursor: pointer;">🔴 Sell Position</button>
+                                <button onclick="handleActiveTradeAction('${item.address}', '${item.symbol}', '${safeName}', '${item.image}', ${item.priceUSD}, '${item.poolAddress}', 'buy')" style="background: rgba(16,185,129,0.15); border: 1px solid var(--accent-green); color: var(--accent-green); padding: 10px; border-radius: 8px; font-size: 12px; font-weight: 900; cursor: pointer;">🟢 Buy More</button>
+                                <button onclick="handleActiveTradeAction('${item.address}', '${item.symbol}', '${safeName}', '${item.image}', ${item.priceUSD}, '${item.poolAddress}', 'sell')" style="background: rgba(239,68,68,0.15); border: 1px solid var(--accent-red); color: var(--accent-red); padding: 10px; border-radius: 8px; font-size: 12px; font-weight: 900; cursor: pointer;">🔴 Sell Position</button>
                             </div>
                         </div>
                     `;
