@@ -1,844 +1,7 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kote Trade Terminal - GRAM & Topblast Memes</title>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
-    <script type="importmap">
-      {
-        "imports": {
-          "@ton/core": "https://esm.sh/@ton/core@0.56.3",
-          "@ton/ton": "https://esm.sh/@ton/ton@13.11.2?deps=@ton/core@0.56.3",
-          "@dedust/sdk": "https://esm.sh/@dedust/sdk@2.1.2?deps=@ton/core@0.56.3,@ton/ton@13.11.2"
-        }
-      }
-    </script>
-    <style>
-        :root {
-            --bg-base: #050507;
-            --bg-sidebar: #09090d;
-            --bg-card: rgba(14, 14, 20, 0.85);
-            --bg-input: #15151e;
-            --border-color: #27151a;
-            --accent-red: #ef4444;
-            --accent-green: #10b981;
-            --accent-moonpay: #7d00ff;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-        }
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            -webkit-tap-highlight-color: transparent;
-        }
-        body {
-            background: linear-gradient(rgba(5, 5, 7, 0.75), rgba(5, 5, 7, 0.90)), url('./bg.jpg.JPG') no-repeat center center fixed;
-            background-size: cover;
-            color: var(--text-main);
-            font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
-            display: flex;
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        /* --- CINEMATIC INTRO SCREEN --- */
-        #intro-screen {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(rgba(5, 5, 7, 0.78), rgba(5, 5, 7, 0.96)), url('./bg.jpg.JPG') no-repeat center center;
-            background-size: cover;
-            z-index: 100;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            padding: 30px 20px;
-            text-align: center;
-            transition: opacity 0.4s ease, visibility 0.4s ease;
-        }
-        #intro-screen.hidden {
-            opacity: 0;
-            visibility: hidden;
-            pointer-events: none;
-        }
-        .intro-content {
-            margin: auto;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 16px;
-        }
-        .intro-logo-moon {
-            width: 92px;
-            height: 92px;
-            background: #111116;
-            border: 2px solid var(--accent-red);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 38px;
-            box-shadow: 0 0 45px rgba(239, 68, 68, 0.45);
-        }
-
-        .main-container {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        /* Top Header */
-        .topbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 20px;
-            background: rgba(9, 9, 13, 0.88);
-            border-bottom: 1px solid var(--border-color);
-            backdrop-filter: blur(16px);
-            z-index: 10;
-        }
-        .brand-logo-box {
-            width: 34px;
-            height: 34px;
-            background: linear-gradient(135deg, var(--accent-red), #7f1d1d);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 9px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 900;
-            color: #fff;
-            box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
-        }
-        .brand-text h1 {
-            font-size: 15px;
-            font-weight: 900;
-            letter-spacing: 0.4px;
-        }
-        #ton-connect {
-            transform: scale(0.85);
-            transform-origin: right center;
-        }
-
-        /* Content Area Viewport */
-        .content-area {
-            flex: 1;
-            overflow-y: auto;
-            padding: 16px;
-            padding-bottom: 90px;
-            -webkit-overflow-scrolling: touch;
-        }
-        .page {
-            display: none;
-            flex-direction: column;
-            gap: 16px;
-            animation: fadeIn 0.2s ease-in-out;
-        }
-        .page.active {
-            display: flex;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(4px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Glassmorphism Cards */
-        .card {
-            background: var(--bg-card);
-            backdrop-filter: blur(14px);
-            -webkit-backdrop-filter: blur(14px);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 16px;
-            box-shadow: 0 10px 35px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.04);
-        }
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-        }
-        .card-title {
-            font-size: 11px;
-            font-weight: 800;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.9px;
-        }
-
-        /* Chart Frame */
-        .chart-box {
-            width: 100%;
-            height: 380px;
-            background: #030304;
-            border: 1px solid var(--border-color);
-            border-radius: 14px;
-            overflow: hidden;
-        }
-        .chart-box iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
-
-        /* Tokenomics Bar */
-        .tokenomics-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 8px;
-            margin-bottom: 16px;
-        }
-        .stat-card {
-            background: var(--bg-input);
-            border: 1px solid var(--border-color);
-            padding: 10px 6px;
-            border-radius: 12px;
-            text-align: center;
-        }
-        .stat-card span {
-            font-size: 9px;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            font-weight: 800;
-            display: block;
-            margin-bottom: 3px;
-        }
-        .stat-card strong {
-            font-size: 13px;
-            font-weight: 900;
-            color: var(--accent-red);
-        }
-
-        /* Buy / Sell Mode Tabs */
-        .trade-tabs {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 6px;
-            background: var(--bg-input);
-            padding: 4px;
-            border-radius: 12px;
-            border: 1px solid var(--border-color);
-            margin-bottom: 12px;
-        }
-        .trade-tab-btn {
-            background: transparent;
-            border: none;
-            color: var(--text-muted);
-            padding: 10px;
-            border-radius: 8px;
-            font-size: 12px;
-            font-weight: 900;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .trade-tab-btn.active.buy-mode {
-            background: var(--accent-green);
-            color: #042f2e;
-        }
-        .trade-tab-btn.active.sell-mode {
-            background: var(--accent-red);
-            color: #ffffff;
-        }
-
-        /* Inputs */
-        .input-group {
-            background: var(--bg-input);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 12px 14px;
-            margin-bottom: 10px;
-            transition: border-color 0.2s;
-        }
-        .input-group:focus-within {
-            border-color: var(--accent-red);
-        }
-        .input-top {
-            display: flex;
-            justify-content: space-between;
-            font-size: 11px;
-            color: var(--text-muted);
-            margin-bottom: 6px;
-            font-weight: 700;
-        }
-        .input-main {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .pro-input {
-            background: transparent;
-            border: none;
-            color: var(--text-main);
-            font-size: 18px;
-            font-weight: 800;
-            width: 60%;
-            outline: none;
-        }
-        .token-badge {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            background: #08080c;
-            border: 1px solid var(--border-color);
-            padding: 6px 12px;
-            border-radius: 10px;
-            font-size: 12px;
-            font-weight: 800;
-            color: #fff;
-        }
-
-        .quick-amounts {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 6px;
-            margin-bottom: 12px;
-        }
-        .quick-btn {
-            background: var(--bg-input);
-            border: 1px solid var(--border-color);
-            color: var(--text-muted);
-            padding: 8px;
-            border-radius: 8px;
-            font-size: 11px;
-            font-weight: 800;
-            cursor: pointer;
-            transition: all 0.15s;
-        }
-        .quick-btn:hover, .quick-btn.active {
-            background: rgba(239, 68, 68, 0.18);
-            border-color: var(--accent-red);
-            color: var(--accent-red);
-        }
-
-        .btn-action {
-            width: 100%;
-            padding: 14px;
-            border-radius: 12px;
-            border: none;
-            font-size: 14px;
-            font-weight: 900;
-            cursor: pointer;
-            text-align: center;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            letter-spacing: 0.3px;
-            transition: transform 0.15s, box-shadow 0.2s;
-        }
-        .btn-action:active {
-            transform: scale(0.98);
-        }
-        .btn-red {
-            background: linear-gradient(135deg, var(--accent-red), #991b1b);
-            color: #ffffff;
-            box-shadow: 0 4px 20px rgba(239, 68, 68, 0.38);
-        }
-        .btn-green-action {
-            background: linear-gradient(135deg, var(--accent-green), #059669);
-            color: #ffffff;
-            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.35);
-        }
-        .btn-moonpay {
-            background: linear-gradient(135deg, #7d00ff, #4c0099);
-            color: #ffffff;
-            box-shadow: 0 4px 22px rgba(125, 0, 255, 0.4);
-        }
-
-        .toggle-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 0;
-            border-top: 1px solid var(--border-color);
-            font-size: 12px;
-            font-weight: 700;
-            color: var(--text-muted);
-            margin-bottom: 12px;
-        }
-
-        /* Anti-Scam Security Badge */
-        .audit-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            background: rgba(16, 185, 129, 0.12);
-            border: 1px solid rgba(16, 185, 129, 0.3);
-            color: var(--accent-green);
-            padding: 4px 10px;
-            border-radius: 8px;
-            font-size: 11px;
-            font-weight: 800;
-            margin-bottom: 10px;
-        }
-
-        /* Token Avatar */
-        .token-avatar-wrap {
-            width: 48px;
-            height: 48px;
-            border-radius: 12px;
-            background: #1a1014;
-            border: 1px solid rgba(16, 185, 129, 0.35);
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-        .token-avatar-wrap img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            position: absolute;
-            top: 0; left: 0;
-            z-index: 2;
-        }
-        .token-avatar-fallback {
-            font-size: 16px;
-            font-weight: 900;
-            color: var(--accent-green);
-            z-index: 1;
-        }
-
-        /* Launch Card */
-        .launch-card {
-            background: #0b0b0f;
-            border: 1px solid var(--border-color);
-            padding: 12px 16px;
-            border-radius: 16px;
-            margin-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: border-color 0.2s, background 0.2s;
-            cursor: pointer;
-        }
-        .launch-card:hover {
-            border-color: var(--accent-green);
-            background: #111118;
-        }
-
-        /* Pagination Styling */
-        .pagination-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 14px;
-            padding-top: 10px;
-            border-top: 1px solid var(--border-color);
-        }
-        .page-btn {
-            background: var(--bg-input);
-            border: 1px solid var(--border-color);
-            color: var(--text-main);
-            padding: 6px 14px;
-            border-radius: 8px;
-            font-size: 11px;
-            font-weight: 800;
-            cursor: pointer;
-        }
-        .page-btn:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-        }
-
-        /* Bottom Navigation Bar */
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            background: rgba(9, 9, 13, 0.95);
-            border-top: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-around;
-            padding: 10px 0 16px 0;
-            z-index: 30;
-            backdrop-filter: blur(20px);
-            overflow-x: auto;
-        }
-        .nav-tab {
-            background: none;
-            border: none;
-            color: var(--text-muted);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 3px;
-            font-size: 9px;
-            font-weight: 800;
-            cursor: pointer;
-            transition: color 0.15s;
-            flex: 1;
-            min-width: 50px;
-        }
-        .nav-tab.active {
-            color: var(--accent-red);
-        }
-    </style>
-</head>
-<body>
-
-    <!-- --- CINEMATIC INTRO SCREEN --- -->
-    <div id="intro-screen">
-        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v12.7</div>
-        <div class="intro-content">
-            <div class="intro-logo-moon">🐱</div>
-            <div style="font-size: 24px; font-weight: 900; color: #fff; letter-spacing: 0.5px;">GRAM & TOPBLAST MEMES</div>
-        </div>
-        <div style="padding-bottom: 20px;">
-            <button class="btn-action btn-red" style="max-width: 300px; margin: 0 auto;" onclick="enterTerminal()">
-                ⚡ Enter Terminal
-            </button>
-        </div>
-    </div>
-
-    <!-- ROBUST GLOBAL HANDLERS -->
-    <script>
-        window.enterTerminal = function() {
-            const intro = document.getElementById('intro-screen');
-            if(intro) intro.classList.add('hidden');
-        };
-
-        window.switchPage = function(pageId, navBtn) {
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
-            const targetId = pageId.startsWith('page-') ? pageId : 'page-' + pageId;
-            const targetEl = document.getElementById(targetId);
-            if(targetEl) {
-                targetEl.classList.add('active');
-                const contentArea = document.querySelector('.content-area');
-                if(contentArea) contentArea.scrollTop = 0;
-            }
-            if(navBtn) navBtn.classList.add('active');
-        };
-    </script>
-
-    <div class="main-container">
-        <!-- Top Header -->
-        <header class="topbar">
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <div class="brand-logo-box">🐱</div>
-                <div class="brand-text">
-                    <h1>Kote Trade Terminal</h1>
-                </div>
-            </div>
-            <div id="ton-connect"></div>
-        </header>
-
-        <!-- Viewport Pages -->
-        <main class="content-area">
-
-            <!-- 1. TRADE PAGE -->
-            <section id="page-trade" class="page active">
-                <div class="card">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                        <div style="display: flex; align-items: center; gap: 12px;">
-                            <div class="token-avatar-wrap" style="width: 48px; height: 48px;">
-                                <span class="token-avatar-fallback" id="heroTokenFallback">T</span>
-                                <img id="heroTokenLogo" src="" onerror="this.style.display='none';">
-                            </div>
-                            <div>
-                                <div style="display:flex; align-items:center; gap:6px;">
-                                    <h2 style="font-size: 17px; font-weight: 900;" id="heroTokenName">Select a Token</h2>
-                                    <span style="font-size: 9px; background: rgba(16,185,129,0.15); color: var(--accent-green); border: 1px solid rgba(16,185,129,0.35); padding: 2px 6px; border-radius: 6px; font-weight: 800; text-transform: uppercase;">Live</span>
-                                </div>
-                                <span style="font-size: 10px; color: var(--text-muted); font-family: monospace;" id="heroTokenCA">Choose from Topblast Memes or Gram Memes</span>
-                            </div>
-                        </div>
-                        <div style="text-align: right;">
-                            <div style="font-size: 16px; font-weight: 900; color: var(--accent-green);" id="heroTokenPrice">$0.000000</div>
-                            <div style="font-size: 11px; color: var(--accent-green); font-weight: 800;" id="heroTokenChange">--</div>
-                        </div>
-                    </div>
-
-                    <div id="tradeAuditBadge" class="audit-badge">
-                        🛡️ DeDust SDK In-App Buy & Sell Engine Active
-                    </div>
-
-                    <div class="tokenomics-grid">
-                        <div class="stat-card"><span>Market Cap</span><strong id="tokMcap">$0.0K</strong></div>
-                        <div class="stat-card"><span>24h Volume</span><strong id="tokVol">$0.0K</strong></div>
-                        <div class="stat-card"><span>Liquidity</span><strong id="tokLiq">$0.0K</strong></div>
-                        <div class="stat-card"><span>Status</span><strong id="tokStatusDisplay" style="color:var(--accent-green)">Active</strong></div>
-                    </div>
-
-                    <div class="trade-tabs">
-                        <button class="trade-tab-btn active buy-mode" id="tabBuy" onclick="setTradeMode('buy')">🟢 Buy Token</button>
-                        <button class="trade-tab-btn sell-mode" id="tabSell" onclick="setTradeMode('sell')">🔴 Sell Token</button>
-                    </div>
-
-                    <div id="sellBalanceBar" style="display: none; justify-content: space-between; font-size: 11px; color: var(--text-muted); margin-bottom: 8px; padding: 0 4px;">
-                        <span>Available Balance:</span>
-                        <strong id="availableTokenBalance" style="color: var(--accent-green);">0.00</strong>
-                    </div>
-
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
-                        <div class="input-group" style="margin-bottom: 0;">
-                            <div class="input-top"><span id="payLabel">You Pay</span><span id="payTokenSymbol">GRAM</span></div>
-                            <div class="input-main">
-                                <input type="number" id="tradeInputAmount" class="pro-input" value="0.1" min="0.0001" step="any" oninput="calculateSwapOutput()">
-                                <div class="token-badge" id="payBadgeToken">💎 GRAM</div>
-                            </div>
-                        </div>
-                        <div class="input-group" style="margin-bottom: 0;">
-                            <div class="input-top"><span id="receiveLabel">You Receive</span><span id="receiveTokenSymbol">TOKEN</span></div>
-                            <div class="input-main">
-                                <input type="text" id="tradeOutputAmount" class="pro-input" style="width: 100%;" value="Loading..." readonly>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="quick-amounts" id="quickAmountsContainer">
-                        <button class="quick-btn" onclick="setTradeAmount(0.1)">0.1</button>
-                        <button class="quick-btn" onclick="setTradeAmount(1)">1</button>
-                        <button class="quick-btn" onclick="setTradeAmount(5)">5</button>
-                        <button class="quick-btn" onclick="setTradeAmount(10)">10</button>
-                    </div>
-
-                    <button class="btn-action" id="executeTradeBtn" style="margin-bottom: 14px;" onclick="executeOnChainTrade()">
-                        ⚡ Execute In-App Swap
-                    </button>
-
-                    <div class="card-header" style="margin-top: 8px; margin-bottom: 6px;">
-                        <span class="card-title" id="chartTitle">📊 Live Chart</span>
-                        <a id="externalChartBtn" href="https://dexscreener.com/ton" target="_blank" style="font-size: 11px; color: var(--accent-red); text-decoration: none; font-weight: 800;">DexScreener ↗</a>
-                    </div>
-                    <div class="chart-box">
-                        <iframe id="dexChartFrame" src="https://dexscreener.com/ton?embed=1&theme=dark&trades=0&info=0"></iframe>
-                    </div>
-                </div>
-            </section>
-
-            <!-- 2. PRO SNIPER PAGE -->
-            <section id="page-sniper" class="page">
-                <div class="card" style="max-width: 520px; margin: 0 auto; width: 100%;">
-                    <div class="card-header">
-                        <span class="card-title">🎯 Kote Sniper & SDK Pool Resolver</span>
-                        <span style="font-size: 11px; color: var(--accent-red); font-weight: 800;">● 0.20 Gas</span>
-                    </div>
-
-                    <div class="input-group">
-                        <div class="input-top"><span>Token Contract or DeDust Pool Address</span><span>Auto-Resolves Pool</span></div>
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <div id="sniperTokenLogoWrap" class="token-avatar-wrap" style="width: 36px; height: 36px; display: none;">
-                                <span class="token-avatar-fallback" id="sniperLogoFallback">?</span>
-                                <img id="sniperTokenLogoImg" src="" onerror="this.style.display='none';">
-                            </div>
-                            <input type="text" id="sniperCA" class="pro-input" style="width: 100%; font-size: 13px;" placeholder="Paste Token CA or Pool EQ..." oninput="auditSniperCA(this.value)">
-                        </div>
-                    </div>
-
-                    <div id="sniperAuditResult" class="audit-badge" style="display:none; margin-bottom: 10px;"></div>
-
-                    <div class="input-group">
-                        <div class="input-top"><span>Snipe Amount (GRAM)</span></div>
-                        <div class="input-main">
-                            <input type="number" id="sniperAmount" class="pro-input" value="0.1" step="any">
-                            <div class="token-badge">GRAM</div>
-                        </div>
-                    </div>
-
-                    <div style="margin-bottom: 12px;">
-                        <div style="font-size: 11px; font-weight: 800; color: var(--text-muted); margin-bottom: 6px;">Slippage Tolerance:</div>
-                        <div style="display: flex; gap: 6px;">
-                            <button class="quick-btn active" style="flex:1;" onclick="setSnipeSlip(0.5, this)">0.5%</button>
-                            <button class="quick-btn" style="flex:1;" onclick="setSnipeSlip(1, this)">1.0%</button>
-                            <button class="quick-btn" style="flex:1;" onclick="setSnipeSlip(3, this)">3.0%</button>
-                            <button class="quick-btn" style="flex:1;" onclick="setSnipeSlip(5, this)">5.0%</button>
-                        </div>
-                    </div>
-
-                    <div class="toggle-row">
-                        <span>🛡️ Auto-Pool Lookup & 0.20 Forward Gas</span>
-                        <input type="checkbox" id="antiMevCheck" checked style="accent-color: var(--accent-red); width: 16px; height: 16px;">
-                    </div>
-
-                    <button class="btn-action btn-red" style="margin-top: 8px;" onclick="executeSnipeOrder()">
-                        🚀 Execute In-App Router Snipe
-                    </button>
-                </div>
-            </section>
-
-            <!-- 3. ACTIVE TRADES -->
-            <section id="page-active-trades" class="page">
-                <div class="card" style="max-width: 650px; margin: 0 auto; width: 100%;">
-                    <div class="card-header">
-                        <div>
-                            <span class="card-title" style="color: var(--accent-green);">⚡ Active Trades & Open Snipes</span>
-                            <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Persistent profile storage & live on-chain PnL</div>
-                        </div>
-                        <button onclick="manualSyncActiveTrades()" style="background: rgba(16,185,129,0.15); border: 1px solid var(--accent-green); color: var(--accent-green); padding: 6px 10px; border-radius: 8px; font-size: 11px; cursor: pointer; font-weight: 800;">↻ Sync Wallet</button>
-                    </div>
-
-                    <div id="mainActiveTradesList" style="display: flex; flex-direction: column; gap: 10px; margin-top: 8px;">
-                        <div style="text-align: center; padding: 25px; color: var(--text-muted); font-size: 12px;">Connect wallet via TonConnect to view active trades and live PnL.</div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- 4. TOPBLAST SECTION -->
-            <section id="page-topblast" class="page">
-                <div class="card" style="max-width: 650px; margin: 0 auto; width: 100%;">
-                    <div class="card-header">
-                        <div>
-                            <span class="card-title" style="color: var(--accent-green);">🔥 Topblast Memes Catalog</span>
-                            <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Pasted Contract Addresses & DexScreener Integration</div>
-                        </div>
-                        <button onclick="loadTopblastTokens()" style="background: rgba(16,185,129,0.15); border: 1px solid var(--accent-green); color: var(--accent-green); padding: 6px 10px; border-radius: 8px; font-size: 11px; cursor: pointer; font-weight: 800;">↻ Refresh</button>
-                    </div>
-
-                    <div class="input-group" style="padding: 8px 12px; margin-bottom: 12px;">
-                        <input type="text" id="topblastSearchInput" class="pro-input" style="width: 100%; font-size: 13px;" placeholder="🔍 Search Topblast Memes..." oninput="filterTopblastList()">
-                    </div>
-
-                    <div id="topblastList">
-                        <div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 12px;">Loading Topblast tokens...</div>
-                    </div>
-
-                    <div class="pagination-bar" id="topblastPaginationBar" style="display: none;">
-                        <button class="page-btn" id="topblastPrevBtn" onclick="changeTopblastPage(-1)">← Previous</button>
-                        <span id="topblastPageIndicator" style="font-size: 11px; font-weight: 800; color: var(--text-muted);">Page 1 of 1</span>
-                        <button class="page-btn" id="topblastNextBtn" onclick="changeTopblastPage(1)">Next →</button>
-                    </div>
-                </div>
-            </section>
-
-            <!-- 5. GRAM MEMES SECTION -->
-            <section id="page-gram-memes" class="page">
-                <div class="card" style="max-width: 650px; margin: 0 auto; width: 100%;">
-                    <div class="card-header">
-                        <div>
-                            <span class="card-title" style="color: var(--accent-green);">🪙 Gram Memes Catalog (DeDust Pools)</span>
-                            <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Integrated from DexScreener DeDust TON Pools</div>
-                        </div>
-                        <button onclick="loadGramMemesTokens()" style="background: rgba(16,185,129,0.15); border: 1px solid var(--accent-green); color: var(--accent-green); padding: 6px 10px; border-radius: 8px; font-size: 11px; cursor: pointer; font-weight: 800;">↻ Refresh</button>
-                    </div>
-
-                    <div class="input-group" style="padding: 8px 12px; margin-bottom: 12px;">
-                        <input type="text" id="gramMemesSearchInput" class="pro-input" style="width: 100%; font-size: 13px;" placeholder="🔍 Search Gram Memes..." oninput="filterGramMemesList()">
-                    </div>
-
-                    <div id="gramMemesList">
-                        <div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 12px;">Loading Gram Memes pools...</div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- 6. PROFILE & PORTFOLIO -->
-            <section id="page-profile" class="page">
-                <div class="card" style="max-width: 550px; margin: 0 auto; width: 100%;">
-                    <div class="card-header"><span class="card-title">👤 Verified On-Chain Portfolio & Earnings</span></div>
-
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px;">
-                        <div style="background: var(--bg-input); border: 1px solid var(--border-color); padding: 12px; border-radius: 12px; text-align: center;">
-                            <span style="font-size: 10px; color: var(--text-muted); font-weight: 800;">Referral Earnings (3%)</span>
-                            <strong id="referralEarnings" style="font-size: 15px; color: var(--accent-green);">0.00 GRAM</strong>
-                        </div>
-                        <div style="background: var(--bg-input); border: 1px solid var(--border-color); padding: 12px; border-radius: 12px; text-align: center;">
-                            <span style="font-size: 10px; color: var(--text-muted); font-weight: 800;">Referred New Users</span>
-                            <strong id="referredCount" style="font-size: 15px; color: var(--accent-green);">0 Users</strong>
-                        </div>
-                    </div>
-
-                    <div style="margin-bottom: 14px;">
-                        <button class="btn-action btn-red" onclick="manualSyncPortfolio()">
-                            ↻ Force Sync On-Chain Data
-                        </button>
-                    </div>
-
-                    <div style="background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 14px; padding: 14px; margin-bottom: 14px;">
-                        <div style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px;">🔗 Your Official @KoteTrade_bot Referral Link</div>
-                        <div style="display: flex; gap: 8px;">
-                            <input type="text" id="refLinkInput" class="pro-input" style="font-size: 11px; width: 100%; background: #07070a; padding: 8px; border-radius: 8px;" readonly value="Connect wallet to generate">
-                            <button class="btn-action btn-red" style="padding: 8px 14px; width: auto; font-size: 12px;" onclick="copyReferralLink()">Copy</button>
-                        </div>
-                    </div>
-
-                    <div class="card-title" style="margin-bottom: 8px;">💎 On-Chain Wallet Holdings</div>
-                    <div id="onChainWalletHoldings" style="display: flex; flex-direction: column; gap: 8px;">
-                        <div style="text-align: center; padding: 15px; color: var(--text-muted); font-size: 12px;">Connect wallet via TonConnect to load live on-chain assets.</div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- 7. MOONPAY GATEWAY PAGE -->
-            <section id="page-buy" class="page">
-                <div class="card" style="max-width: 580px; margin: 0 auto; width: 100%; background: linear-gradient(145deg, #110b1d, #09090d); border: 1px solid rgba(125, 0, 255, 0.45); box-shadow: 0 12px 40px rgba(125, 0, 255, 0.18);">
-                    <div class="card-header" style="border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 14px; margin-bottom: 16px;">
-                        <div style="display: flex; align-items: center; gap: 12px;">
-                            <div style="width: 44px; height: 44px; background: #7D00FF; border-radius: 12px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(125,0,255,0.5);">
-                                <svg width="26" height="26" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <circle cx="14" cy="18" r="9" fill="white"/>
-                                    <circle cx="24" cy="9" r="4" fill="white"/>
-                                </svg>
-                            </div>
-                            <div>
-                                <div style="display: flex; align-items: center; gap: 6px;">
-                                    <h3 style="font-size: 18px; font-weight: 900; color: #fff; letter-spacing: -0.3px;">MoonPay</h3>
-                                    <span style="font-size: 10px; background: rgba(125, 0, 255, 0.25); color: #d8b4fe; padding: 2px 7px; border-radius: 6px; font-weight: 800;">Official Partner</span>
-                                </div>
-                                <span style="font-size: 11px; color: var(--text-muted);">Direct Deposit to Connected Wallet</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="input-group" style="border-color: rgba(125, 0, 255, 0.35);">
-                        <div class="input-top"><span>Purchase Amount (USD)</span><span>Min: $20</span></div>
-                        <div class="input-main">
-                            <input type="number" id="fiatAmount" class="pro-input" value="100" min="20">
-                            <div class="token-badge" style="background: #1c1033; color: #e9d5ff; border-color: #581c87;">USD 💵</div>
-                        </div>
-                    </div>
-
-                    <div class="quick-amounts" style="margin-bottom: 16px;">
-                        <button class="quick-btn" onclick="document.getElementById('fiatAmount').value=50">$50</button>
-                        <button class="quick-btn" onclick="document.getElementById('fiatAmount').value=100">$100</button>
-                        <button class="quick-btn" onclick="document.getElementById('fiatAmount').value=250">$250</button>
-                        <button class="quick-btn" onclick="document.getElementById('fiatAmount').value=500">$500</button>
-                    </div>
-
-                    <div style="background: rgba(0,0,0,0.45); border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; padding: 14px; margin-bottom: 16px; display: flex; flex-direction: column; gap: 8px; font-size: 12px;">
-                        <div style="display: flex; justify-content: space-between;"><span style="color: var(--text-muted);">Gateway:</span> <strong style="color: #fff;">MoonPay Direct On-Ramp</strong></div>
-                        <div style="display: flex; justify-content: space-between;"><span style="color: var(--text-muted);">Destination Wallet:</span> <strong id="moonpayWalletTarget" style="color: var(--accent-green);">Connect Wallet First</strong></div>
-                        <div style="display: flex; justify-content: space-between;"><span style="color: var(--text-muted);">Payment Rails:</span> <strong style="color: #d8b4fe;">Apple Pay, Google Pay, Cards</strong></div>
-                    </div>
-
-                    <button class="btn-action btn-moonpay" style="font-size: 15px; padding: 16px;" onclick="launchMoonPay()">
-                        <svg width="18" height="18" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <circle cx="14" cy="18" r="9" fill="white"/>
-                            <circle cx="24" cy="9" r="4" fill="white"/>
-                        </svg>
-                        Proceed with Guaranteed Wallet Mapping
-                    </button>
-                </div>
-            </section>
-
-        </main>
-
-        <!-- Bottom Mobile Navigation Bar -->
-        <nav class="bottom-nav">
-            <button class="nav-tab active" onclick="switchPage('trade', this); loadTopblastTokens();"><span>📈</span><span>Trade</span></button>
-            <button class="nav-tab" onclick="switchPage('sniper', this)"><span>🎯</span><span>Sniper</span></button>
-            <button class="nav-tab" onclick="switchPage('page-active-trades', this)"><span>⚡</span><span>Active</span></button>
-            <button class="nav-tab" onclick="switchPage('page-topblast', this); loadTopblastTokens();"><span>🔥</span><span>Topblast</span></button>
-            <button class="nav-tab" onclick="switchPage('page-gram-memes', this); loadGramMemesTokens();"><span>🪙</span><span>Gram Memes</span></button>
-            <button class="nav-tab" onclick="switchPage('page-profile', this)"><span>👤</span><span>Profile</span></button>
-            <button class="nav-tab" onclick="switchPage('page-buy', this)"><span>💳</span><span>MoonPay</span></button>
-        </nav>
-    </div>
-
-    <!-- MODULE SCRIPT WITH AUTOMATIC CONTRACT ADDRESS HYDRATION -->
     <script type="module">
         import { Address, beginCell } from '@ton/core';
         import { TonClient4 } from '@ton/ton';
-        import { Asset, Factory, MAINNET_FACTORY_ADDR, VaultNative, VaultJetton } from '@dedust/sdk';
+        import { Factory, MAINNET_FACTORY_ADDR, VaultNative, VaultJetton } from '@dedust/sdk';
 
         const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
         if (tg) { tg.ready(); tg.expand(); }
@@ -851,6 +14,14 @@
             buttonRootId: 'ton-connect'
         });
 
+        window.openWalletModal = function() {
+            if (tonConnectUI.connected) {
+                tonConnectUI.disconnect();
+            } else {
+                tonConnectUI.openModal();
+            }
+        };
+
         const tonClient = new TonClient4({ endpoint: 'https://mainnet-v4.tonhubapi.com' });
         const dedustFactory = tonClient.open(Factory.createFromAddress(MAINNET_FACTORY_ADDR));
 
@@ -858,6 +29,7 @@
         let userJettonHoldingsMap = new Map();
         let referralEarnings = 0;
         let referredTradersSet = new Set();
+        let selectedSnipeSlippage = 0.5;
 
         const TREASURY_ADDRESS = "UQAC-pXNqjUJ0u1wBkLPiDkLVMZkWYXWvNQuH5Mtx_tPdsGV";
         const DEDUST_NATIVE_VAULT = "EQDa4VOnTYlLvDJ0gZjNYm5PXfSmmtL6Vs6A_CZEtXCNICq_";
@@ -921,9 +93,7 @@
             return { poolAddress: inputAddress, tokenAddress: inputAddress, symbol: 'TOKEN', name: 'Token', priceUsd: 0.01 };
         }
 
-        // --- AUTOMATIC CATALOG HYDRATOR ---
         async function hydrateTokenCatalog(addresses, targetArray, renderCallback) {
-            // 1. Instant Fallback Generation so items show immediately without hanging
             targetArray.length = 0;
             addresses.forEach((ca, idx) => {
                 targetArray.push({
@@ -943,7 +113,6 @@
             });
             renderCallback();
 
-            // 2. Fetch Live DexScreener Data in Background (Batched)
             if (addresses.length === 0) return;
             try {
                 const chunk = addresses.slice(0, 30).join(',');
@@ -1094,17 +263,174 @@
             });
         }
 
+        // --- WALLET CONNECTION & PROFILE SYNC ---
         tonConnectUI.onStatusChange(wallet => {
+            const profileBtn = document.getElementById('profileConnectBtn');
             if (wallet && wallet.account) {
                 userWalletAddress = wallet.account.address;
                 const shortAddr = userWalletAddress.slice(0, 4) + '...' + userWalletAddress.slice(-4);
+                
+                if (profileBtn) {
+                    profileBtn.innerText = `🟢 ${shortAddr} (Disconnect)`;
+                    profileBtn.style.background = 'rgba(16,185,129,0.15)';
+                    profileBtn.style.borderColor = 'var(--accent-green)';
+                    profileBtn.style.color = 'var(--accent-green)';
+                }
+
                 document.getElementById('refLinkInput').value = `https://t.me/${TELEGRAM_BOT_USERNAME}/app?startapp=ref_${shortAddr}`;
                 document.getElementById('moonpayWalletTarget').innerText = shortAddr;
+                fetchRealWalletHoldings(userWalletAddress);
+                verifyBlockchainTransactions(userWalletAddress);
+            } else {
+                userWalletAddress = null;
+                userJettonHoldingsMap.clear();
+                
+                if (profileBtn) {
+                    profileBtn.innerText = '🔗 Connect Wallet';
+                    profileBtn.style.background = 'rgba(239,68,68,0.18)';
+                    profileBtn.style.borderColor = 'var(--accent-red)';
+                    profileBtn.style.color = 'var(--accent-red)';
+                }
+
+                document.getElementById('refLinkInput').value = 'Connect wallet to generate';
+                document.getElementById('moonpayWalletTarget').innerText = 'Connect Wallet First';
+                document.getElementById('onChainWalletHoldings').innerHTML = `<div style="text-align: center; padding: 15px; color: var(--text-muted); font-size: 12px;">Connect wallet via TonConnect to load live on-chain assets.</div>`;
+                document.getElementById('mainActiveTradesList').innerHTML = `<div style="text-align: center; padding: 15px; color: var(--text-muted); font-size: 12px;">Connect wallet via TonConnect to view active trades and live PnL.</div>`;
             }
         });
 
+        window.auditSniperCA = async function(ca) {
+            const auditEl = document.getElementById('sniperAuditResult');
+            const logoWrap = document.getElementById('sniperTokenLogoWrap');
+            const logoImg = document.getElementById('sniperTokenLogoImg');
+            const logoFallback = document.getElementById('sniperLogoFallback');
+
+            if (!ca || ca.length < 10) { 
+                auditEl.style.display = 'none'; 
+                logoWrap.style.display = 'none';
+                return; 
+            }
+            auditEl.style.display = 'inline-flex';
+            auditEl.innerText = '🔍 Resolving DeDust Pool...';
+
+            const resolved = await resolveDeDustPoolAddress(ca.trim());
+            auditEl.innerText = `🛡️ DeDust Pool Verified: ${resolved.poolAddress.slice(0, 6)}...${resolved.poolAddress.slice(-4)}`;
+
+            try {
+                const r = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${resolved.tokenAddress}`);
+                const d = await r.json();
+                if (d.pairs && d.pairs.length > 0) {
+                    const p = d.pairs[0];
+                    const logoUrl = p.info?.imageUrl || p.baseToken?.logoURI;
+                    const sym = p.baseToken?.symbol || '?';
+                    logoFallback.innerText = sym.charAt(0);
+                    if (logoUrl) {
+                        logoImg.style.display = 'block';
+                        logoImg.src = logoUrl;
+                    } else {
+                        logoImg.style.display = 'none';
+                    }
+                    logoWrap.style.display = 'flex';
+                }
+            } catch (err) {
+                logoWrap.style.display = 'none';
+            }
+        };
+
+        function getHeldTokenInfo(tokenAddr) {
+            if (!tokenAddr) return null;
+            if (userJettonHoldingsMap.has(tokenAddr)) return userJettonHoldingsMap.get(tokenAddr);
+            try {
+                const raw = Address.parse(tokenAddr).toRawString();
+                for (const [k, v] of userJettonHoldingsMap.entries()) {
+                    if (Address.parse(k).toRawString() === raw) return v;
+                }
+            } catch (e) {}
+            return null;
+        }
+
+        window.setTradeMode = function(mode) {
+            currentTradeMode = mode;
+            const tabBuy = document.getElementById('tabBuy');
+            const tabSell = document.getElementById('tabSell');
+            const payLabel = document.getElementById('payLabel');
+            const payTokenSymbol = document.getElementById('payTokenSymbol');
+            const payBadgeToken = document.getElementById('payBadgeToken');
+            const receiveLabel = document.getElementById('receiveLabel');
+            const receiveTokenSymbol = document.getElementById('receiveTokenSymbol');
+            const executeBtn = document.getElementById('executeTradeBtn');
+            const quickContainer = document.getElementById('quickAmountsContainer');
+            const sellBalBar = document.getElementById('sellBalanceBar');
+
+            if (mode === 'buy') {
+                tabBuy.classList.add('active');
+                tabSell.classList.remove('active');
+                payLabel.innerText = 'You Pay';
+                payTokenSymbol.innerText = 'GRAM';
+                payBadgeToken.innerText = '💎 GRAM';
+                receiveLabel.innerText = `You Receive (${currentActiveToken.symbol})`;
+                receiveTokenSymbol.innerText = currentActiveToken.symbol;
+                executeBtn.className = 'btn-action btn-red';
+                executeBtn.innerHTML = `⚡ Execute In-App Buy ($${currentActiveToken.symbol})`;
+                sellBalBar.style.display = 'none';
+                document.getElementById('tradeInputAmount').value = 0.1;
+
+                quickContainer.innerHTML = `
+                    <button class="quick-btn" onclick="setTradeAmount(0.1)">0.1</button>
+                    <button class="quick-btn" onclick="setTradeAmount(1)">1</button>
+                    <button class="quick-btn" onclick="setTradeAmount(5)">5</button>
+                    <button class="quick-btn" onclick="setTradeAmount(10)">10</button>
+                `;
+            } else {
+                tabSell.classList.add('active');
+                tabBuy.classList.remove('active');
+                payLabel.innerText = 'You Sell';
+                payTokenSymbol.innerText = currentActiveToken.symbol;
+                payBadgeToken.innerText = currentActiveToken.symbol;
+                receiveLabel.innerText = 'You Receive (GRAM)';
+                receiveTokenSymbol.innerText = 'GRAM';
+                executeBtn.className = 'btn-action btn-green-action';
+                executeBtn.innerHTML = `🔴 Execute In-App Sell ($${currentActiveToken.symbol})`;
+
+                const held = getHeldTokenInfo(currentActiveToken.address);
+                const bal = held ? held.balance : 0;
+                sellBalBar.style.display = 'flex';
+                document.getElementById('availableTokenBalance').innerText = `${bal.toLocaleString(undefined, {maximumFractionDigits: 4})} ${currentActiveToken.symbol}`;
+                document.getElementById('tradeInputAmount').value = bal > 0 ? bal : 0;
+
+                quickContainer.innerHTML = `
+                    <button class="quick-btn" onclick="setSellPercent(25)">25%</button>
+                    <button class="quick-btn" onclick="setSellPercent(50)">50%</button>
+                    <button class="quick-btn" onclick="setSellPercent(75)">75%</button>
+                    <button class="quick-btn" onclick="setSellPercent(100)">100%</button>
+                `;
+            }
+            calculateSwapOutput();
+        };
+
+        window.setSellPercent = function(pct) {
+            const held = getHeldTokenInfo(currentActiveToken.address);
+            const bal = held ? held.balance : 0;
+            const amt = pct === 100 ? bal : Number((bal * (pct / 100)).toFixed(6));
+            document.getElementById('tradeInputAmount').value = amt;
+            calculateSwapOutput();
+        };
+
+        window.setTradeAmount = function(val) {
+            document.getElementById('tradeInputAmount').value = val;
+            calculateSwapOutput();
+        };
+
+        window.setSnipeSlip = function(val, el) {
+            el.parentElement.querySelectorAll('.quick-btn').forEach(b => b.classList.remove('active'));
+            el.classList.add('active');
+            selectedSnipeSlippage = val;
+        };
+
         window.selectTokenForTrade = function(address, name, symbol, logo, mcap, liq, vol, priceUSD = 0.01, graduated = true, migrationDex = 'dedust', poolAddress = '') {
-            currentActiveToken = { name, symbol, address, poolAddress, logo, mcap, liq, vol, priceNative: 0.0012, priceUSD, graduated, migrationDex, decimals: 9 };
+            const held = getHeldTokenInfo(address);
+            currentActiveToken = { name, symbol, address, poolAddress, logo, mcap, liq, vol, priceNative: 0.0012, priceUSD, graduated, migrationDex, decimals: held ? held.decimals : 9 };
+            
             document.getElementById('heroTokenName').innerText = `${name} ($${symbol})`;
             document.getElementById('heroTokenCA').innerText = address;
             document.getElementById('heroTokenFallback').innerText = symbol.charAt(0);
@@ -1116,23 +442,494 @@
             document.getElementById('receiveTokenSymbol').innerText = symbol;
             document.getElementById('chartTitle').innerText = `📊 Live Chart: $${symbol}`;
             document.getElementById('dexChartFrame').src = `https://dexscreener.com/ton/${poolAddress || address}?embed=1&theme=dark&trades=0&info=0`;
+            document.getElementById('externalChartBtn').href = `https://dexscreener.com/ton/${poolAddress || address}`;
             
             document.getElementById('tokMcap').innerText = mcap >= 1e6 ? '$' + (mcap/1e6).toFixed(2) + 'M' : '$' + (mcap/1e3).toFixed(1) + 'K';
             document.getElementById('tokLiq').innerText = liq >= 1e6 ? '$' + (liq/1e6).toFixed(2) + 'M' : '$' + (liq/1e3).toFixed(1) + 'K';
             document.getElementById('tokVol').innerText = vol >= 1e6 ? '$' + (vol/1e6).toFixed(2) + 'M' : '$' + (vol/1e3).toFixed(1) + 'K';
             document.getElementById('heroTokenPrice').innerText = '$' + priceUSD.toFixed(6);
 
+            const statusDisp = document.getElementById('tokStatusDisplay');
+            if (statusDisp) {
+                statusDisp.innerText = graduated ? `Graduated (${migrationDex.toUpperCase()})` : 'Bonding Curve';
+                statusDisp.style.color = graduated ? 'var(--accent-green)' : 'var(--accent-red)';
+            }
+
+            const sniperInput = document.getElementById('sniperCA');
+            if (sniperInput) {
+                sniperInput.value = address;
+                auditSniperCA(address);
+            }
+
+            setTradeMode('buy');
             switchPage('trade', document.querySelectorAll('.nav-tab')[0]);
+            calculateSwapOutput();
         };
 
         window.selectTokenForSniper = function(address, symbol) {
-            document.getElementById('sniperCA').value = address;
+            const sniperInput = document.getElementById('sniperCA');
+            if (sniperInput) {
+                sniperInput.value = address;
+                auditSniperCA(address);
+            }
             switchPage('sniper', document.querySelectorAll('.nav-tab')[1]);
+        };
+
+        async function calculateSwapOutput() {
+            const inputVal = parseFloat(document.getElementById('tradeInputAmount').value) || 0;
+            if (inputVal <= 0 || !currentActiveToken.address) {
+                document.getElementById('tradeOutputAmount').value = '~ 0.00';
+                return;
+            }
+            const netInput = (currentTradeMode === 'buy' && inputVal >= 0.5) ? inputVal * 0.90 : inputVal;
+            try {
+                const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${currentActiveToken.address}`);
+                const data = await res.json();
+                const pairs = data.pairs || [];
+                if (pairs.length > 0) {
+                    const pair = pairs[0];
+                    const priceNative = parseFloat(pair.priceNative) || 0.0012;
+                    currentActiveToken.priceNative = priceNative;
+                    if(pair.priceUsd) currentActiveToken.priceUSD = parseFloat(pair.priceUsd);
+                    if(!currentActiveToken.poolAddress && pair.pairAddress) currentActiveToken.poolAddress = pair.pairAddress;
+                    
+                    let exactOutput = currentTradeMode === 'buy' ? netInput / priceNative : netInput * priceNative;
+                    document.getElementById('tradeOutputAmount').value = '~ ' + exactOutput.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 });
+                } else {
+                    const fallbackRate = 850.5;
+                    const resOutput = currentTradeMode === 'buy' ? netInput * fallbackRate : netInput / fallbackRate;
+                    document.getElementById('tradeOutputAmount').value = '~ ' + resOutput.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 });
+                }
+            } catch (e) {
+                const fallbackRate = 850.5;
+                const resOutput = currentTradeMode === 'buy' ? netInput * fallbackRate : netInput / fallbackRate;
+                document.getElementById('tradeOutputAmount').value = '~ ' + resOutput.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 });
+            }
+        }
+        window.calculateSwapOutput = calculateSwapOutput;
+
+        function saveTradeToPersistentProfile(tradeObj) {
+            if (!userWalletAddress) return;
+            const storageKey = `kote_trades_${userWalletAddress}`;
+            let existingTrades = JSON.parse(localStorage.getItem(storageKey) || '[]');
+            const idx = existingTrades.findIndex(t => t.address === tradeObj.address);
+            if (idx >= 0) {
+                existingTrades[idx].costBasisUSD += tradeObj.costBasisUSD;
+            } else {
+                existingTrades.push(tradeObj);
+            }
+            localStorage.setItem(storageKey, JSON.stringify(existingTrades));
+        }
+
+        async function fetchRealWalletHoldings(address) {
+            const holdingsContainer = document.getElementById('onChainWalletHoldings');
+            const activeTradesContainer = document.getElementById('mainActiveTradesList');
+            if(!holdingsContainer || !activeTradesContainer) return;
+            
+            holdingsContainer.innerHTML = `<div style="text-align: center; padding: 15px; color: var(--text-muted); font-size: 12px;">Querying TonAPI blockchain...</div>`;
+            activeTradesContainer.innerHTML = `<div style="text-align: center; padding: 15px; color: var(--text-muted); font-size: 12px;">Calculating persistent trades & live PnL...</div>`;
+
+            try {
+                const res = await fetch(`https://tonapi.io/v2/accounts/${address}/jettons`);
+                const data = await res.json();
+                let balances = data.balances || [];
+
+                userJettonHoldingsMap.clear();
+                const storageKey = `kote_trades_${address}`;
+                let persistentTrades = JSON.parse(localStorage.getItem(storageKey) || '[]');
+
+                let parsedBalances = [];
+                for (const b of balances) {
+                    const rawBal = parseFloat(b.balance) || 0;
+                    if (rawBal <= 0) continue;
+
+                    const decimals = b.jetton.decimals || 9;
+                    const amount = rawBal / Math.pow(10, decimals);
+                    const tokenAddr = b.jetton.address;
+                    const jettonWalletAddr = b.wallet_address?.address || '';
+
+                    userJettonHoldingsMap.set(tokenAddr, {
+                        balance: amount,
+                        rawBalance: BigInt(b.balance),
+                        decimals,
+                        jettonWalletAddress: jettonWalletAddr
+                    });
+
+                    const name = b.jetton.name || 'Unknown';
+                    const symbol = b.jetton.symbol || 'JETTON';
+                    const image = b.jetton.image || `https://cache.tonapi.io/imgproxy/${tokenAddr}/rs:fill:200:200:1/g:no`;
+
+                    let priceUSD = 0.01;
+                    let priceChange24h = 0;
+                    let poolAddress = '';
+                    try {
+                        const dexRes = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${tokenAddr}`);
+                        const dexData = await dexRes.json();
+                        if (dexData.pairs && dexData.pairs.length > 0) {
+                            const pair = dexData.pairs[0];
+                            priceUSD = parseFloat(pair.priceUsd) || 0.01;
+                            priceChange24h = pair.priceChange?.h24 || 0;
+                            poolAddress = pair.pairAddress || '';
+                        }
+                    } catch (err) {}
+
+                    const estUsdValue = amount * priceUSD;
+                    let recordedTrade = persistentTrades.find(t => t.address === tokenAddr);
+                    let costBasisUSD = recordedTrade ? recordedTrade.costBasisUSD : estUsdValue * (1 - (priceChange24h / 100));
+
+                    const pnlUSD = estUsdValue - costBasisUSD;
+                    const pnlPercent = costBasisUSD > 0 ? (pnlUSD / costBasisUSD) * 100 : priceChange24h;
+
+                    parsedBalances.push({
+                        name, symbol, address: tokenAddr, poolAddress, amount, image, estUsdValue, priceUSD, pnlUSD, pnlPercent
+                    });
+                }
+
+                parsedBalances.sort((a, b) => b.estUsdValue - a.estUsdValue);
+
+                holdingsContainer.innerHTML = '';
+                activeTradesContainer.innerHTML = '';
+
+                if (parsedBalances.length === 0) {
+                    holdingsContainer.innerHTML = `<div style="text-align: center; padding: 15px; color: var(--text-muted); font-size: 12px;">No jetton balances found.</div>`;
+                    activeTradesContainer.innerHTML = `<div style="text-align: center; padding: 15px; color: var(--text-muted); font-size: 12px;">No active trades found. Sold or transferred tokens disappear automatically.</div>`;
+                    return;
+                }
+
+                parsedBalances.forEach(item => {
+                    const pnlColor = item.pnlPercent >= 0 ? 'var(--accent-green)' : 'var(--accent-red)';
+                    const pnlSign = item.pnlPercent >= 0 ? '+' : '';
+
+                    holdingsContainer.innerHTML += `
+                        <div class="launch-card" onclick="selectTokenForTrade('${item.address}', '${item.name.replace(/'/g, "\\'")}', '${item.symbol}', '${item.image}', 50000, 20000, 10000, ${item.priceUSD}, true, 'dedust', '${item.poolAddress}')">
+                            <div style="display:flex; align-items:center; gap:12px;">
+                                <div class="token-avatar-wrap">
+                                    <span class="token-avatar-fallback">${item.symbol.charAt(0)}</span>
+                                    <img src="${item.image}" onerror="this.style.display='none';">
+                                </div>
+                                <div>
+                                    <h4 style="font-size:13px; font-weight:800;">$${item.symbol}</h4>
+                                    <span style="font-size:11px; color:var(--text-muted);">${item.name}</span>
+                                </div>
+                            </div>
+                            <div style="text-align:right;">
+                                <div style="font-size:10px; color:var(--text-muted); text-transform:uppercase; font-weight:700;">Holdings</div>
+                                <div style="font-size:13px; font-weight:900; color:var(--accent-green);">~$${item.estUsdValue.toFixed(2)}</div>
+                            </div>
+                        </div>
+                    `;
+
+                    activeTradesContainer.innerHTML += `
+                        <div style="background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 14px; padding: 14px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                <div style="display: flex; align-items: center; gap: 12px;">
+                                    <div class="token-avatar-wrap" style="width: 42px; height: 42px;">
+                                        <span class="token-avatar-fallback">${item.symbol.charAt(0)}</span>
+                                        <img src="${item.image}" onerror="this.style.display='none';">
+                                    </div>
+                                    <div>
+                                        <h4 style="font-size:14px; font-weight:900; color:#fff;">$${item.symbol}</h4>
+                                        <span style="font-size:11px; color:var(--text-muted); font-weight:700;">${item.name}</span>
+                                    </div>
+                                </div>
+                                <div style="text-align: right;">
+                                    <div style="font-size:14px; font-weight:900; color:#fff;">~$${item.estUsdValue.toFixed(2)}</div>
+                                    <div style="font-size:11px; font-weight:800; color:${pnlColor};">${pnlSign}${item.pnlPercent.toFixed(2)}% (${pnlSign}$${item.pnlUSD.toFixed(2)})</div>
+                                </div>
+                            </div>
+
+                            <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); background: rgba(0,0,0,0.3); padding: 8px 10px; border-radius: 8px; margin-bottom: 10px;">
+                                <span>Amount Bought / Held: <strong style="color: #fff;">${item.amount.toLocaleString(undefined, {maximumFractionDigits: 4})} ${item.symbol}</strong></span>
+                                <span>Live Price: <strong style="color: var(--accent-green)">$${item.priceUSD.toFixed(6)}</strong></span>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                                <button onclick="selectTokenForTrade('${item.address}', '${item.name.replace(/'/g, "\\'")}', '${item.symbol}', '${item.image}', 50000, 20000, 10000, ${item.priceUSD}, true, 'dedust', '${item.poolAddress}'); setTradeMode('buy'); switchPage('trade', document.querySelectorAll('.nav-tab')[0]);" style="background: rgba(16,185,129,0.15); border: 1px solid var(--accent-green); color: var(--accent-green); padding: 10px; border-radius: 8px; font-size: 12px; font-weight: 900; cursor: pointer;">🟢 Buy More</button>
+                                <button onclick="selectTokenForTrade('${item.address}', '${item.name.replace(/'/g, "\\'")}', '${item.symbol}', '${item.image}', 50000, 20000, 10000, ${item.priceUSD}, true, 'dedust', '${item.poolAddress}'); setTradeMode('sell'); switchPage('trade', document.querySelectorAll('.nav-tab')[0]);" style="background: rgba(239,68,68,0.15); border: 1px solid var(--accent-red); color: var(--accent-red); padding: 10px; border-radius: 8px; font-size: 12px; font-weight: 900; cursor: pointer;">🔴 Sell Position</button>
+                            </div>
+                        </div>
+                    `;
+                });
+
+            } catch (e) {
+                holdingsContainer.innerHTML = `<div style="text-align: center; padding: 15px; color: var(--accent-red); font-size: 12px;">Failed to fetch live on-chain holdings.</div>`;
+                activeTradesContainer.innerHTML = `<div style="text-align: center; padding: 15px; color: var(--accent-red); font-size: 12px;">Failed to load active trades.</div>`;
+            }
+        }
+
+        window.manualSyncActiveTrades = function() {
+            if (!userWalletAddress) { alert('Please connect your wallet first.'); return; }
+            fetchRealWalletHoldings(userWalletAddress);
+            alert('✅ Active trades synchronized with blockchain!');
+        };
+
+        async function verifyBlockchainTransactions(address) {
+            try {
+                const res = await fetch(`https://tonapi.io/v2/blockchain/accounts/${address}/transactions?limit=30`);
+                const data = await res.json();
+                const txs = data.transactions || [];
+
+                let confirmedReferralTotal = 0;
+                referredTradersSet.clear();
+
+                txs.forEach(tx => {
+                    if (tx.in_msg && tx.in_msg.destination && tx.in_msg.destination.address === address) {
+                        const comment = tx.in_msg.comment || '';
+                        if (comment.includes('KoteTrade Ref Fee') || comment.includes('KoteTrade')) {
+                            const valTon = parseFloat(tx.in_msg.value || 0) / 1e9;
+                            if (valTon > 0 && tx.in_msg.source && tx.in_msg.source.address) {
+                                referredTradersSet.add(tx.in_msg.source.address);
+                                confirmedReferralTotal += valTon;
+                            }
+                        }
+                    }
+                });
+
+                referralEarnings = confirmedReferralTotal;
+                document.getElementById('referralEarnings').innerText = referralEarnings.toFixed(4) + ' GRAM';
+                document.getElementById('referredCount').innerText = referredTradersSet.size + ' Users';
+            } catch (e) {}
+        }
+
+        window.manualSyncPortfolio = function() {
+            if (!userWalletAddress) { alert('Please connect your wallet first.'); return; }
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '🔄 Syncing Blockchain...';
+            
+            Promise.all([
+                fetchRealWalletHoldings(userWalletAddress),
+                verifyBlockchainTransactions(userWalletAddress)
+            ]).then(() => {
+                btn.innerHTML = originalText;
+                alert('✅ On-chain data synchronized successfully!');
+            }).catch(err => {
+                btn.innerHTML = originalText;
+                alert('Sync failed, please try again in a few seconds.');
+            });
+        };
+
+        window.copyReferralLink = function() {
+            const link = document.getElementById('refLinkInput').value;
+            if (!link.includes('http')) { alert('Connect wallet first.'); return; }
+            navigator.clipboard.writeText(link);
+            alert('Referral link copied!');
+        };
+
+        function buildDeDustBuyMessages(inputVal, resolvedPoolAddr) {
+            const isMicroTrade = inputVal < 0.5;
+            const totalFeeAmount = isMicroTrade ? 0 : inputVal * 0.10;
+            const netAmount = inputVal - totalFeeAmount;
+
+            let messages = [];
+
+            if (!isMicroTrade && totalFeeAmount > 0) {
+                const refCommentCell = beginCell()
+                    .storeUint(0, 32)
+                    .storeStringTail("KoteTrade Ref Fee")
+                    .endCell();
+                const refPayloadBoc = refCommentCell.toBoc().toString('base64');
+
+                if (referrerAddress) {
+                    const referrerFee = totalFeeAmount * 0.30; 
+                    const treasuryFee = totalFeeAmount * 0.70; 
+                    messages.push({ address: referrerAddress, amount: Math.floor(referrerFee * 1e9).toString(), payload: refPayloadBoc });
+                    messages.push({ address: TREASURY_ADDRESS, amount: Math.floor(treasuryFee * 1e9).toString() });
+                } else {
+                    messages.push({ address: TREASURY_ADDRESS, amount: Math.floor(totalFeeAmount * 1e9).toString() });
+                }
+            }
+
+            const poolAddr = Address.parse(resolvedPoolAddr);
+            const userAddr = Address.parse(userWalletAddress);
+
+            const swapPayload = VaultNative.createSwapPayload({
+                poolAddress: poolAddr,
+                amount: BigInt(Math.floor(netAmount * 1e9)),
+                swapParams: {
+                    recipientAddress: userAddr,
+                    ...(referrerAddress ? { referralAddress: Address.parse(referrerAddress) } : {})
+                }
+            });
+
+            const payloadBoc = swapPayload.toBoc().toString('base64');
+            const swapTonTotal = netAmount + DEDUST_FORWARD_GAS;
+
+            messages.push({
+                address: DEDUST_NATIVE_VAULT,
+                amount: Math.floor(swapTonTotal * 1e9).toString(),
+                payload: payloadBoc
+            });
+
+            return { messages, netAmount };
+        }
+
+        async function buildDeDustSellMessages(tokenAmount, tokenAddrStr, resolvedPoolAddr) {
+            const held = getHeldTokenInfo(tokenAddrStr);
+            if (!held || !held.jettonWalletAddress) {
+                throw new Error("Could not find your Jetton Wallet for this token. Make sure you hold this token.");
+            }
+
+            const decimals = held.decimals || 9;
+            const rawJettonAmount = BigInt(Math.floor(tokenAmount * Math.pow(10, decimals)));
+            if (rawJettonAmount <= 0n) {
+                throw new Error("Sell amount must be greater than 0.");
+            }
+
+            const jettonMasterAddr = Address.parse(tokenAddrStr);
+            const jettonVault = await dedustFactory.getJettonVault(jettonMasterAddr);
+            const poolAddr = Address.parse(resolvedPoolAddr);
+            const userAddr = Address.parse(userWalletAddress);
+
+            const forwardSwapPayload = VaultJetton.createSwapPayload({
+                poolAddress: poolAddr,
+                swapParams: {
+                    recipientAddress: userAddr,
+                    ...(referrerAddress ? { referralAddress: Address.parse(referrerAddress) } : {})
+                }
+            });
+
+            const jettonTransferBody = beginCell()
+                .storeUint(0x0f8a7ea5, 32)
+                .storeUint(0n, 64)
+                .storeCoins(rawJettonAmount)
+                .storeAddress(jettonVault.address)
+                .storeAddress(userAddr)
+                .storeBit(0)
+                .storeCoins(BigInt(Math.floor(0.20 * 1e9)))
+                .storeBit(1)
+                .storeRef(forwardSwapPayload)
+                .endCell();
+
+            const messages = [{
+                address: Address.parse(held.jettonWalletAddress).toString(),
+                amount: Math.floor(0.25 * 1e9).toString(),
+                payload: jettonTransferBody.toBoc().toString('base64')
+            }];
+
+            return { messages };
+        }
+
+        window.executeOnChainTrade = async function() {
+            if (!tonConnectUI.connected) { tonConnectUI.openModal(); return; }
+
+            const inputVal = parseFloat(document.getElementById('tradeInputAmount').value) || 0;
+            if (inputVal <= 0 || !currentActiveToken.address) {
+                alert('Please select a valid token and enter a trade amount.');
+                return;
+            }
+
+            const btn = document.getElementById('executeTradeBtn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '🔍 Resolving DeDust Pool...';
+            btn.disabled = true;
+
+            try {
+                const resolved = await resolveDeDustPoolAddress(currentActiveToken.poolAddress || currentActiveToken.address);
+
+                if (currentTradeMode === 'buy') {
+                    btn.innerHTML = '🛡️ Signing In-App Buy...';
+                    const { messages, netAmount } = buildDeDustBuyMessages(inputVal, resolved.poolAddress);
+
+                    const transaction = { validUntil: Math.floor(Date.now() / 1000) + 360, messages };
+                    await tonConnectUI.sendTransaction(transaction);
+
+                    saveTradeToPersistentProfile({
+                        address: resolved.tokenAddress,
+                        symbol: resolved.symbol,
+                        name: resolved.name,
+                        costBasisUSD: netAmount * resolved.priceUsd,
+                        timestamp: Date.now()
+                    });
+
+                    alert(`✅ In-App Buy Confirmed!\n\n• Pool: ${resolved.poolAddress.slice(0,6)}...\n• Net Buy: ${netAmount} GRAM for $${resolved.symbol}\n• Tokens routed directly to your wallet!`);
+                } else {
+                    btn.innerHTML = '🛡️ Preparing In-App Sell...';
+                    const { messages } = await buildDeDustSellMessages(inputVal, resolved.tokenAddress, resolved.poolAddress);
+
+                    btn.innerHTML = '🛡️ Signing In-App Sell...';
+                    const transaction = { validUntil: Math.floor(Date.now() / 1000) + 360, messages };
+                    await tonConnectUI.sendTransaction(transaction);
+
+                    alert(`✅ In-App Sell Confirmed!\n\n• Sold: ${inputVal.toLocaleString()} $${resolved.symbol}\n• Output GRAM routed directly to your wallet!`);
+                }
+
+                setTimeout(() => {
+                    if (userWalletAddress) {
+                        verifyBlockchainTransactions(userWalletAddress);
+                        fetchRealWalletHoldings(userWalletAddress);
+                    }
+                }, 12000);
+
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            } catch (error) {
+                alert(`Trade Cancelled or Failed: ${error.message || error}`);
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        };
+
+        window.executeSnipeOrder = async function() {
+            if (!tonConnectUI.connected) { tonConnectUI.openModal(); return; }
+            const ca = document.getElementById('sniperCA').value.trim();
+            const amtGram = parseFloat(document.getElementById('sniperAmount').value) || 0;
+            if (!ca) { alert('Please enter a contract address.'); return; }
+            if (amtGram <= 0) { alert('Please enter a valid snipe amount.'); return; }
+
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '🔍 Resolving DeDust Pool...';
+            btn.disabled = true;
+
+            try {
+                const resolved = await resolveDeDustPoolAddress(ca);
+                btn.innerHTML = '🛡️ Signing SDK Snipe...';
+
+                const { messages, netAmount } = buildDeDustBuyMessages(amtGram, resolved.poolAddress);
+
+                const transaction = { validUntil: Math.floor(Date.now() / 1000) + 360, messages };
+                await tonConnectUI.sendTransaction(transaction);
+
+                saveTradeToPersistentProfile({
+                    address: resolved.tokenAddress,
+                    symbol: resolved.symbol,
+                    name: resolved.name,
+                    costBasisUSD: netAmount * resolved.priceUsd,
+                    timestamp: Date.now()
+                });
+
+                alert(`🎯 In-App Snipe Confirmed!\n\n• Target Pool: ${resolved.poolAddress.slice(0,6)}...\n• Net Snipe: ${netAmount} GRAM for $${resolved.symbol}\n• Tokens delivered to your wallet & saved to Active Trades!`);
+
+                setTimeout(() => {
+                    if (userWalletAddress) {
+                        verifyBlockchainTransactions(userWalletAddress);
+                        fetchRealWalletHoldings(userWalletAddress);
+                    }
+                }, 12000);
+
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            } catch (error) {
+                alert(`Snipe Cancelled or Failed: ${error.message || error}`);
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        };
+
+        window.launchMoonPay = function() {
+            if (!userWalletAddress) {
+                alert('Please connect your TON wallet via TonConnect first.');
+                tonConnectUI.openModal();
+                return;
+            }
+            const amount = document.getElementById('fiatAmount').value || 100;
+            const url = `https://buy.moonpay.com/?currencyCode=ton&baseCurrencyAmount=${amount}&walletAddress=${userWalletAddress}`;
+            if (tg && typeof tg.openLink === 'function') { tg.openLink(url); } else { window.open(url, '_blank'); }
         };
 
         // --- IMMEDIATE INITIALIZATION ON BOOT ---
         loadTopblastTokens();
         loadGramMemesTokens();
+        calculateSwapOutput();
     </script>
-</body>
-</html>
