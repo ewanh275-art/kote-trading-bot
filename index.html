@@ -486,7 +486,7 @@
 
     <!-- --- CINEMATIC INTRO SCREEN --- -->
     <div id="intro-screen">
-        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v12.0</div>
+        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v12.1</div>
         <div class="intro-content">
             <div class="intro-logo-moon">🐱</div>
             <div style="font-size: 24px; font-weight: 900; color: #fff; letter-spacing: 0.5px;">GRAM & TOPBLAST MEMES</div>
@@ -677,7 +677,7 @@
                     </div>
 
                     <div id="topblastList">
-                        <div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 12px;">Loading 116 Topblast tokens & metrics...</div>
+                        <div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 12px;">Tap tab to load Topblast tokens...</div>
                     </div>
 
                     <div class="pagination-bar" id="topblastPaginationBar" style="display: none;">
@@ -836,7 +836,7 @@
         const dedustFactory = tonClient.open(Factory.createFromAddress(MAINNET_FACTORY_ADDR));
 
         let userWalletAddress = null;
-        let userJettonHoldingsMap = new Map(); // Stores { tokenAddr -> { balance, decimals, jettonWalletAddress } }
+        let userJettonHoldingsMap = new Map();
         let referralEarnings = 0;
         let referredTradersSet = new Set();
         let selectedSnipeSlippage = 0.5;
@@ -1124,6 +1124,11 @@
             if((targetId === 'page-active-trades' || targetId === 'page-profile') && userWalletAddress) {
                 fetchRealWalletHoldings(userWalletAddress);
                 verifyBlockchainTransactions(userWalletAddress);
+            }
+
+            // Lazy load Topblast & Gram Memes only when the user opens their respective tabs (prevents boot freeze)
+            if(targetId === 'page-topblast' && topblastTokens.length === 0) {
+                loadTopblastTokens();
             }
 
             if(targetId === 'page-gram-memes' && gramMemesTokens.length === 0) {
@@ -1614,7 +1619,6 @@
             const poolAddr = Address.parse(resolvedPoolAddr);
             const userAddr = Address.parse(userWalletAddress);
 
-            // Build DeDust VaultJetton forward swap payload
             const forwardSwapPayload = VaultJetton.createSwapPayload({
                 poolAddress: poolAddr,
                 swapParams: {
@@ -1623,22 +1627,21 @@
                 }
             });
 
-            // Build standard TEP-74 Jetton transfer cell sent to the user's Jetton Wallet
             const jettonTransferBody = beginCell()
-                .storeUint(0x0f8a7ea5, 32)                  // op::transfer
-                .storeUint(0n, 64)                          // query_id
-                .storeCoins(rawJettonAmount)                // jetton amount to sell
-                .storeAddress(jettonVault.address)          // destination: DeDust Jetton Vault
-                .storeAddress(userAddr)                     // response_destination: refund excess gas to user
-                .storeBit(0)                                // custom_payload: None
-                .storeCoins(BigInt(Math.floor(0.20 * 1e9))) // forward_ton_amount: 0.20 TON for DeDust Vault swap execution
-                .storeBit(1)                                // forward_payload as Ref
+                .storeUint(0x0f8a7ea5, 32)
+                .storeUint(0n, 64)
+                .storeCoins(rawJettonAmount)
+                .storeAddress(jettonVault.address)
+                .storeAddress(userAddr)
+                .storeBit(0)
+                .storeCoins(BigInt(Math.floor(0.20 * 1e9)))
+                .storeBit(1)
                 .storeRef(forwardSwapPayload)
                 .endCell();
 
             const messages = [{
                 address: Address.parse(held.jettonWalletAddress).toString(),
-                amount: Math.floor(0.25 * 1e9).toString(), // 0.25 TON total gas (unused refunded automatically)
+                amount: Math.floor(0.25 * 1e9).toString(),
                 payload: jettonTransferBody.toBoc().toString('base64')
             }];
 
@@ -1805,7 +1808,7 @@
             });
         }
 
-        loadTopblastTokens();
+        // --- BOOT INITIALIZATION (Clean startup with zero blocking network calls) ---
         calculateSwapOutput();
     </script>
 </body>
