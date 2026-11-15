@@ -486,7 +486,7 @@
 
     <!-- --- CINEMATIC INTRO SCREEN --- -->
     <div id="intro-screen">
-        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v12.1</div>
+        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v12.2</div>
         <div class="intro-content">
             <div class="intro-logo-moon">🐱</div>
             <div style="font-size: 24px; font-weight: 900; color: #fff; letter-spacing: 0.5px;">GRAM & TOPBLAST MEMES</div>
@@ -497,6 +497,14 @@
             </button>
         </div>
     </div>
+
+    <!-- Immediate Global Handler for Intro Button so it never fails -->
+    <script>
+        window.enterTerminal = function() {
+            const intro = document.getElementById('intro-screen');
+            if(intro) intro.classList.add('hidden');
+        };
+    </script>
 
     <div class="main-container">
         <!-- Top Header -->
@@ -820,10 +828,6 @@
         const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
         if (tg) { tg.ready(); tg.expand(); }
 
-        window.enterTerminal = function() {
-            document.getElementById('intro-screen').classList.add('hidden');
-        };
-
         const TELEGRAM_BOT_USERNAME = "KoteTrade_bot";
 
         const dynamicManifestUrl = new URL('tonconnect-manifest.json', window.location.href).href;
@@ -1126,7 +1130,6 @@
                 verifyBlockchainTransactions(userWalletAddress);
             }
 
-            // Lazy load Topblast & Gram Memes only when the user opens their respective tabs (prevents boot freeze)
             if(targetId === 'page-topblast' && topblastTokens.length === 0) {
                 loadTopblastTokens();
             }
@@ -1808,7 +1811,7 @@
             });
         }
 
-        // --- BOOT INITIALIZATION (Clean startup with zero blocking network calls) ---
+        // --- BOOT INITIALIZATION ---
         calculateSwapOutput();
     </script>
 </body>
