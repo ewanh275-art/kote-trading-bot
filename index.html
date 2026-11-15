@@ -487,7 +487,7 @@
 
     <!-- --- CINEMATIC INTRO SCREEN --- -->
     <div id="intro-screen">
-        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v12.7</div>
+        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v12.8</div>
         <div class="intro-content">
             <div class="intro-logo-moon">🐱</div>
             <div style="font-size: 24px; font-weight: 900; color: #fff; letter-spacing: 0.5px;">GRAM & TOPBLAST MEMES</div>
@@ -688,8 +688,8 @@
                 <div class="card" style="max-width: 650px; margin: 0 auto; width: 100%;">
                     <div class="card-header">
                         <div>
-                            <span class="card-title" style="color: var(--accent-green);">🔥 Topblast Memes Catalog</span>
-                            <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Pasted Contract Addresses & DexScreener Integration</div>
+                            <span class="card-title" style="color: var(--accent-green);">🔥 Topblast Memes Catalog (78 Tokens)</span>
+                            <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Loaded with live DexScreener & DeDust Data</div>
                         </div>
                         <button onclick="loadTopblastTokens()" style="background: rgba(16,185,129,0.15); border: 1px solid var(--accent-green); color: var(--accent-green); padding: 6px 10px; border-radius: 8px; font-size: 11px; cursor: pointer; font-weight: 800;">↻ Refresh</button>
                     </div>
@@ -734,7 +734,12 @@
             <!-- 6. PROFILE & PORTFOLIO -->
             <section id="page-profile" class="page">
                 <div class="card" style="max-width: 550px; margin: 0 auto; width: 100%;">
-                    <div class="card-header"><span class="card-title">👤 Verified On-Chain Portfolio & Earnings</span></div>
+                    <div class="card-header">
+                        <span class="card-title">👤 Verified On-Chain Portfolio & Earnings</span>
+                        <button id="profileConnectBtn" onclick="openWalletModal()" style="background: rgba(239,68,68,0.18); border: 1px solid var(--accent-red); color: var(--accent-red); padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 800; cursor: pointer;">
+                            🔗 Connect Wallet
+                        </button>
+                    </div>
 
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px;">
                         <div style="background: var(--bg-input); border: 1px solid var(--border-color); padding: 12px; border-radius: 12px; text-align: center;">
@@ -834,11 +839,11 @@
         </nav>
     </div>
 
-    <!-- MODULE SCRIPT WITH AUTOMATIC CONTRACT ADDRESS HYDRATION -->
+    <!-- SCRIPT WITH ALL 78 TOPBLAST CONTRACT ADDRESSES -->
     <script type="module">
         import { Address, beginCell } from '@ton/core';
         import { TonClient4 } from '@ton/ton';
-        import { Asset, Factory, MAINNET_FACTORY_ADDR, VaultNative, VaultJetton } from '@dedust/sdk';
+        import { Factory, MAINNET_FACTORY_ADDR, VaultNative, VaultJetton } from '@dedust/sdk';
 
         const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
         if (tg) { tg.ready(); tg.expand(); }
@@ -851,6 +856,14 @@
             buttonRootId: 'ton-connect'
         });
 
+        window.openWalletModal = function() {
+            if (tonConnectUI.connected) {
+                tonConnectUI.disconnect();
+            } else {
+                tonConnectUI.openModal();
+            }
+        };
+
         const tonClient = new TonClient4({ endpoint: 'https://mainnet-v4.tonhubapi.com' });
         const dedustFactory = tonClient.open(Factory.createFromAddress(MAINNET_FACTORY_ADDR));
 
@@ -858,6 +871,7 @@
         let userJettonHoldingsMap = new Map();
         let referralEarnings = 0;
         let referredTradersSet = new Set();
+        let selectedSnipeSlippage = 0.5;
 
         const TREASURY_ADDRESS = "UQAC-pXNqjUJ0u1wBkLPiDkLVMZkWYXWvNQuH5Mtx_tPdsGV";
         const DEDUST_NATIVE_VAULT = "EQDa4VOnTYlLvDJ0gZjNYm5PXfSmmtL6Vs6A_CZEtXCNICq_";
@@ -866,9 +880,9 @@
         const urlParams = new URLSearchParams(window.location.search);
         let referrerAddress = urlParams.get('ref') || (tg && tg.initDataUnsafe && tg.initDataUnsafe.start_param ? tg.initDataUnsafe.start_param.replace('ref_', '') : null);
 
-        // ==========================================
-        // 🚀 PASTE YOUR TOPBLAST CONTRACT ADDRESSES HERE
-        // ==========================================
+        // =========================================================================
+        // 🔥 ALL 78 TOPBLAST CONTRACT ADDRESSES
+        // =========================================================================
         let topblastAddresses = [
             "EQAOY0xbKV1g3e2V7jdo5erF5u-5h19qB4IpPkK0RPy0RKGV",
             "EQAOyf4n-7wTtTI45LGQwfacEfnkpOa9v6bjpwgeCHX5WW8y",
@@ -879,12 +893,80 @@
             "EQBvYQ3TyUYTjQxZa6UPbjwVzjnC5U3PRiXhpIu-HPMYMtTX",
             "EQAmvp1Vrr0zY2--STdH-0X_mP5iCD61p2vNVJYwHlgBni2C",
             "EQAO_tYpLbPq-GOXegYTYtFaQ0tMkxLBxzYF8cUCGGWAj_aA",
-            "EQA61O71y4I8oZDXRvMOrHtub2vxcPI54f1oGA_e4h0JL64L"
+            "EQA61O71y4I8oZDXRvMOrHtub2vxcPI54f1oGA_e4h0JL64L",
+            "EQAmewWMVccMpcKtgLUjcvkwGVSnzYIar2w39D-W_-Jp1U_V",
+            "EQAmbXjiqLPXW16g3PXdMRzLKyprUvx8K2pwenW4kTj17vHk",
+            "EQAmTUciPykaNw5bZ9DlYXzpB9vFjUZOd5re_TiCHbaYmzvU",
+            "EQAmT22Q2aPyLeTPmkzbCC0oDoOsLxTjSbR2XvWltb49FsuV",
+            "EQAmaMdwCmpZNJSRfvbNZDu1HkjFbw2VtvvI1FDKvLJMgyXE",
+            "EQAmB_sndV45N-cmgT2tihQOcaf4EgT3nhhsvYeJ4UnICc0A",
+            "EQA69XQSXbB6zXv36mTFaiazCBSuLj_zT6tH44m6ohvjGv02",
+            "EQAOp85i7pf7tyV0cyJBxULyTP3dXJCvPZYOQ0OVOk1HGr-d",
+            "EQAOHBcxj6v444-9OQfgD0blgRSJd3YpFgrKzM7o3rgKQXjW",
+            "EQAmAb3d7dEP8fMWOf42Jzxu8DyG_fCK9ndfLs1XhjlN5HU9",
+            "EQA6_KTcZORIevd4zw9GJGmpaWKrzdixod8J1fWfm4r7YxZm",
+            "EQAmmPdBvJMe00ZVck3_oQL46HPov6RMGoPW2ex-7kjI0Il1",
+            "EQAmuf2yZ6vUjhKViYT-IYWNFEgrO3W47o-w9-15q_iD4A5D",
+            "EQAOp_GJvXdf-KOyrzwXV5Uf0Pzbsc5QXLRPwPc6dj1YnhPb",
+            "EQAOLGOVGr1z7Je3tn-1fKEIXmUYTduh2hnYzxBmhzFqDgIu",
+            "EQAmdLjlODBRz5Wyn04SeH_kx1V__X-ZSCwjRFnyYQnHkRdb",
+            "EQAm-H72S6NMaO3KEP7jFXPnupsgO0s-mggOKW89l098lL57",
+            "EQA6P6O_XDH0VNFedCZuopL7e8UdSqH9YEcC2bwzSjtYyuI4",
+            "EQAmBV5LVsfKTUdhQQIz3jOePtuA9BJLq7C1Rui082v0aVF3",
+            "EQAmiAVqNkNobs8CXbt38JlNFlXJ0eztRlsP3Z27YF2DMvKr",
+            "EQA6b9p3ILwLkcKiOra-Be1XjZRtQWE5MPBpjZLtuGRxlS9Y",
+            "EQA6COgHs8dr9El9WthdbXpK8toHwkY841QZ3jtxs59be7SQ",
+            "EQAOGTFrLBTBlHE-rk5RQunJDpJ56ynz3cbPvEx-UdySeJEl",
+            "EQAmAMzMHGzw8wmCusbD07lS3AHg9Z3FL51qvfqVjJz2B4cu",
+            "EQA6kIgw_H_dFqgOouoAW9lm0kxnhk_5DSa7pSsu2qcvHdNI",
+            "EQAmsQK_X-PCaD1j1GGbezh9fO2-Ig-S8BtXPQMe6jorcNuH",
+            "EQA6oZqfngpjbXn7SJdBjIYEoOxt_NusP4ULYCVAuQyG65G3",
+            "EQAm3zO8VWQs1--V3rCjiK1DDFdt0WiY7tks7vLI7SOIoFlg",
+            "EQAONWhv3NkoQrJPMvB67_yknWLPxVX8wPefTPV75h7ZmVKO",
+            "EQD2NxxuZXSywKAt2khypQgsjwoSkeFeg6L9tOnLlfMGaxg9",
+            "EQAmQ2hL2H4A95Qq0pYvH9ir6F56PoliZNJbp50KULxiwpEr",
+            "EQAmWdWzG4fuBRy_esum7AnopZaTxcmmH3JooDir9oykGshI",
+            "EQAOGXscdLLxePpymILh_bu6hkZgsh-Pwq4B5StFlDjc44IG",
+            "EQA6FNQzTeFvY395QVg5GhKNexiK4hECAmBbfuLY5TXyvCX2",
+            "EQA6iDIR4zMPLF0WphiC3e9TaM77kmZaqg9iMYimrpoXgKmv",
+            "EQA6K2JOf-sZ4iHJp0wbz8fV8xFuCcs3UsoGcw72FDpLbhvJ",
+            "EQAmN9ssxWSo5oQThYrqIAiIKH5I4bgKh396hcRZn3RVgbOt",
+            "EQAOXbw31WsP3-1YxvL_2XLcDgWnUqeQaK6ckoLujdhRP_VG",
+            "EQAmi9mYcrZE12hjCkkkUZRH8XKfgtn0hwnA4Aq5NPxctBjY",
+            "EQAOjpXNmnSQpKqEj4cUiz_048P-C24MA1JNqD_CPmVAOH0q",
+            "EQAOFLzQQf1V8rHFZglTCCHbY8mXGbZd5NNExqw9-T3OGnqs",
+            "EQA6dF18rzlU_FYMs3Bos-Xy8sfTPLnqrzmmUl2Uac2t1dSc",
+            "EQAmHxZ7muN8QhJ1sqSsxd2Y1NXQrDne5iq1W3OgjYgNT_ry",
+            "EQAmVFff4F53sDQgzCJv1f3LlSofxJgRBEagsAvGocW2HY-2",
+            "EQA66xs9cWmVWFWDwSlwG5e8BS1_Jfb2c2ViWtSxe1nsfdyp",
+            "EQAmmrze1EPTGwIWoVNBNhP_nSOzo-Gjcybm-ssXtn-23WYP",
+            "EQAmyzD9_-5MccsXofbLpsCj40gwOU7WC-8XHwCDww21FVyy",
+            "EQAm5HVkMvZWepsxIEIQfsMln6YJJolGQmJxMLYU5V8h1abL",
+            "EQAm4yyz06js43ANzvjjX-iEXHBpFUCN9I6V1Tiw1FebNlRe",
+            "EQAmUUMHs-IDUoVYbno-j_R4_wc_HDCJ9VbU4OVNthS_Ul9z",
+            "EQAOp1jq28iWiHmZxnCZgfgOBqBE0bbKrcfj6gXgSPplF16l",
+            "EQAmRXESGA2sUc_UPGQ0qTJfOLU25ixfsE7elFwDI2eR3RE_",
+            "EQA6enm16bWjG1eUKI19E3EbWZjlB7r79RmpCTx79PymzgnK",
+            "EQA6KVkWh1na5tA-XPGJsevjmrm90Zq_2pi9ljowDE5o4xaC",
+            "EQAOitDQsM9t5uXYkiDIyFFDE8H2sKLaINcJcxk01q9QmNjV",
+            "EQAmnA14XeBqTRHUqRlaqs_PPAtxBa-HI2d9oqHzdzAaMNUG",
+            "EQA6CjFaclFsDu6Z4gOIZ_9QN_dQ14IQEwAyHL227fDjIe5V",
+            "EQA6Ze_BBi0e-uoOLugKQEIrteRsuLbQFj5S6lhqdnYEVC-0",
+            "EQAmCL42WxSfj-wdvLjlp0v6kPXSZRsxhVl9Xo_wpwnkQmU-",
+            "EQAO9HVPcwuhiYwlOBasnZD8h3yH9mEWAIicwNNh4J0hIdn9",
+            "EQAOQtEkl0ie2-lktarRA5tUS9PL6kueAoKQc3iW1-euno6q",
+            "EQAmKfjNR6png60YE98lcB72Xi6h9_Ksk-YidYvGoJc2Z3pL",
+            "EQAmrHtrkk3Em8RSEqoK50O02C542fk8zdEG18SwU4TRgIp4",
+            "EQA69Mhu92OBCtAse0SJbv3_3VpiVV10d5vLUw_3Bg8Myt_0",
+            "EQAmJaTOz6MeuCPA4fr8ugqgHd4TuO5-U1Fp5JX9HK9RrxZW",
+            "EQAme5Z3_wsVhvSemTvwFToq2AIRz_NSfEdiKOgdI8H11EPh",
+            "EQA6ObSo9TtyE8gU3FA_u3ogAWLBsy0IjoONtCKmbAjBqh8h",
+            "EQA6LO"
         ];
 
-        // ==========================================
-        // 🪙 PASTE YOUR GRAM MEMES / DEDUST CONTRACT ADDRESSES HERE
-        // ==========================================
+        // =========================================================================
+        // 🪙 GRAM MEMES / DEDUST CONTRACT ADDRESSES
+        // =========================================================================
         let gramMemesAddresses = [
             "EQAn0x...gram",
             "EQBZ_5s...redo",
@@ -921,19 +1003,17 @@
             return { poolAddress: inputAddress, tokenAddress: inputAddress, symbol: 'TOKEN', name: 'Token', priceUsd: 0.01 };
         }
 
-        // --- AUTOMATIC CATALOG HYDRATOR ---
         async function hydrateTokenCatalog(addresses, targetArray, renderCallback) {
-            // 1. Instant Fallback Generation so items show immediately without hanging
             targetArray.length = 0;
             addresses.forEach((ca, idx) => {
                 targetArray.push({
-                    name: `Token #${idx + 1}`,
-                    symbol: `MEME${idx + 1}`,
+                    name: `Topblast Token #${idx + 1}`,
+                    symbol: `TB${idx + 1}`,
                     address: ca,
                     poolAddress: '',
                     graduated: true,
                     migrationDex: 'dedust',
-                    logo: 'https://dedust.io/favicon.ico',
+                    logo: 'https://topblastv2.lol/favicon.png',
                     mcap: 50000 + (idx * 15000),
                     liq: 20000 + (idx * 5000),
                     vol: 10000 + (idx * 2000),
@@ -943,30 +1023,32 @@
             });
             renderCallback();
 
-            // 2. Fetch Live DexScreener Data in Background (Batched)
             if (addresses.length === 0) return;
             try {
-                const chunk = addresses.slice(0, 30).join(',');
-                const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${chunk}`);
-                const data = await res.json();
-                const pairs = data.pairs || [];
+                // Query DexScreener in batches of up to 30 addresses
+                for (let i = 0; i < addresses.length; i += 30) {
+                    const chunk = addresses.slice(i, i + 30).join(',');
+                    const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${chunk}`);
+                    const data = await res.json();
+                    const pairs = data.pairs || [];
 
-                pairs.forEach(p => {
-                    const tokenAddr = p.baseToken?.address || p.pairAddress;
-                    const match = targetArray.find(t => t.address.toLowerCase() === tokenAddr.toLowerCase());
-                    if (match) {
-                        match.name = p.baseToken?.name || match.name;
-                        match.symbol = p.baseToken?.symbol || match.symbol;
-                        match.poolAddress = p.pairAddress || match.poolAddress;
-                        match.logo = p.info?.imageUrl || p.baseToken?.logoURI || match.logo;
-                        match.mcap = p.marketCap || p.fdv || match.mcap;
-                        match.liq = p.liquidity?.usd || match.liq;
-                        match.vol = p.volume?.h24 || match.vol;
-                        match.priceUSD = parseFloat(p.priceUsd) || match.priceUSD;
-                        match.statusText = `Graduated (${(p.dexId || 'dedust').toUpperCase()})`;
-                    }
-                });
-                renderCallback();
+                    pairs.forEach(p => {
+                        const tokenAddr = p.baseToken?.address || p.pairAddress;
+                        const match = targetArray.find(t => t.address.toLowerCase() === tokenAddr.toLowerCase());
+                        if (match) {
+                            match.name = p.baseToken?.name || match.name;
+                            match.symbol = p.baseToken?.symbol || match.symbol;
+                            match.poolAddress = p.pairAddress || match.poolAddress;
+                            match.logo = p.info?.imageUrl || p.baseToken?.logoURI || match.logo;
+                            match.mcap = p.marketCap || p.fdv || match.mcap;
+                            match.liq = p.liquidity?.usd || match.liq;
+                            match.vol = p.volume?.h24 || match.vol;
+                            match.priceUSD = parseFloat(p.priceUsd) || match.priceUSD;
+                            match.statusText = `Graduated (${(p.dexId || 'dedust').toUpperCase()})`;
+                        }
+                    });
+                    renderCallback();
+                }
             } catch (e) {}
         }
 
@@ -1094,17 +1176,174 @@
             });
         }
 
+        // --- WALLET CONNECTION & PROFILE SYNC ---
         tonConnectUI.onStatusChange(wallet => {
+            const profileBtn = document.getElementById('profileConnectBtn');
             if (wallet && wallet.account) {
                 userWalletAddress = wallet.account.address;
                 const shortAddr = userWalletAddress.slice(0, 4) + '...' + userWalletAddress.slice(-4);
+                
+                if (profileBtn) {
+                    profileBtn.innerText = `🟢 ${shortAddr} (Disconnect)`;
+                    profileBtn.style.background = 'rgba(16,185,129,0.15)';
+                    profileBtn.style.borderColor = 'var(--accent-green)';
+                    profileBtn.style.color = 'var(--accent-green)';
+                }
+
                 document.getElementById('refLinkInput').value = `https://t.me/${TELEGRAM_BOT_USERNAME}/app?startapp=ref_${shortAddr}`;
                 document.getElementById('moonpayWalletTarget').innerText = shortAddr;
+                fetchRealWalletHoldings(userWalletAddress);
+                verifyBlockchainTransactions(userWalletAddress);
+            } else {
+                userWalletAddress = null;
+                userJettonHoldingsMap.clear();
+                
+                if (profileBtn) {
+                    profileBtn.innerText = '🔗 Connect Wallet';
+                    profileBtn.style.background = 'rgba(239,68,68,0.18)';
+                    profileBtn.style.borderColor = 'var(--accent-red)';
+                    profileBtn.style.color = 'var(--accent-red)';
+                }
+
+                document.getElementById('refLinkInput').value = 'Connect wallet to generate';
+                document.getElementById('moonpayWalletTarget').innerText = 'Connect Wallet First';
+                document.getElementById('onChainWalletHoldings').innerHTML = `<div style="text-align: center; padding: 15px; color: var(--text-muted); font-size: 12px;">Connect wallet via TonConnect to load live on-chain assets.</div>`;
+                document.getElementById('mainActiveTradesList').innerHTML = `<div style="text-align: center; padding: 15px; color: var(--text-muted); font-size: 12px;">Connect wallet via TonConnect to view active trades and live PnL.</div>`;
             }
         });
 
+        window.auditSniperCA = async function(ca) {
+            const auditEl = document.getElementById('sniperAuditResult');
+            const logoWrap = document.getElementById('sniperTokenLogoWrap');
+            const logoImg = document.getElementById('sniperTokenLogoImg');
+            const logoFallback = document.getElementById('sniperLogoFallback');
+
+            if (!ca || ca.length < 10) { 
+                auditEl.style.display = 'none'; 
+                logoWrap.style.display = 'none';
+                return; 
+            }
+            auditEl.style.display = 'inline-flex';
+            auditEl.innerText = '🔍 Resolving DeDust Pool...';
+
+            const resolved = await resolveDeDustPoolAddress(ca.trim());
+            auditEl.innerText = `🛡️ DeDust Pool Verified: ${resolved.poolAddress.slice(0, 6)}...${resolved.poolAddress.slice(-4)}`;
+
+            try {
+                const r = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${resolved.tokenAddress}`);
+                const d = await r.json();
+                if (d.pairs && d.pairs.length > 0) {
+                    const p = d.pairs[0];
+                    const logoUrl = p.info?.imageUrl || p.baseToken?.logoURI;
+                    const sym = p.baseToken?.symbol || '?';
+                    logoFallback.innerText = sym.charAt(0);
+                    if (logoUrl) {
+                        logoImg.style.display = 'block';
+                        logoImg.src = logoUrl;
+                    } else {
+                        logoImg.style.display = 'none';
+                    }
+                    logoWrap.style.display = 'flex';
+                }
+            } catch (err) {
+                logoWrap.style.display = 'none';
+            }
+        };
+
+        function getHeldTokenInfo(tokenAddr) {
+            if (!tokenAddr) return null;
+            if (userJettonHoldingsMap.has(tokenAddr)) return userJettonHoldingsMap.get(tokenAddr);
+            try {
+                const raw = Address.parse(tokenAddr).toRawString();
+                for (const [k, v] of userJettonHoldingsMap.entries()) {
+                    if (Address.parse(k).toRawString() === raw) return v;
+                }
+            } catch (e) {}
+            return null;
+        }
+
+        window.setTradeMode = function(mode) {
+            currentTradeMode = mode;
+            const tabBuy = document.getElementById('tabBuy');
+            const tabSell = document.getElementById('tabSell');
+            const payLabel = document.getElementById('payLabel');
+            const payTokenSymbol = document.getElementById('payTokenSymbol');
+            const payBadgeToken = document.getElementById('payBadgeToken');
+            const receiveLabel = document.getElementById('receiveLabel');
+            const receiveTokenSymbol = document.getElementById('receiveTokenSymbol');
+            const executeBtn = document.getElementById('executeTradeBtn');
+            const quickContainer = document.getElementById('quickAmountsContainer');
+            const sellBalBar = document.getElementById('sellBalanceBar');
+
+            if (mode === 'buy') {
+                tabBuy.classList.add('active');
+                tabSell.classList.remove('active');
+                payLabel.innerText = 'You Pay';
+                payTokenSymbol.innerText = 'GRAM';
+                payBadgeToken.innerText = '💎 GRAM';
+                receiveLabel.innerText = `You Receive (${currentActiveToken.symbol})`;
+                receiveTokenSymbol.innerText = currentActiveToken.symbol;
+                executeBtn.className = 'btn-action btn-red';
+                executeBtn.innerHTML = `⚡ Execute In-App Buy ($${currentActiveToken.symbol})`;
+                sellBalBar.style.display = 'none';
+                document.getElementById('tradeInputAmount').value = 0.1;
+
+                quickContainer.innerHTML = `
+                    <button class="quick-btn" onclick="setTradeAmount(0.1)">0.1</button>
+                    <button class="quick-btn" onclick="setTradeAmount(1)">1</button>
+                    <button class="quick-btn" onclick="setTradeAmount(5)">5</button>
+                    <button class="quick-btn" onclick="setTradeAmount(10)">10</button>
+                `;
+            } else {
+                tabSell.classList.add('active');
+                tabBuy.classList.remove('active');
+                payLabel.innerText = 'You Sell';
+                payTokenSymbol.innerText = currentActiveToken.symbol;
+                payBadgeToken.innerText = currentActiveToken.symbol;
+                receiveLabel.innerText = 'You Receive (GRAM)';
+                receiveTokenSymbol.innerText = 'GRAM';
+                executeBtn.className = 'btn-action btn-green-action';
+                executeBtn.innerHTML = `🔴 Execute In-App Sell ($${currentActiveToken.symbol})`;
+
+                const held = getHeldTokenInfo(currentActiveToken.address);
+                const bal = held ? held.balance : 0;
+                sellBalBar.style.display = 'flex';
+                document.getElementById('availableTokenBalance').innerText = `${bal.toLocaleString(undefined, {maximumFractionDigits: 4})} ${currentActiveToken.symbol}`;
+                document.getElementById('tradeInputAmount').value = bal > 0 ? bal : 0;
+
+                quickContainer.innerHTML = `
+                    <button class="quick-btn" onclick="setSellPercent(25)">25%</button>
+                    <button class="quick-btn" onclick="setSellPercent(50)">50%</button>
+                    <button class="quick-btn" onclick="setSellPercent(75)">75%</button>
+                    <button class="quick-btn" onclick="setSellPercent(100)">100%</button>
+                `;
+            }
+            calculateSwapOutput();
+        };
+
+        window.setSellPercent = function(pct) {
+            const held = getHeldTokenInfo(currentActiveToken.address);
+            const bal = held ? held.balance : 0;
+            const amt = pct === 100 ? bal : Number((bal * (pct / 100)).toFixed(6));
+            document.getElementById('tradeInputAmount').value = amt;
+            calculateSwapOutput();
+        };
+
+        window.setTradeAmount = function(val) {
+            document.getElementById('tradeInputAmount').value = val;
+            calculateSwapOutput();
+        };
+
+        window.setSnipeSlip = function(val, el) {
+            el.parentElement.querySelectorAll('.quick-btn').forEach(b => b.classList.remove('active'));
+            el.classList.add('active');
+            selectedSnipeSlippage = val;
+        };
+
         window.selectTokenForTrade = function(address, name, symbol, logo, mcap, liq, vol, priceUSD = 0.01, graduated = true, migrationDex = 'dedust', poolAddress = '') {
-            currentActiveToken = { name, symbol, address, poolAddress, logo, mcap, liq, vol, priceNative: 0.0012, priceUSD, graduated, migrationDex, decimals: 9 };
+            const held = getHeldTokenInfo(address);
+            currentActiveToken = { name, symbol, address, poolAddress, logo, mcap, liq, vol, priceNative: 0.0012, priceUSD, graduated, migrationDex, decimals: held ? held.decimals : 9 };
+            
             document.getElementById('heroTokenName').innerText = `${name} ($${symbol})`;
             document.getElementById('heroTokenCA').innerText = address;
             document.getElementById('heroTokenFallback').innerText = symbol.charAt(0);
@@ -1116,23 +1355,496 @@
             document.getElementById('receiveTokenSymbol').innerText = symbol;
             document.getElementById('chartTitle').innerText = `📊 Live Chart: $${symbol}`;
             document.getElementById('dexChartFrame').src = `https://dexscreener.com/ton/${poolAddress || address}?embed=1&theme=dark&trades=0&info=0`;
+            document.getElementById('externalChartBtn').href = `https://dexscreener.com/ton/${poolAddress || address}`;
             
             document.getElementById('tokMcap').innerText = mcap >= 1e6 ? '$' + (mcap/1e6).toFixed(2) + 'M' : '$' + (mcap/1e3).toFixed(1) + 'K';
             document.getElementById('tokLiq').innerText = liq >= 1e6 ? '$' + (liq/1e6).toFixed(2) + 'M' : '$' + (liq/1e3).toFixed(1) + 'K';
             document.getElementById('tokVol').innerText = vol >= 1e6 ? '$' + (vol/1e6).toFixed(2) + 'M' : '$' + (vol/1e3).toFixed(1) + 'K';
             document.getElementById('heroTokenPrice').innerText = '$' + priceUSD.toFixed(6);
 
+            const statusDisp = document.getElementById('tokStatusDisplay');
+            if (statusDisp) {
+                statusDisp.innerText = graduated ? `Graduated (${migrationDex.toUpperCase()})` : 'Bonding Curve';
+                statusDisp.style.color = graduated ? 'var(--accent-green)' : 'var(--accent-red)';
+            }
+
+            const sniperInput = document.getElementById('sniperCA');
+            if (sniperInput) {
+                sniperInput.value = address;
+                auditSniperCA(address);
+            }
+
+            setTradeMode('buy');
             switchPage('trade', document.querySelectorAll('.nav-tab')[0]);
+            calculateSwapOutput();
         };
 
         window.selectTokenForSniper = function(address, symbol) {
-            document.getElementById('sniperCA').value = address;
+            const sniperInput = document.getElementById('sniperCA');
+            if (sniperInput) {
+                sniperInput.value = address;
+                auditSniperCA(address);
+            }
             switchPage('sniper', document.querySelectorAll('.nav-tab')[1]);
+        };
+
+        async function calculateSwapOutput() {
+            const inputVal = parseFloat(document.getElementById('tradeInputAmount').value) || 0;
+            if (inputVal <= 0 || !currentActiveToken.address) {
+                document.getElementById('tradeOutputAmount').value = '~ 0.00';
+                return;
+            }
+            const netInput = (currentTradeMode === 'buy' && inputVal >= 0.5) ? inputVal * 0.90 : inputVal;
+            try {
+                const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${currentActiveToken.address}`);
+                const data = await res.json();
+                const pairs = data.pairs || [];
+                if (pairs.length > 0) {
+                    const pair = pairs[0];
+                    const priceNative = parseFloat(pair.priceNative) || 0.0012;
+                    currentActiveToken.priceNative = priceNative;
+                    if(pair.priceUsd) currentActiveToken.priceUSD = parseFloat(pair.priceUsd);
+                    if(!currentActiveToken.poolAddress && pair.pairAddress) currentActiveToken.poolAddress = pair.pairAddress;
+                    
+                    let exactOutput = currentTradeMode === 'buy' ? netInput / priceNative : netInput * priceNative;
+                    document.getElementById('tradeOutputAmount').value = '~ ' + exactOutput.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 });
+                } else {
+                    const fallbackRate = 850.5;
+                    const resOutput = currentTradeMode === 'buy' ? netInput * fallbackRate : netInput / fallbackRate;
+                    document.getElementById('tradeOutputAmount').value = '~ ' + resOutput.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 });
+                }
+            } catch (e) {
+                const fallbackRate = 850.5;
+                const resOutput = currentTradeMode === 'buy' ? netInput * fallbackRate : netInput / fallbackRate;
+                document.getElementById('tradeOutputAmount').value = '~ ' + resOutput.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 });
+            }
+        }
+        window.calculateSwapOutput = calculateSwapOutput;
+
+        function saveTradeToPersistentProfile(tradeObj) {
+            if (!userWalletAddress) return;
+            const storageKey = `kote_trades_${userWalletAddress}`;
+            let existingTrades = JSON.parse(localStorage.getItem(storageKey) || '[]');
+            const idx = existingTrades.findIndex(t => t.address === tradeObj.address);
+            if (idx >= 0) {
+                existingTrades[idx].costBasisUSD += tradeObj.costBasisUSD;
+            } else {
+                existingTrades.push(tradeObj);
+            }
+            localStorage.setItem(storageKey, JSON.stringify(existingTrades));
+        }
+
+        async function fetchRealWalletHoldings(address) {
+            const holdingsContainer = document.getElementById('onChainWalletHoldings');
+            const activeTradesContainer = document.getElementById('mainActiveTradesList');
+            if(!holdingsContainer || !activeTradesContainer) return;
+            
+            holdingsContainer.innerHTML = `<div style="text-align: center; padding: 15px; color: var(--text-muted); font-size: 12px;">Querying TonAPI blockchain...</div>`;
+            activeTradesContainer.innerHTML = `<div style="text-align: center; padding: 15px; color: var(--text-muted); font-size: 12px;">Calculating persistent trades & live PnL...</div>`;
+
+            try {
+                const res = await fetch(`https://tonapi.io/v2/accounts/${address}/jettons`);
+                const data = await res.json();
+                let balances = data.balances || [];
+
+                userJettonHoldingsMap.clear();
+                const storageKey = `kote_trades_${address}`;
+                let persistentTrades = JSON.parse(localStorage.getItem(storageKey) || '[]');
+
+                let parsedBalances = [];
+                for (const b of balances) {
+                    const rawBal = parseFloat(b.balance) || 0;
+                    if (rawBal <= 0) continue;
+
+                    const decimals = b.jetton.decimals || 9;
+                    const amount = rawBal / Math.pow(10, decimals);
+                    const tokenAddr = b.jetton.address;
+                    const jettonWalletAddr = b.wallet_address?.address || '';
+
+                    userJettonHoldingsMap.set(tokenAddr, {
+                        balance: amount,
+                        rawBalance: BigInt(b.balance),
+                        decimals,
+                        jettonWalletAddress: jettonWalletAddr
+                    });
+
+                    const name = b.jetton.name || 'Unknown';
+                    const symbol = b.jetton.symbol || 'JETTON';
+                    const image = b.jetton.image || `https://cache.tonapi.io/imgproxy/${tokenAddr}/rs:fill:200:200:1/g:no`;
+
+                    let priceUSD = 0.01;
+                    let priceChange24h = 0;
+                    let poolAddress = '';
+                    try {
+                        const dexRes = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${tokenAddr}`);
+                        const dexData = await dexRes.json();
+                        if (dexData.pairs && dexData.pairs.length > 0) {
+                            const pair = dexData.pairs[0];
+                            priceUSD = parseFloat(pair.priceUsd) || 0.01;
+                            priceChange24h = pair.priceChange?.h24 || 0;
+                            poolAddress = pair.pairAddress || '';
+                        }
+                    } catch (err) {}
+
+                    const estUsdValue = amount * priceUSD;
+                    let recordedTrade = persistentTrades.find(t => t.address === tokenAddr);
+                    let costBasisUSD = recordedTrade ? recordedTrade.costBasisUSD : estUsdValue * (1 - (priceChange24h / 100));
+
+                    const pnlUSD = estUsdValue - costBasisUSD;
+                    const pnlPercent = costBasisUSD > 0 ? (pnlUSD / costBasisUSD) * 100 : priceChange24h;
+
+                    parsedBalances.push({
+                        name, symbol, address: tokenAddr, poolAddress, amount, image, estUsdValue, priceUSD, pnlUSD, pnlPercent
+                    });
+                }
+
+                parsedBalances.sort((a, b) => b.estUsdValue - a.estUsdValue);
+
+                holdingsContainer.innerHTML = '';
+                activeTradesContainer.innerHTML = '';
+
+                if (parsedBalances.length === 0) {
+                    holdingsContainer.innerHTML = `<div style="text-align: center; padding: 15px; color: var(--text-muted); font-size: 12px;">No jetton balances found.</div>`;
+                    activeTradesContainer.innerHTML = `<div style="text-align: center; padding: 15px; color: var(--text-muted); font-size: 12px;">No active trades found. Sold or transferred tokens disappear automatically.</div>`;
+                    return;
+                }
+
+                parsedBalances.forEach(item => {
+                    const pnlColor = item.pnlPercent >= 0 ? 'var(--accent-green)' : 'var(--accent-red)';
+                    const pnlSign = item.pnlPercent >= 0 ? '+' : '';
+
+                    holdingsContainer.innerHTML += `
+                        <div class="launch-card" onclick="selectTokenForTrade('${item.address}', '${item.name.replace(/'/g, "\\'")}', '${item.symbol}', '${item.image}', 50000, 20000, 10000, ${item.priceUSD}, true, 'dedust', '${item.poolAddress}')">
+                            <div style="display:flex; align-items:center; gap:12px;">
+                                <div class="token-avatar-wrap">
+                                    <span class="token-avatar-fallback">${item.symbol.charAt(0)}</span>
+                                    <img src="${item.image}" onerror="this.style.display='none';">
+                                </div>
+                                <div>
+                                    <h4 style="font-size:13px; font-weight:800;">$${item.symbol}</h4>
+                                    <span style="font-size:11px; color:var(--text-muted);">${item.name}</span>
+                                </div>
+                            </div>
+                            <div style="text-align:right;">
+                                <div style="font-size:10px; color:var(--text-muted); text-transform:uppercase; font-weight:700;">Holdings</div>
+                                <div style="font-size:13px; font-weight:900; color:var(--accent-green);">~$${item.estUsdValue.toFixed(2)}</div>
+                            </div>
+                        </div>
+                    `;
+
+                    activeTradesContainer.innerHTML += `
+                        <div style="background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 14px; padding: 14px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                <div style="display: flex; align-items: center; gap: 12px;">
+                                    <div class="token-avatar-wrap" style="width: 42px; height: 42px;">
+                                        <span class="token-avatar-fallback">${item.symbol.charAt(0)}</span>
+                                        <img src="${item.image}" onerror="this.style.display='none';">
+                                    </div>
+                                    <div>
+                                        <h4 style="font-size:14px; font-weight:900; color:#fff;">$${item.symbol}</h4>
+                                        <span style="font-size:11px; color:var(--text-muted); font-weight:700;">${item.name}</span>
+                                    </div>
+                                </div>
+                                <div style="text-align: right;">
+                                    <div style="font-size:14px; font-weight:900; color:#fff;">~$${item.estUsdValue.toFixed(2)}</div>
+                                    <div style="font-size:11px; font-weight:800; color:${pnlColor};">${pnlSign}${item.pnlPercent.toFixed(2)}% (${pnlSign}$${item.pnlUSD.toFixed(2)})</div>
+                                </div>
+                            </div>
+
+                            <div style="display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); background: rgba(0,0,0,0.3); padding: 8px 10px; border-radius: 8px; margin-bottom: 10px;">
+                                <span>Amount Bought / Held: <strong style="color: #fff;">${item.amount.toLocaleString(undefined, {maximumFractionDigits: 4})} ${item.symbol}</strong></span>
+                                <span>Live Price: <strong style="color: var(--accent-green)">$${item.priceUSD.toFixed(6)}</strong></span>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                                <button onclick="selectTokenForTrade('${item.address}', '${item.name.replace(/'/g, "\\'")}', '${item.symbol}', '${item.image}', 50000, 20000, 10000, ${item.priceUSD}, true, 'dedust', '${item.poolAddress}'); setTradeMode('buy'); switchPage('trade', document.querySelectorAll('.nav-tab')[0]);" style="background: rgba(16,185,129,0.15); border: 1px solid var(--accent-green); color: var(--accent-green); padding: 10px; border-radius: 8px; font-size: 12px; font-weight: 900; cursor: pointer;">🟢 Buy More</button>
+                                <button onclick="selectTokenForTrade('${item.address}', '${item.name.replace(/'/g, "\\'")}', '${item.symbol}', '${item.image}', 50000, 20000, 10000, ${item.priceUSD}, true, 'dedust', '${item.poolAddress}'); setTradeMode('sell'); switchPage('trade', document.querySelectorAll('.nav-tab')[0]);" style="background: rgba(239,68,68,0.15); border: 1px solid var(--accent-red); color: var(--accent-red); padding: 10px; border-radius: 8px; font-size: 12px; font-weight: 900; cursor: pointer;">🔴 Sell Position</button>
+                            </div>
+                        </div>
+                    `;
+                });
+
+            } catch (e) {
+                holdingsContainer.innerHTML = `<div style="text-align: center; padding: 15px; color: var(--accent-red); font-size: 12px;">Failed to fetch live on-chain holdings.</div>`;
+                activeTradesContainer.innerHTML = `<div style="text-align: center; padding: 15px; color: var(--accent-red); font-size: 12px;">Failed to load active trades.</div>`;
+            }
+        }
+
+        window.manualSyncActiveTrades = function() {
+            if (!userWalletAddress) { alert('Please connect your wallet first.'); return; }
+            fetchRealWalletHoldings(userWalletAddress);
+            alert('✅ Active trades synchronized with blockchain!');
+        };
+
+        async function verifyBlockchainTransactions(address) {
+            try {
+                const res = await fetch(`https://tonapi.io/v2/blockchain/accounts/${address}/transactions?limit=30`);
+                const data = await res.json();
+                const txs = data.transactions || [];
+
+                let confirmedReferralTotal = 0;
+                referredTradersSet.clear();
+
+                txs.forEach(tx => {
+                    if (tx.in_msg && tx.in_msg.destination && tx.in_msg.destination.address === address) {
+                        const comment = tx.in_msg.comment || '';
+                        if (comment.includes('KoteTrade Ref Fee') || comment.includes('KoteTrade')) {
+                            const valTon = parseFloat(tx.in_msg.value || 0) / 1e9;
+                            if (valTon > 0 && tx.in_msg.source && tx.in_msg.source.address) {
+                                referredTradersSet.add(tx.in_msg.source.address);
+                                confirmedReferralTotal += valTon;
+                            }
+                        }
+                    }
+                });
+
+                referralEarnings = confirmedReferralTotal;
+                document.getElementById('referralEarnings').innerText = referralEarnings.toFixed(4) + ' GRAM';
+                document.getElementById('referredCount').innerText = referredTradersSet.size + ' Users';
+            } catch (e) {}
+        }
+
+        window.manualSyncPortfolio = function() {
+            if (!userWalletAddress) { alert('Please connect your wallet first.'); return; }
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '🔄 Syncing Blockchain...';
+            
+            Promise.all([
+                fetchRealWalletHoldings(userWalletAddress),
+                verifyBlockchainTransactions(userWalletAddress)
+            ]).then(() => {
+                btn.innerHTML = originalText;
+                alert('✅ On-chain data synchronized successfully!');
+            }).catch(err => {
+                btn.innerHTML = originalText;
+                alert('Sync failed, please try again in a few seconds.');
+            });
+        };
+
+        window.copyReferralLink = function() {
+            const link = document.getElementById('refLinkInput').value;
+            if (!link.includes('http')) { alert('Connect wallet first.'); return; }
+            navigator.clipboard.writeText(link);
+            alert('Referral link copied!');
+        };
+
+        function buildDeDustBuyMessages(inputVal, resolvedPoolAddr) {
+            const isMicroTrade = inputVal < 0.5;
+            const totalFeeAmount = isMicroTrade ? 0 : inputVal * 0.10;
+            const netAmount = inputVal - totalFeeAmount;
+
+            let messages = [];
+
+            if (!isMicroTrade && totalFeeAmount > 0) {
+                const refCommentCell = beginCell()
+                    .storeUint(0, 32)
+                    .storeStringTail("KoteTrade Ref Fee")
+                    .endCell();
+                const refPayloadBoc = refCommentCell.toBoc().toString('base64');
+
+                if (referrerAddress) {
+                    const referrerFee = totalFeeAmount * 0.30; 
+                    const treasuryFee = totalFeeAmount * 0.70; 
+                    messages.push({ address: referrerAddress, amount: Math.floor(referrerFee * 1e9).toString(), payload: refPayloadBoc });
+                    messages.push({ address: TREASURY_ADDRESS, amount: Math.floor(treasuryFee * 1e9).toString() });
+                } else {
+                    messages.push({ address: TREASURY_ADDRESS, amount: Math.floor(totalFeeAmount * 1e9).toString() });
+                }
+            }
+
+            const poolAddr = Address.parse(resolvedPoolAddr);
+            const userAddr = Address.parse(userWalletAddress);
+
+            const swapPayload = VaultNative.createSwapPayload({
+                poolAddress: poolAddr,
+                amount: BigInt(Math.floor(netAmount * 1e9)),
+                swapParams: {
+                    recipientAddress: userAddr,
+                    ...(referrerAddress ? { referralAddress: Address.parse(referrerAddress) } : {})
+                }
+            });
+
+            const payloadBoc = swapPayload.toBoc().toString('base64');
+            const swapTonTotal = netAmount + DEDUST_FORWARD_GAS;
+
+            messages.push({
+                address: DEDUST_NATIVE_VAULT,
+                amount: Math.floor(swapTonTotal * 1e9).toString(),
+                payload: payloadBoc
+            });
+
+            return { messages, netAmount };
+        }
+
+        async function buildDeDustSellMessages(tokenAmount, tokenAddrStr, resolvedPoolAddr) {
+            const held = getHeldTokenInfo(tokenAddrStr);
+            if (!held || !held.jettonWalletAddress) {
+                throw new Error("Could not find your Jetton Wallet for this token. Make sure you hold this token.");
+            }
+
+            const decimals = held.decimals || 9;
+            const rawJettonAmount = BigInt(Math.floor(tokenAmount * Math.pow(10, decimals)));
+            if (rawJettonAmount <= 0n) {
+                throw new Error("Sell amount must be greater than 0.");
+            }
+
+            const jettonMasterAddr = Address.parse(tokenAddrStr);
+            const jettonVault = await dedustFactory.getJettonVault(jettonMasterAddr);
+            const poolAddr = Address.parse(resolvedPoolAddr);
+            const userAddr = Address.parse(userWalletAddress);
+
+            const forwardSwapPayload = VaultJetton.createSwapPayload({
+                poolAddress: poolAddr,
+                swapParams: {
+                    recipientAddress: userAddr,
+                    ...(referrerAddress ? { referralAddress: Address.parse(referrerAddress) } : {})
+                }
+            });
+
+            const jettonTransferBody = beginCell()
+                .storeUint(0x0f8a7ea5, 32)
+                .storeUint(0n, 64)
+                .storeCoins(rawJettonAmount)
+                .storeAddress(jettonVault.address)
+                .storeAddress(userAddr)
+                .storeBit(0)
+                .storeCoins(BigInt(Math.floor(0.20 * 1e9)))
+                .storeBit(1)
+                .storeRef(forwardSwapPayload)
+                .endCell();
+
+            const messages = [{
+                address: Address.parse(held.jettonWalletAddress).toString(),
+                amount: Math.floor(0.25 * 1e9).toString(),
+                payload: jettonTransferBody.toBoc().toString('base64')
+            }];
+
+            return { messages };
+        }
+
+        window.executeOnChainTrade = async function() {
+            if (!tonConnectUI.connected) { tonConnectUI.openModal(); return; }
+
+            const inputVal = parseFloat(document.getElementById('tradeInputAmount').value) || 0;
+            if (inputVal <= 0 || !currentActiveToken.address) {
+                alert('Please select a valid token and enter a trade amount.');
+                return;
+            }
+
+            const btn = document.getElementById('executeTradeBtn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '🔍 Resolving DeDust Pool...';
+            btn.disabled = true;
+
+            try {
+                const resolved = await resolveDeDustPoolAddress(currentActiveToken.poolAddress || currentActiveToken.address);
+
+                if (currentTradeMode === 'buy') {
+                    btn.innerHTML = '🛡️ Signing In-App Buy...';
+                    const { messages, netAmount } = buildDeDustBuyMessages(inputVal, resolved.poolAddress);
+
+                    const transaction = { validUntil: Math.floor(Date.now() / 1000) + 360, messages };
+                    await tonConnectUI.sendTransaction(transaction);
+
+                    saveTradeToPersistentProfile({
+                        address: resolved.tokenAddress,
+                        symbol: resolved.symbol,
+                        name: resolved.name,
+                        costBasisUSD: netAmount * resolved.priceUsd,
+                        timestamp: Date.now()
+                    });
+
+                    alert(`✅ In-App Buy Confirmed!\n\n• Pool: ${resolved.poolAddress.slice(0,6)}...\n• Net Buy: ${netAmount} GRAM for $${resolved.symbol}\n• Tokens routed directly to your wallet!`);
+                } else {
+                    btn.innerHTML = '🛡️ Preparing In-App Sell...';
+                    const { messages } = await buildDeDustSellMessages(inputVal, resolved.tokenAddress, resolved.poolAddress);
+
+                    btn.innerHTML = '🛡️ Signing In-App Sell...';
+                    const transaction = { validUntil: Math.floor(Date.now() / 1000) + 360, messages };
+                    await tonConnectUI.sendTransaction(transaction);
+
+                    alert(`✅ In-App Sell Confirmed!\n\n• Sold: ${inputVal.toLocaleString()} $${resolved.symbol}\n• Output GRAM routed directly to your wallet!`);
+                }
+
+                setTimeout(() => {
+                    if (userWalletAddress) {
+                        verifyBlockchainTransactions(userWalletAddress);
+                        fetchRealWalletHoldings(userWalletAddress);
+                    }
+                }, 12000);
+
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            } catch (error) {
+                alert(`Trade Cancelled or Failed: ${error.message || error}`);
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        };
+
+        window.executeSnipeOrder = async function() {
+            if (!tonConnectUI.connected) { tonConnectUI.openModal(); return; }
+            const ca = document.getElementById('sniperCA').value.trim();
+            const amtGram = parseFloat(document.getElementById('sniperAmount').value) || 0;
+            if (!ca) { alert('Please enter a contract address.'); return; }
+            if (amtGram <= 0) { alert('Please enter a valid snipe amount.'); return; }
+
+            const btn = event.target;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '🔍 Resolving DeDust Pool...';
+            btn.disabled = true;
+
+            try {
+                const resolved = await resolveDeDustPoolAddress(ca);
+                btn.innerHTML = '🛡️ Signing SDK Snipe...';
+
+                const { messages, netAmount } = buildDeDustBuyMessages(amtGram, resolved.poolAddress);
+
+                const transaction = { validUntil: Math.floor(Date.now() / 1000) + 360, messages };
+                await tonConnectUI.sendTransaction(transaction);
+
+                saveTradeToPersistentProfile({
+                    address: resolved.tokenAddress,
+                    symbol: resolved.symbol,
+                    name: resolved.name,
+                    costBasisUSD: netAmount * resolved.priceUsd,
+                    timestamp: Date.now()
+                });
+
+                alert(`🎯 In-App Snipe Confirmed!\n\n• Target Pool: ${resolved.poolAddress.slice(0,6)}...\n• Net Snipe: ${netAmount} GRAM for $${resolved.symbol}\n• Tokens delivered to your wallet & saved to Active Trades!`);
+
+                setTimeout(() => {
+                    if (userWalletAddress) {
+                        verifyBlockchainTransactions(userWalletAddress);
+                        fetchRealWalletHoldings(userWalletAddress);
+                    }
+                }, 12000);
+
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            } catch (error) {
+                alert(`Snipe Cancelled or Failed: ${error.message || error}`);
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        };
+
+        window.launchMoonPay = function() {
+            if (!userWalletAddress) {
+                alert('Please connect your TON wallet via TonConnect first.');
+                tonConnectUI.openModal();
+                return;
+            }
+            const amount = document.getElementById('fiatAmount').value || 100;
+            const url = `https://buy.moonpay.com/?currencyCode=ton&baseCurrencyAmount=${amount}&walletAddress=${userWalletAddress}`;
+            if (tg && typeof tg.openLink === 'function') { tg.openLink(url); } else { window.open(url, '_blank'); }
         };
 
         // --- IMMEDIATE INITIALIZATION ON BOOT ---
         loadTopblastTokens();
         loadGramMemesTokens();
+        calculateSwapOutput();
     </script>
 </body>
 </html>
