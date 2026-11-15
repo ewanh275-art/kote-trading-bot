@@ -529,6 +529,7 @@
                     <h1>Kote Trade Terminal</h1>
                 </div>
             </div>
+            <!-- Clean TonConnect UI Container -->
             <div id="ton-connect"></div>
         </header>
 
@@ -839,7 +840,7 @@
         </nav>
     </div>
 
-    <!-- MAIN SCRIPT MODULE WITH LAZY WALLET CONNECT INITIALIZER -->
+    <!-- MAIN SCRIPT MODULE -->
     <script type="module">
         import { Address, beginCell } from '@ton/core';
         import { TonClient4 } from '@ton/ton';
@@ -850,33 +851,28 @@
 
         const TELEGRAM_BOT_USERNAME = "KoteTrade_bot";
 
-        const dynamicManifestUrl = new URL('tonconnect-manifest.json', window.location.href).href;
+        // --- CLEAN & ROBUST TONCONNECT INITIALIZATION ---
+        const manifestUrl = new URL('tonconnect-manifest.json', window.location.href).href;
         let tonConnectUI = null;
 
         try {
             if (window.TON_CONNECT_UI && window.TON_CONNECT_UI.TonConnectUI) {
                 tonConnectUI = new window.TON_CONNECT_UI.TonConnectUI({
-                    manifestUrl: dynamicManifestUrl,
-                    buttonRootId: 'ton-connect',
-                    actionsConfiguration: {
-                        twaReturnUrl: 'https://t.me/KoteTrade_bot/app'
-                    }
+                    manifestUrl: manifestUrl,
+                    buttonRootId: 'ton-connect'
                 });
             }
-        } catch (e) {
-            console.error("TonConnect init error:", e);
+        } catch (err) {
+            console.error("TonConnect initialization error:", err);
         }
 
-        // Robust Lazy Initializer for Click Handler
+        // Global Modal Handler for Profile / Custom Buttons
         window.openWalletModal = async function() {
             try {
                 if (!tonConnectUI && window.TON_CONNECT_UI && window.TON_CONNECT_UI.TonConnectUI) {
                     tonConnectUI = new window.TON_CONNECT_UI.TonConnectUI({
-                        manifestUrl: dynamicManifestUrl,
-                        buttonRootId: 'ton-connect',
-                        actionsConfiguration: {
-                            twaReturnUrl: 'https://t.me/KoteTrade_bot/app'
-                        }
+                        manifestUrl: manifestUrl,
+                        buttonRootId: 'ton-connect'
                     });
                 }
 
@@ -887,10 +883,10 @@
                         await tonConnectUI.openModal();
                     }
                 } else {
-                    alert("TonConnect library failed to load. Check your internet connection or manifest URL.");
+                    alert("TonConnect library is still loading. Please try again in a moment.");
                 }
-            } catch (err) {
-                alert("Wallet connection error: " + (err.message || err));
+            } catch (error) {
+                alert("Wallet connection error: " + (error.message || error));
             }
         };
 
@@ -1201,6 +1197,7 @@
             });
         }
 
+        // --- TONCONNECT STATUS CHANGE LISTENER ---
         if (tonConnectUI) {
             tonConnectUI.onStatusChange(wallet => {
                 const profileBtn = document.getElementById('profileConnectBtn');
