@@ -499,7 +499,7 @@
         </div>
     </div>
 
-    <!-- ROBUST GLOBAL HANDLERS -->
+    <!-- GLOBAL INDEPENDENT UI HANDLERS (GUARANTEED TO WORK INSTANTLY) -->
     <script>
         window.enterTerminal = function() {
             const intro = document.getElementById('intro-screen');
@@ -840,7 +840,7 @@
         </nav>
     </div>
 
-    <!-- MAIN SCRIPT MODULE -->
+    <!-- MAIN SCRIPT MODULE FOR BLOCKCHAIN & WALLET LOGIC -->
     <script type="module">
         import { Address, beginCell } from '@ton/core';
         import { TonClient4 } from '@ton/ton';
@@ -851,7 +851,6 @@
 
         const TELEGRAM_BOT_USERNAME = "KoteTrade_bot";
 
-        // --- CLEAN & ROBUST TONCONNECT INITIALIZATION ---
         const manifestUrl = new URL('tonconnect-manifest.json', window.location.href).href;
         let tonConnectUI = null;
 
@@ -866,7 +865,6 @@
             console.error("TonConnect initialization error:", err);
         }
 
-        // Global Modal Handler for Profile / Custom Buttons
         window.openWalletModal = async function() {
             try {
                 if (!tonConnectUI && window.TON_CONNECT_UI && window.TON_CONNECT_UI.TonConnectUI) {
@@ -1197,7 +1195,6 @@
             });
         }
 
-        // --- TONCONNECT STATUS CHANGE LISTENER ---
         if (tonConnectUI) {
             tonConnectUI.onStatusChange(wallet => {
                 const profileBtn = document.getElementById('profileConnectBtn');
