@@ -3,32 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kote Trade Terminal - GRAM & Topblast Memes</title>
+    <title>Kote Trade Terminal</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
             --bg-base: #050507;
-            --bg-sidebar: #09090d;
             --bg-card: rgba(14, 14, 20, 0.85);
             --bg-input: #15151e;
             --border-color: #27151a;
             --accent-red: #ef4444;
             --accent-green: #10b981;
-            --accent-moonpay: #7d00ff;
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
         }
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         body {
-            background: linear-gradient(rgba(5, 5, 7, 0.75), rgba(5, 5, 7, 0.90)), url('./bg.jpg.JPG') no-repeat center center fixed;
-            background-size: cover; color: var(--text-main);
+            background: #050507; color: var(--text-main);
             font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
             display: flex; height: 100vh; overflow: hidden;
         }
         #intro-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(rgba(5, 5, 7, 0.78), rgba(5, 5, 7, 0.96)), url('./bg.jpg.JPG') no-repeat center center;
-            background-size: cover; z-index: 100; display: flex; flex-direction: column;
+            background: #050507; z-index: 100; display: flex; flex-direction: column;
             justify-content: space-between; padding: 30px 20px; text-align: center;
             transition: opacity 0.4s ease, visibility 0.4s ease;
         }
@@ -42,253 +38,68 @@
         .main-container { flex: 1; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
         .topbar {
             display: flex; justify-content: space-between; align-items: center; padding: 12px 20px;
-            background: rgba(9, 9, 13, 0.88); border-bottom: 1px solid var(--border-color); backdrop-filter: blur(16px); z-index: 10;
+            background: rgba(9, 9, 13, 0.88); border-bottom: 1px solid var(--border-color); z-index: 10;
         }
         .brand-logo-box {
             width: 34px; height: 34px; background: linear-gradient(135deg, var(--accent-red), #7f1d1d);
             border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 9px; display: flex;
             align-items: center; justify-content: center; font-weight: 900; color: #fff;
-            box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
         }
         .brand-text h1 { font-size: 15px; font-weight: 900; letter-spacing: 0.4px; }
         .content-area { flex: 1; overflow-y: auto; padding: 16px; padding-bottom: 90px; -webkit-overflow-scrolling: touch; }
-        .page { display: none; flex-direction: column; gap: 16px; animation: fadeIn 0.2s ease-in-out; }
+        .page { display: none; flex-direction: column; gap: 16px; }
         .page.active { display: flex; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
         .card {
-            background: var(--bg-card); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
-            border: 1px solid var(--border-color); border-radius: 16px; padding: 16px;
-            box-shadow: 0 10px 35px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+            background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; padding: 16px;
         }
         .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
         .card-title { font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.9px; }
-        .chart-box { width: 100%; height: 380px; background: #030304; border: 1px solid var(--border-color); border-radius: 14px; overflow: hidden; }
-        .chart-box iframe { width: 100%; height: 100%; border: none; }
-        .tokenomics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 16px; }
-        .stat-card { background: var(--bg-input); border: 1px solid var(--border-color); padding: 10px 6px; border-radius: 12px; text-align: center; }
-        .stat-card span { font-size: 9px; color: var(--text-muted); text-transform: uppercase; font-weight: 800; display: block; margin-bottom: 3px; }
-        .stat-card strong { font-size: 13px; font-weight: 900; color: var(--accent-red); }
         .trade-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; background: var(--bg-input); padding: 4px; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 12px; }
         .trade-tab-btn { background: transparent; border: none; color: var(--text-muted); padding: 10px; border-radius: 8px; font-size: 12px; font-weight: 900; cursor: pointer; transition: all 0.2s; }
-        .trade-tab-btn.active.buy-mode, .trade-tab-btn.active { background: var(--accent-green); color: #042f2e; }
-        .trade-tab-btn.active.sell-mode { background: var(--accent-red); color: #ffffff; }
-        .input-group { background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px 14px; margin-bottom: 10px; }
-        .input-top { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); margin-bottom: 6px; font-weight: 700; }
-        .input-main { display: flex; justify-content: space-between; align-items: center; }
-        .pro-input { background: transparent; border: none; color: var(--text-main); font-size: 18px; font-weight: 800; width: 60%; outline: none; }
-        .token-badge { display: flex; align-items: center; gap: 6px; background: #08080c; border: 1px solid var(--border-color); padding: 6px 12px; border-radius: 10px; font-size: 12px; font-weight: 800; color: #fff; }
-        .quick-amounts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 12px; }
-        .quick-btn { background: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-muted); padding: 8px; border-radius: 8px; font-size: 11px; font-weight: 800; cursor: pointer; }
-        .btn-action { width: 100%; padding: 14px; border-radius: 12px; border: none; font-size: 14px; font-weight: 900; cursor: pointer; text-align: center; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
-        .btn-red { background: linear-gradient(135deg, var(--accent-red), #991b1b); color: #fff; box-shadow: 0 4px 20px rgba(239, 68, 68, 0.38); }
-        .btn-green-action { background: linear-gradient(135deg, var(--accent-green), #059669); color: #fff; }
-        .audit-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.3); color: var(--accent-green); padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 800; margin-bottom: 10px; }
-        .token-avatar-wrap { width: 48px; height: 48px; border-radius: 12px; background: #1a1014; border: 1px solid rgba(16,185,129,0.35); position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        .token-avatar-wrap img { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; z-index: 2; }
-        .token-avatar-fallback { font-size: 16px; font-weight: 900; color: var(--accent-green); z-index: 1; }
+        .trade-tab-btn.active { background: var(--accent-green); color: #042f2e; }
         .launch-card { background: #0b0b0f; border: 1px solid var(--border-color); padding: 12px 16px; border-radius: 16px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
         .launch-card:hover { border-color: var(--accent-green); background: #111118; }
-        .pagination-bar { display: flex; justify-content: space-between; align-items: center; margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--border-color); }
-        .page-btn { background: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-main); padding: 6px 14px; border-radius: 8px; font-size: 11px; font-weight: 800; cursor: pointer; }
-        .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .btn-action { width: 100%; padding: 14px; border-radius: 12px; border: none; font-size: 14px; font-weight: 900; cursor: pointer; text-align: center; }
+        .btn-red { background: linear-gradient(135deg, var(--accent-red), #991b1b); color: #fff; }
         .bottom-nav {
             position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(9, 9, 13, 0.95);
             border-top: 1px solid var(--border-color); display: flex; justify-content: space-around;
-            padding: 10px 0 16px 0; z-index: 30; backdrop-filter: blur(20px); overflow-x: auto;
+            padding: 10px 0 16px 0; z-index: 30;
         }
-        .nav-tab { background: none; border: none; color: var(--text-muted); display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 9px; font-weight: 800; cursor: pointer; flex: 1; min-width: 50px; }
+        .nav-tab { background: none; border: none; color: var(--text-muted); display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 9px; font-weight: 800; cursor: pointer; flex: 1; }
         .nav-tab.active { color: var(--accent-red); }
     </style>
 </head>
 <body>
 
     <div id="intro-screen">
-        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v13.0</div>
+        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL</div>
         <div class="intro-content">
             <div class="intro-logo-moon">🐱</div>
-            <div style="font-size: 24px; font-weight: 900; color: #fff; letter-spacing: 0.5px;">GRAM & TOPBLAST MEMES</div>
+            <div style="font-size: 24px; font-weight: 900; color: #fff;">GRAM MEMES TERMINAL</div>
         </div>
         <div style="padding-bottom: 20px;">
-            <button class="btn-action btn-red" id="enterTerminalBtn" onclick="enterTerminal()" style="max-width: 300px; margin: 0 auto;">⚡ Enter Terminal</button>
+            <button class="btn-action btn-red" onclick="enterTerminal()" style="max-width: 300px; margin: 0 auto;">⚡ Enter Terminal</button>
         </div>
     </div>
 
     <script>
-        window.enterTerminal = function() {
-            const intro = document.getElementById('intro-screen');
-            if(intro) intro.classList.add('hidden');
-        };
+        const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+        if (tg) { tg.ready(); tg.expand(); }
 
-        window.switchPage = function(pageId, navBtn) {
+        function enterTerminal() {
+            document.getElementById('intro-screen').classList.add('hidden');
+        }
+
+        function switchPage(pageId, navBtn) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
-            const targetId = pageId.startsWith('page-') ? pageId : 'page-' + pageId;
-            const targetEl = document.getElementById(targetId);
-            if(targetEl) {
-                targetEl.classList.add('active');
-                document.querySelector('.content-area').scrollTop = 0;
-            }
+            document.getElementById('page-' + pageId).classList.add('active');
             if(navBtn) navBtn.classList.add('active');
-        };
-
-        window.currentTradeMode = 'buy';
-        window.currentActiveToken = { name: 'Select Token', symbol: 'TOKEN', address: '', poolAddress: '', logo: '', mcap: 0, liq: 0, vol: 0, priceUSD: 0, change24h: 0 };
-        
-        window.topblastTokens = [
-            { address: 'EQB-MPwuxusWknM7H9N_6U1y59_h_M0nK7wD70t4Z4H6z30U', name: 'Gram Memes Token', symbol: 'GRAM', logo: 'https://asset.ston.fi/img/EQB-MPwuxusWknM7H9N_6U1y59_h_M0nK7wD70t4Z4H6z30U.png', mcap: 1850000, liq: 620000, vol: 450000, priceUSD: 0.85, change24h: 12.4, poolAddress: 'EQB-MPwuxusWknM7H9N_6U1y59_h_M0nK7wD70t4Z4H6z30U' }
-        ];
-        window.gramDedustTokens = [];
-        window.gramStonfiTokens = [];
-
-        let currentDedustPage = 1;
-        let currentStonfiPage = 1;
-        let currentTopblastPage = 1;
-        const itemsPerPage = 10;
-
-        function isTonOrGram(s) {
-            if (!s) return false;
-            const str = String(s).toLowerCase();
-            return str === 'native' || str.includes('ton') || str.includes('gram') || str.includes('eqaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaam9c');
+            document.querySelector('.content-area').scrollTop = 0;
         }
 
-        // Fetch live from DeDust & STON.fi Public APIs directly in browser (CORS enabled)
-        async function fetchAllPoolsDirectly() {
-            try {
-                // Fetch DeDust Pools & Assets
-                const [dedustPoolsRes, dedustAssetsRes, stonfiPoolsRes] = await Promise.all([
-                    fetch('https://api.dedust.io/v2/pools').catch(() => null),
-                    fetch('https://api.dedust.io/v2/assets').catch(() => null),
-                    fetch('https://api.ston.fi/v1/pools').catch(() => null)
-                ]);
-
-                const dedustPools = dedustPoolsRes ? await dedustPoolsRes.json() : [];
-                const dedustAssets = dedustAssetsRes ? await dedustAssetsRes.json() : [];
-                const stonfiData = stonfiPoolsRes ? await stonfiPoolsRes.json() : {};
-                const stonfiPools = stonfiData.pool_list || [];
-
-                const assetsMap = new Map();
-                dedustAssets.forEach(a => { if(a && a.address) assetsMap.set(a.address, a); });
-
-                const dedustList = [];
-                (dedustPools || []).forEach(pool => {
-                    const assets = pool.assets || [];
-                    if (assets.length < 2) return;
-                    const [a0, a1] = assets;
-                    const meta0 = assetsMap.get(a0) || {};
-                    const meta1 = assetsMap.get(a1) || {};
-
-                    const is0Ton = isTonOrGram(a0) || isTonOrGram(meta0.symbol);
-                    const is1Ton = isTonOrGram(a1) || isTonOrGram(meta1.symbol);
-
-                    let quote = is0Ton ? a0 : (is1Ton ? a1 : null);
-                    let base = quote === a0 ? a1 : (quote === a1 ? a0 : null);
-                    if (!base) return;
-
-                    let baseMeta = assetsMap.get(base) || {};
-                    let symbol = baseMeta.symbol || 'MEME';
-                    let name = baseMeta.name || symbol;
-                    let liqUSD = parseFloat(pool.stats?.reserveUSD || '10000');
-                    let vol24h = parseFloat(pool.stats?.volume24hUSD || '5000');
-                    let priceUSD = parseFloat(pool.stats?.price || '0.01');
-                    let change24h = parseFloat(pool.stats?.priceChange24h || '0');
-                    let mcap = liqUSD > 0 ? liqUSD * 3.2 : 50000;
-
-                    let logo = '';
-                    if (baseMeta.image) {
-                        logo = baseMeta.image.startsWith('http') ? baseMeta.image : `https://assets.dedust.io/images/${baseMeta.image}`;
-                    } else {
-                        logo = `https://assets.dedust.io/images/${base}.png`;
-                    }
-
-                    dedustList.push({
-                        address: base,
-                        name: name,
-                        symbol: String(symbol).toUpperCase(),
-                        logo: logo,
-                        mcap: mcap,
-                        liq: liqUSD,
-                        vol: vol24h,
-                        priceUSD: priceUSD,
-                        change24h: change24h,
-                        dexSource: 'dedust',
-                        poolAddress: pool.address || base
-                    });
-                });
-
-                const stonfiList = [];
-                (stonfiPools || []).forEach(pool => {
-                    const t0 = pool.token0_address;
-                    const t1 = pool.token1_address;
-                    const s0 = pool.token0_symbol || '';
-                    const s1 = pool.token1_symbol || '';
-
-                    const is0Ton = isTonOrGram(t0) || isTonOrGram(s0);
-                    const is1Ton = isTonOrGram(t1) || isTonOrGram(s1);
-
-                    let quote = is0Ton ? t0 : (is1Ton ? t1 : null);
-                    let baseAddress = quote === t0 ? t1 : t0;
-                    let baseSymbol = quote === t0 ? s1 : s0;
-                    if (!baseAddress) return;
-
-                    let liqUSD = parseFloat(pool.lp_total_supply_usd || '10000');
-                    let vol24h = parseFloat(pool.volume_24h || '5000');
-                    let priceUSD = parseFloat(pool.lp_price || '0.01');
-                    let mcap = liqUSD > 0 ? liqUSD * 3.2 : 50000;
-
-                    stonfiList.push({
-                        address: baseAddress,
-                        name: baseSymbol || 'MEME',
-                        symbol: String(baseSymbol || 'MEME').toUpperCase(),
-                        logo: `https://asset.ston.fi/img/${baseAddress}.png`,
-                        mcap: mcap,
-                        liq: liqUSD,
-                        vol: vol24h,
-                        priceUSD: priceUSD,
-                        change24h: 0,
-                        dexSource: 'stonfi',
-                        poolAddress: pool.address || baseAddress
-                    });
-                });
-
-                if (dedustList.length > 0) window.gramDedustTokens = dedustList;
-                if (stonfiList.length > 0) window.gramStonfiTokens = stonfiList;
-
-                if (window.gramDedustTokens.length === 0) loadMasterBackup();
-            } catch (err) {
-                console.warn('API fetch warning, loading comprehensive offline registry:', err);
-                loadMasterBackup();
-            }
-            renderAllInstantly();
-        }
-
-        function loadMasterBackup() {
-            window.gramDedustTokens = [
-                { address: 'EQBlqsm144Dq6SjbPI4jjZvA1hqTIP3CvHovbIfW_t-SCALE', name: 'Scale TON', symbol: 'SCALE', logo: 'https://assets.dedust.io/images/EQBlqsm144Dq6SjbPI4jjZvA1hqTIP3CvHovbIfW_t-SCALE.png', mcap: 840000, liq: 310000, vol: 195000, priceUSD: 0.14, change24h: 8.5, dexSource: 'dedust', poolAddress: 'EQBlqsm144Dq6SjbPI4jjZvA1hqTIP3CvHovbIfW_t-SCALE' },
-                { address: 'EQA4g22tW9bBvH5N_6U1y59_h_M0nK7wD70t4Z4H6z30F', name: 'Fish Crypto', symbol: 'FISH', logo: 'https://asset.ston.fi/img/EQA4g22tW9bBvH5N_6U1y59_h_M0nK7wD70t4Z4H6z30F.png', mcap: 1450000, liq: 520000, vol: 320000, priceUSD: 0.042, change24h: -2.3, dexSource: 'dedust', poolAddress: 'EQA4g22tW9bBvH5N_6U1y59_h_M0nK7wD70t4Z4H6z30F' },
-                { address: 'EQCGX_REDO_MEME_TOKEN_ADDRESS', name: 'Resistance Dog', symbol: 'REDO', logo: 'https://asset.ston.fi/img/EQCGX_REDO_MEME_TOKEN_ADDRESS.png', mcap: 3400000, liq: 1100000, vol: 720000, priceUSD: 0.34, change24h: 18.2, dexSource: 'dedust', poolAddress: 'EQCGX_REDO_MEME_TOKEN_ADDRESS' }
-            ];
-            window.gramStonfiTokens = [
-                { address: 'EQCJTjXjWKaUjiGHnsd7N5ztGIAUC9od04i68G_3AEmFbknI', name: 'STON.fi Governance', symbol: 'STON', logo: 'https://asset.ston.fi/img/EQCJTjXjWKaUjiGHnsd7N5ztGIAUC9od04i68G_3AEmFbknI.png', mcap: 9200000, liq: 2800000, vol: 950000, priceUSD: 2.10, change24h: -1.5, dexSource: 'stonfi', poolAddress: 'EQCJTjXjWKaUjiGHnsd7N5ztGIAUC9od04i68G_3AEmFbknI' },
-                { address: 'TON', name: 'Toncoin', symbol: 'TON', logo: 'https://asset.ston.fi/img/TON.png', mcap: 14200000000, liq: 45000000, vol: 12000000, priceUSD: 5.65, change24h: 4.2, dexSource: 'stonfi', poolAddress: 'TON' }
-            ];
-            for (let i = 1; i <= 100; i++) {
-                window.gramDedustTokens.push({
-                    address: `EQ_REAL_TOKEN_HASH_${i}`,
-                    name: `Gram Pool Token #${i}`,
-                    symbol: `MEME${i}`,
-                    logo: `https://assets.dedust.io/images/EQBlqsm144Dq6SjbPI4jjZvA1hqTIP3CvHovbIfW_t-SCALE.png`,
-                    mcap: 150000 + (i * 20000),
-                    liq: 50000 + (i * 7000),
-                    vol: 20000 + (i * 4000),
-                    priceUSD: 0.005 + (i * 0.0003),
-                    change24h: (i % 2 === 0 ? 3 : -2) * 2.1,
-                    dexSource: 'dedust',
-                    poolAddress: `EQ_POOL_${i}`
-                });
-            }
-        }
-
-        window.switchGramSubTab = function(tabName) {
+        function switchGramSubTab(tabName) {
             const dedustBtn = document.getElementById('gramSubDedust');
             const stonfiBtn = document.getElementById('gramSubStonfi');
             const dedustContainer = document.getElementById('gramDedustContainer');
@@ -299,78 +110,13 @@
                 stonfiBtn.classList.remove('active');
                 dedustContainer.style.display = 'block';
                 stonfiContainer.style.display = 'none';
-                renderGramDedustList();
             } else {
                 stonfiBtn.classList.add('active');
                 dedustBtn.classList.remove('active');
                 dedustContainer.style.display = 'none';
                 stonfiContainer.style.display = 'block';
-                renderGramStonfiList();
             }
-        };
-
-        window.handleTokenCardClick = function(address, symbol, poolAddress) {
-            const allTokens = (window.topblastTokens || []).concat(window.gramDedustTokens || []).concat(window.gramStonfiTokens || []);
-            const found = allTokens.find(t => t.address.toLowerCase() === address.toLowerCase());
-            if (found) {
-                selectTokenForTrade(found.address, found.name, found.symbol, found.logo, found.mcap, found.liq, found.vol, found.priceUSD, found.change24h || 0, true, 'dedust', found.poolAddress);
-            } else {
-                selectTokenForTrade(address, symbol, symbol, '', 50000, 20000, 10000, 0.01, 0, true, 'dedust', poolAddress);
-            }
-        };
-
-        window.setTradeMode = function(mode) {
-            window.currentTradeMode = mode;
-            const tabBuy = document.getElementById('tabBuy');
-            const tabSell = document.getElementById('tabSell');
-            const payLabel = document.getElementById('payLabel');
-            const payTokenSymbol = document.getElementById('payTokenSymbol');
-            const payBadgeToken = document.getElementById('payBadgeToken');
-            const receiveLabel = document.getElementById('receiveLabel');
-            const receiveTokenSymbol = document.getElementById('receiveTokenSymbol');
-            const executeBtn = document.getElementById('executeTradeBtn');
-            const quickContainer = document.getElementById('quickAmountsContainer');
-            const sellBalBar = document.getElementById('sellBalanceBar');
-
-            if (mode === 'buy') {
-                tabBuy.classList.add('active');
-                tabSell.classList.remove('active');
-                payLabel.innerText = 'You Pay';
-                payTokenSymbol.innerText = 'GRAM';
-                payBadgeToken.innerText = '💎 GRAM';
-                receiveLabel.innerText = `You Receive (${window.currentActiveToken.symbol})`;
-                receiveTokenSymbol.innerText = window.currentActiveToken.symbol;
-                executeBtn.className = 'btn-action btn-red';
-                executeBtn.innerHTML = `⚡ Execute Buy ($${window.currentActiveToken.symbol})`;
-                sellBalBar.style.display = 'none';
-                document.getElementById('tradeInputAmount').value = 0.1;
-                quickContainer.innerHTML = `<button class="quick-btn" onclick="setTradeAmount(0.1)">0.1</button><button class="quick-btn" onclick="setTradeAmount(1)">1</button><button class="quick-btn" onclick="setTradeAmount(5)">5</button><button class="quick-btn" onclick="setTradeAmount(10)">10</button>`;
-            } else {
-                tabSell.classList.add('active');
-                tabBuy.classList.remove('active');
-                payLabel.innerText = 'You Sell';
-                payTokenSymbol.innerText = window.currentActiveToken.symbol;
-                payBadgeToken.innerText = window.currentActiveToken.symbol;
-                receiveLabel.innerText = 'You Receive (GRAM)';
-                receiveTokenSymbol.innerText = 'GRAM';
-                executeBtn.className = 'btn-action btn-green-action';
-                executeBtn.innerHTML = `🔴 Execute Sell ($${window.currentActiveToken.symbol})`;
-                sellBalBar.style.display = 'flex';
-                document.getElementById('tradeInputAmount').value = 0;
-                quickContainer.innerHTML = `<button class="quick-btn" onclick="setSellPercent(25)">25%</button><button class="quick-btn" onclick="setSellPercent(50)">50%</button><button class="quick-btn" onclick="setSellPercent(75)">75%</button><button class="quick-btn" onclick="setSellPercent(100)">100%</button>`;
-            }
-            calculateSwapOutput();
-        };
-
-        window.setTradeAmount = function(val) { document.getElementById('tradeInputAmount').value = val; calculateSwapOutput(); };
-        window.setSellPercent = function(pct) { document.getElementById('tradeInputAmount').value = pct; calculateSwapOutput(); };
-        window.copyReferralLink = function() { navigator.clipboard.writeText("https://t.me/KoteTrade_bot/app"); alert('Referral link copied!'); };
-
-        document.addEventListener('DOMContentLoaded', () => {
-            const enterBtn = document.getElementById('enterTerminalBtn');
-            if(enterBtn) enterBtn.addEventListener('click', window.enterTerminal);
-            fetchAllPoolsDirectly();
-        });
+        }
     </script>
 
     <div class="main-container">
@@ -385,236 +131,92 @@
             <!-- 1. TRADE PAGE -->
             <section id="page-trade" class="page active">
                 <div class="card">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                        <div style="display: flex; align-items: center; gap: 12px;">
-                            <div class="token-avatar-wrap" style="width: 48px; height: 48px;">
-                                <span class="token-avatar-fallback" id="heroTokenFallback">T</span>
-                                <img id="heroTokenLogo" src="" onerror="this.style.display='none';">
-                            </div>
-                            <div>
-                                <div style="display:flex; align-items:center; gap:6px;">
-                                    <h2 style="font-size: 17px; font-weight: 900;" id="heroTokenName">Select a Token</h2>
-                                    <span style="font-size: 9px; background: rgba(16,185,129,0.15); color: var(--accent-green); border: 1px solid rgba(16,185,129,0.35); padding: 2px 6px; border-radius: 6px; font-weight: 800; text-transform: uppercase;">Live</span>
-                                </div>
-                                <span style="font-size: 10px; color: var(--text-muted); font-family: monospace;" id="heroTokenCA">Choose from DeDust or STON.fi Pools</span>
-                            </div>
-                        </div>
-                        <div style="text-align: right;">
-                            <div style="font-size: 16px; font-weight: 900; color: var(--accent-green);" id="heroTokenPrice">$0.000000</div>
-                            <div style="font-size: 11px; color: var(--accent-green); font-weight: 800;" id="heroTokenChange">--</div>
-                        </div>
+                    <div class="card-header">
+                        <span class="card-title">Trading Dashboard</span>
                     </div>
-
-                    <div class="audit-badge">🛡️ DeDust & STON.fi Direct API Active</div>
-
-                    <div class="tokenomics-grid">
-                        <div class="stat-card"><span>Market Cap</span><strong id="tokMcap">$0.0K</strong></div>
-                        <div class="stat-card"><span>24h Volume</span><strong id="tokVol">$0.0K</strong></div>
-                        <div class="stat-card"><span>Liquidity</span><strong id="tokLiq">$0.0K</strong></div>
-                        <div class="stat-card"><span>Status</span><strong id="tokStatusDisplay" style="color:var(--accent-green)">Active</strong></div>
-                    </div>
-
-                    <div class="trade-tabs">
-                        <button class="trade-tab-btn active buy-mode" id="tabBuy" onclick="setTradeMode('buy')">🟢 Buy Token</button>
-                        <button class="trade-tab-btn sell-mode" id="tabSell" onclick="setTradeMode('sell')">🔴 Sell Token</button>
-                    </div>
-
-                    <div id="sellBalanceBar" style="display: none; justify-content: space-between; font-size: 11px; color: var(--text-muted); margin-bottom: 8px; padding: 0 4px;">
-                        <span>Available Balance:</span><strong id="availableTokenBalance" style="color: var(--accent-green);">0.00</strong>
-                    </div>
-
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
-                        <div class="input-group" style="margin-bottom: 0;">
-                            <div class="input-top"><span id="payLabel">You Pay</span><span id="payTokenSymbol">GRAM</span></div>
-                            <div class="input-main">
-                                <input type="number" id="tradeInputAmount" class="pro-input" value="0.1" min="0.0001" step="any" oninput="calculateSwapOutput()">
-                                <div class="token-badge" id="payBadgeToken">💎 GRAM</div>
-                            </div>
-                        </div>
-                        <div class="input-group" style="margin-bottom: 0;">
-                            <div class="input-top"><span id="receiveLabel">You Receive</span><span id="receiveTokenSymbol">TOKEN</span></div>
-                            <div class="input-main">
-                                <input type="text" id="tradeOutputAmount" class="pro-input" style="width: 100%;" value="Loading..." readonly>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="quick-amounts" id="quickAmountsContainer">
-                        <button class="quick-btn" onclick="setTradeAmount(0.1)">0.1</button>
-                        <button class="quick-btn" onclick="setTradeAmount(1)">1</button>
-                        <button class="quick-btn" onclick="setTradeAmount(5)">5</button>
-                        <button class="quick-btn" onclick="setTradeAmount(10)">10</button>
-                    </div>
-
-                    <button class="btn-action" id="executeTradeBtn" style="margin-bottom: 14px;" onclick="alert('Executing On-Chain Swap via DEX Router')">⚡ Execute In-App Swap</button>
-
-                    <div class="card-header" style="margin-top: 8px; margin-bottom: 6px;">
-                        <span class="card-title" id="chartTitle">📊 Live Chart</span>
-                        <a id="externalChartBtn" href="https://dexscreener.com/ton" target="_blank" style="font-size: 11px; color: var(--accent-red); text-decoration: none; font-weight: 800;">DexScreener ↗</a>
-                    </div>
-                    <div class="chart-box">
-                        <iframe id="dexChartFrame" src="https://dexscreener.com/ton?embed=1&theme=dark&trades=0&info=0"></iframe>
-                    </div>
+                    <p style="color: var(--text-muted); font-size: 13px;">Select a token from Gram Memes to start trading.</p>
                 </div>
             </section>
 
-            <!-- 2. PRO SNIPER PAGE -->
+            <!-- 2. SNIPER PAGE -->
             <section id="page-sniper" class="page">
-                <div class="card" style="max-width: 520px; margin: 0 auto; width: 100%;">
+                <div class="card">
                     <div class="card-header">
-                        <span class="card-title">🎯 Kote Sniper & SDK Pool Resolver</span>
-                        <span style="font-size: 11px; color: var(--accent-red); font-weight: 800;">● 0.20 Gas</span>
+                        <span class="card-title">Sniper Module</span>
                     </div>
-                    <div class="input-group">
-                        <div class="input-top"><span>Token Contract or Pool Address</span></div>
-                        <input type="text" id="sniperCA" class="pro-input" style="width: 100%; font-size: 13px;" placeholder="Paste Token CA or Pool EQ...">
-                    </div>
-                    <div class="input-group">
-                        <div class="input-top"><span>Snipe Amount (GRAM)</span></div>
-                        <div class="input-main">
-                            <input type="number" id="sniperAmount" class="pro-input" value="0.1" step="any">
-                            <div class="token-badge">GRAM</div>
-                        </div>
-                    </div>
-                    <button class="btn-action btn-red" style="margin-top: 8px;" onclick="alert('Executing Snipe Order')">🚀 Execute In-App Router Snipe</button>
+                    <p style="color: var(--text-muted); font-size: 13px;">Ready for contract sniping logic.</p>
                 </div>
             </section>
 
-            <!-- 3. ACTIVE TRADES -->
-            <section id="page-active-trades" class="page">
-                <div class="card" style="max-width: 650px; margin: 0 auto; width: 100%;">
-                    <div class="card-header">
-                        <div>
-                            <span class="card-title" style="color: var(--accent-green);">⚡ Active Trades & Open Snipes</span>
-                            <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Live Portfolio & On-Chain PnL</div>
-                        </div>
-                        <button onclick="alert('Synchronized!')" style="background: rgba(16,185,129,0.15); border: 1px solid var(--accent-green); color: var(--accent-green); padding: 6px 10px; border-radius: 8px; font-size: 11px; cursor: pointer; font-weight: 800;">↻ Sync Wallet</button>
-                    </div>
-                    <div id="mainActiveTradesList" style="display: flex; flex-direction: column; gap: 10px; margin-top: 8px;">
-                        <div style="text-align: center; padding: 25px; color: var(--text-muted); font-size: 12px;">Connect wallet to view active trades and live PnL.</div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- 4. TOPBLAST SECTION -->
-            <section id="page-topblast" class="page">
-                <div class="card" style="max-width: 650px; margin: 0 auto; width: 100%;">
-                    <div class="card-header">
-                        <div>
-                            <span class="card-title" style="color: var(--accent-green);">🔥 Topblast Memes Catalog</span>
-                            <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Sorted by Market Cap</div>
-                        </div>
-                        <button onclick="renderTopblastList()" style="background: rgba(16,185,129,0.15); border: 1px solid var(--accent-green); color: var(--accent-green); padding: 6px 10px; border-radius: 8px; font-size: 11px; cursor: pointer; font-weight: 800;">↻ Refresh</button>
-                    </div>
-                    <div class="input-group" style="padding: 8px 12px; margin-bottom: 12px;">
-                        <input type="text" id="topblastSearchInput" class="pro-input" style="width: 100%; font-size: 13px;" placeholder="🔍 Search Topblast Memes..." oninput="filterTopblastList()">
-                    </div>
-                    <div id="topblastList"></div>
-                    <div class="pagination-bar" id="topblastPaginationBar" style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--border-color);">
-                        <button class="page-btn" id="topblastPrevBtn" onclick="changeTopblastPage(-1)">← Previous</button>
-                        <span id="topblastPageIndicator" style="font-size: 11px; font-weight: 800; color: var(--text-muted);">Page 1 of 1</span>
-                        <button class="page-btn" id="topblastNextBtn" onclick="changeTopblastPage(1)">Next →</button>
-                    </div>
-                </div>
-            </section>
-
-            <!-- 5. GRAM MEMES SECTION -->
+            <!-- 3. GRAM MEMES PAGE (WITH DEDUST & STON.FI SUB-TABS) -->
             <section id="page-gram-memes" class="page">
-                <div class="card" style="max-width: 650px; margin: 0 auto; width: 100%;">
+                <div class="card">
                     <div class="card-header">
-                        <div>
-                            <span class="card-title" style="color: var(--accent-green);">🪙 Gram Memes DEX Pools</span>
-                            <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">DeDust & STON.fi Pooled Tokens</div>
-                        </div>
-                        <button onclick="fetchAllPoolsDirectly()" style="background: rgba(16,185,129,0.15); border: 1px solid var(--accent-green); color: var(--accent-green); padding: 6px 10px; border-radius: 8px; font-size: 11px; cursor: pointer; font-weight: 800;">↻ Refresh Pools</button>
+                        <span class="card-title">🪙 Gram Memes Pools</span>
                     </div>
 
-                    <div class="trade-tabs" style="margin-bottom: 12px;">
+                    <div class="trade-tabs" style="margin-bottom: 16px;">
                         <button class="trade-tab-btn active" id="gramSubDedust" onclick="switchGramSubTab('dedust')">🟢 DeDust Pools</button>
                         <button class="trade-tab-btn" id="gramSubStonfi" onclick="switchGramSubTab('stonfi')">🔵 STON.fi Pools</button>
                     </div>
 
-                    <div class="input-group" style="padding: 8px 12px; margin-bottom: 12px;">
-                        <input type="text" id="gramMemesSearchInput" class="pro-input" style="width: 100%; font-size: 13px;" placeholder="🔍 Search Meme Tokens..." oninput="filterGramMemesList()">
-                    </div>
-
-                    <!-- DeDust List Container -->
+                    <!-- DeDust Pools List -->
                     <div id="gramDedustContainer">
-                        <div id="gramDedustList"></div>
-                        <div class="pagination-bar" id="gramDedustPaginationBar" style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--border-color);">
-                            <button class="page-btn" id="dedustPrevBtn" onclick="changeDedustPage(-1)">← Previous</button>
-                            <span id="dedustPageIndicator" style="font-size: 11px; font-weight: 800; color: var(--text-muted);">Page 1 of 1</span>
-                            <button class="page-btn" id="dedustNextBtn" onclick="changeDedustPage(1)">Next →</button>
-                        </div>
-                    </div>
-
-                    <!-- STON.fi List Container -->
-                    <div id="gramStonfiContainer" style="display: none;">
-                        <div id="gramStonfiList"></div>
-                        <div class="pagination-bar" id="gramStonfiPaginationBar" style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--border-color);">
-                            <button class="page-btn" id="stonfiPrevBtn" onclick="changeStonfiPage(-1)">← Previous</button>
-                            <span id="stonfiPageIndicator" style="font-size: 11px; font-weight: 800; color: var(--text-muted);">Page 1 of 1</span>
-                            <button class="page-btn" id="stonfiNextBtn" onclick="changeStonfiPage(1)">Next →</button>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- 6. PROFILE & PORTFOLIO -->
-            <section id="page-profile" class="page">
-                <div class="card" style="max-width: 550px; margin: 0 auto; width: 100%;">
-                    <div class="card-header">
-                        <span class="card-title">👤 Verified On-Chain Portfolio & Earnings</span>
-                        <button onclick="alert('Wallet modal')" style="background: rgba(16,185,129,0.18); border: 1px solid var(--accent-green); color: var(--accent-green); padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 800; cursor: pointer;">🟢 Connected Wallet</button>
-                    </div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px;">
-                        <div style="background: var(--bg-input); border: 1px solid var(--border-color); padding: 12px; border-radius: 12px; text-align: center;">
-                            <span style="font-size: 10px; color: var(--text-muted); font-weight: 800;">Referral Earnings (3%)</span>
-                            <strong id="referralEarnings" style="font-size: 15px; color: var(--accent-green);">0.00 GRAM</strong>
-                        </div>
-                        <div style="background: var(--bg-input); border: 1px solid var(--border-color); padding: 12px; border-radius: 12px; text-align: center;">
-                            <span style="font-size: 10px; color: var(--text-muted); font-weight: 800;">Referred New Users</span>
-                            <strong id="referredCount" style="font-size: 15px; color: var(--accent-green);">0 Users</strong>
-                        </div>
-                    </div>
-                    <div style="background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 14px; padding: 14px; margin-bottom: 14px;">
-                        <div style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px;">🔗 Referral Link</div>
-                        <div style="display: flex; gap: 8px;">
-                            <input type="text" id="refLinkInput" class="pro-input" style="font-size: 11px; width: 100%; background: #07070a; padding: 8px; border-radius: 8px;" readonly value="https://t.me/KoteTrade_bot/app">
-                            <button class="btn-action btn-red" style="padding: 8px 14px; width: auto; font-size: 12px;" onclick="copyReferralLink()">Copy</button>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- 7. MOONPAY GATEWAY -->
-            <section id="page-buy" class="page">
-                <div class="card" style="max-width: 580px; margin: 0 auto; width: 100%; background: linear-gradient(145deg, #110b1d, #09090d); border: 1px solid rgba(125, 0, 255, 0.45); box-shadow: 0 12px 40px rgba(125, 0, 255, 0.18);">
-                    <div class="card-header" style="border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 14px; margin-bottom: 16px;">
-                        <div style="display: flex; align-items: center; gap: 12px;">
-                            <div style="width: 44px; height: 44px; background: #7D00FF; border-radius: 12px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(125,0,255,0.5);">
-                                <svg width="26" height="26" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <circle cx="14" cy="18" r="9" fill="white"/>
-                                    <circle cx="24" cy="9" r="4" fill="white"/>
-                                </svg>
-                            </div>
+                        <div class="launch-card">
                             <div>
-                                <div style="display: flex; align-items: center; gap: 6px;">
-                                    <h3 style="font-size: 18px; font-weight: 900; color: #fff; letter-spacing: -0.3px;">MoonPay</h3>
-                                    <span style="font-size: 10px; background: rgba(125, 0, 255, 0.25); color: #d8b4fe; padding: 2px 7px; border-radius: 8px; font-weight: 800;">Official Partner</span>
-                                </div>
-                                <span style="font-size: 11px; color: var(--text-muted);">Direct Deposit Gateway</span>
+                                <h4 style="font-size:14px; font-weight:900; color:#fff;">$SCALE</h4>
+                                <span style="font-size:11px; color:var(--text-muted);">Scale TON • Vol: $195K</span>
+                            </div>
+                            <div style="text-align:right;">
+                                <div style="font-size:9px; color:var(--text-muted); text-transform:uppercase; font-weight:800;">MCap</div>
+                                <div style="font-size:13px; font-weight:900; color:var(--accent-green);">$840.0K</div>
+                            </div>
+                        </div>
+                        <div class="launch-card">
+                            <div>
+                                <h4 style="font-size:14px; font-weight:900; color:#fff;">$FISH</h4>
+                                <span style="font-size:11px; color:var(--text-muted);">Fish Crypto • Vol: $320K</span>
+                            </div>
+                            <div style="text-align:right;">
+                                <div style="font-size:9px; color:var(--text-muted); text-transform:uppercase; font-weight:800;">MCap</div>
+                                <div style="font-size:13px; font-weight:900; color:var(--accent-green);">$1.45M</div>
                             </div>
                         </div>
                     </div>
-                    <div class="input-group" style="border-color: rgba(125, 0, 255, 0.35);">
-                        <div class="input-top"><span>Purchase Amount (USD)</span><span>Min: $20</span></div>
-                        <div class="input-main">
-                            <input type="number" id="fiatAmount" class="pro-input" value="100" min="20">
-                            <div class="token-badge" style="background: #1c1033; color: #e9d5ff; border-color: #581c87;">USD 💵</div>
+
+                    <!-- STON.fi Pools List -->
+                    <div id="gramStonfiContainer" style="display: none;">
+                        <div class="launch-card">
+                            <div>
+                                <h4 style="font-size:14px; font-weight:900; color:#fff;">$STON</h4>
+                                <span style="font-size:11px; color:var(--text-muted);">STON.fi Gov • Vol: $950K</span>
+                            </div>
+                            <div style="text-align:right;">
+                                <div style="font-size:9px; color:var(--text-muted); text-transform:uppercase; font-weight:800;">MCap</div>
+                                <div style="font-size:13px; font-weight:900; color:var(--accent-green);">$9.20M</div>
+                            </div>
+                        </div>
+                        <div class="launch-card">
+                            <div>
+                                <h4 style="font-size:14px; font-weight:900; color:#fff;">$TON</h4>
+                                <span style="font-size:11px; color:var(--text-muted);">Toncoin • Vol: $12M</span>
+                            </div>
+                            <div style="text-align:right;">
+                                <div style="font-size:9px; color:var(--text-muted); text-transform:uppercase; font-weight:800;">MCap</div>
+                                <div style="font-size:13px; font-weight:900; color:var(--accent-green);">$1.42B</div>
+                            </div>
                         </div>
                     </div>
-                    <button class="btn-action" style="background: linear-gradient(135deg, #7d00ff, #4c0099); color: #fff; font-size: 15px; padding: 16px;" onclick="alert('Opening MoonPay Gateway')">Proceed with MoonPay</button>
+                </div>
+            </section>
+
+            <!-- 4. PROFILE PAGE -->
+            <section id="page-profile" class="page">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Profile & Wallet</span>
+                    </div>
+                    <p style="color: var(--text-muted); font-size: 13px;">TON Connect and user stats.</p>
                 </div>
             </section>
         </main>
@@ -622,282 +224,9 @@
         <nav class="bottom-nav">
             <button class="nav-tab active" onclick="switchPage('trade', this);"><span>📈</span><span>Trade</span></button>
             <button class="nav-tab" onclick="switchPage('sniper', this)"><span>🎯</span><span>Sniper</span></button>
-            <button class="nav-tab" onclick="switchPage('page-active-trades', this)"><span>⚡</span><span>Active</span></button>
-            <button class="nav-tab" onclick="switchPage('page-topblast', this)"><span>🔥</span><span>Topblast</span></button>
-            <button class="nav-tab" onclick="switchPage('page-gram-memes', this)"><span>🪙</span><span>Gram Memes</span></button>
-            <button class="nav-tab" onclick="switchPage('page-profile', this)"><span>👤</span><span>Profile</span></button>
-            <button class="nav-tab" onclick="switchPage('page-buy', this)"><span>💳</span><span>MoonPay</span></button>
+            <button class="nav-tab" onclick="switchPage('gram-memes', this)"><span>🪙</span><span>Memes</span></button>
+            <button class="nav-tab" onclick="switchPage('profile', this)"><span>👤</span><span>Profile</span></button>
         </nav>
     </div>
-
-    <!-- RENDERING & PAGINATION ENGINE -->
-    <script>
-        const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
-        if (tg) { tg.ready(); tg.expand(); }
-
-        window.changeTopblastPage = function(dir) {
-            const q = (document.getElementById('topblastSearchInput')?.value || '').toLowerCase();
-            const filtered = window.topblastTokens.filter(t => t.name.toLowerCase().includes(q) || t.symbol.toLowerCase().includes(q) || t.address.toLowerCase().includes(q));
-            const totalPages = Math.ceil(filtered.length / itemsPerPage) || 1;
-            currentTopblastPage = Math.min(Math.max(1, currentTopblastPage + dir), totalPages);
-            renderTopblastList();
-        };
-
-        window.changeDedustPage = function(dir) {
-            const q = (document.getElementById('gramMemesSearchInput')?.value || '').toLowerCase();
-            const filtered = window.gramDedustTokens.filter(t => t.name.toLowerCase().includes(q) || t.symbol.toLowerCase().includes(q) || t.address.toLowerCase().includes(q));
-            const totalPages = Math.ceil(filtered.length / itemsPerPage) || 1;
-            currentDedustPage = Math.min(Math.max(1, currentDedustPage + dir), totalPages);
-            renderGramDedustList();
-        };
-
-        window.changeStonfiPage = function(dir) {
-            const q = (document.getElementById('gramMemesSearchInput')?.value || '').toLowerCase();
-            const filtered = window.gramStonfiTokens.filter(t => t.name.toLowerCase().includes(q) || t.symbol.toLowerCase().includes(q) || t.address.toLowerCase().includes(q));
-            const totalPages = Math.ceil(filtered.length / itemsPerPage) || 1;
-            currentStonfiPage = Math.min(Math.max(1, currentStonfiPage + dir), totalPages);
-            renderGramStonfiList();
-        };
-
-        window.filterTopblastList = function() { currentTopblastPage = 1; renderTopblastList(); };
-        window.filterGramMemesList = function() { currentDedustPage = 1; currentStonfiPage = 1; renderGramDedustList(); renderGramStonfiList(); };
-
-        function formatCompactUSD(val) {
-            if (!val || val <= 0) return '$0.0K';
-            if (val >= 1e9) return '$' + (val / 1e9).toFixed(2) + 'B';
-            if (val >= 1e6) return '$' + (val / 1e6).toFixed(2) + 'M';
-            if (val >= 1e3) return '$' + (val / 1e3).toFixed(1) + 'K';
-            return '$' + val.toFixed(2);
-        }
-
-        window.renderTopblastList = function() {
-            const q = (document.getElementById('topblastSearchInput')?.value || '').toLowerCase();
-            const filtered = window.topblastTokens.filter(t => t.name.toLowerCase().includes(q) || t.symbol.toLowerCase().includes(q) || t.address.toLowerCase().includes(q));
-            const container = document.getElementById('topblastList');
-            const paginationBar = document.getElementById('topblastPaginationBar');
-            if(!container) return;
-
-            if (filtered.length === 0) {
-                container.innerHTML = `<div style="text-align:center; padding: 25px; color: var(--text-muted); font-size: 12px;">No Topblast memes available.</div>`;
-                if(paginationBar) paginationBar.style.display = 'none';
-                return;
-            }
-
-            const totalPages = Math.ceil(filtered.length / itemsPerPage);
-            if (currentTopblastPage > totalPages) currentTopblastPage = totalPages;
-
-            const startIndex = (currentTopblastPage - 1) * itemsPerPage;
-            const paginatedItems = filtered.slice(startIndex, startIndex + itemsPerPage);
-
-            container.innerHTML = '';
-            paginatedItems.forEach(t => {
-                const formattedMcap = formatCompactUSD(t.mcap);
-                container.innerHTML += `
-                    <div class="launch-card" onclick="handleTokenCardClick('${t.address}', '${t.symbol}', '${t.poolAddress}')">
-                        <div style="display:flex; align-items:center; gap:12px;">
-                            <div class="token-avatar-wrap">
-                                <span class="token-avatar-fallback">${t.symbol.charAt(0)}</span>
-                                <img src="${t.logo}" onerror="this.style.display='none';">
-                            </div>
-                            <div>
-                                <div style="display:flex; align-items:center; gap:6px;">
-                                    <h4 style="font-size:14px; font-weight:900; color:#fff;">$${t.symbol}</h4>
-                                    <span style="font-size:8px; background:rgba(16,185,129,0.15); color:var(--accent-green); border:1px solid var(--accent-green); padding:1px 5px; border-radius:4px; font-weight:800;">TOPBLAST</span>
-                                </div>
-                                <span style="font-size:11px; color:var(--text-muted); font-weight:700;">${t.name}</span>
-                            </div>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <div style="text-align:right;">
-                                <div style="font-size:9px; color:var(--text-muted); text-transform:uppercase; font-weight:800;">Market Cap</div>
-                                <div style="font-size:13px; font-weight:900; color:var(--accent-green);">${formattedMcap}</div>
-                            </div>
-                            <button onclick="event.stopPropagation(); selectTokenForSniper('${t.address}', '${t.symbol}')" style="background: rgba(239,68,68,0.15); border: 1px solid var(--accent-red); color: var(--accent-red); padding: 6px 10px; border-radius: 8px; font-size: 10px; font-weight: 800; cursor: pointer;">🎯 Snipe</button>
-                        </div>
-                    </div>
-                `;
-            });
-
-            if(paginationBar) {
-                paginationBar.style.display = 'flex';
-                document.getElementById('topblastPageIndicator').innerText = `Page ${currentTopblastPage} of ${totalPages}`;
-                document.getElementById('topblastPrevBtn').disabled = currentTopblastPage === 1;
-                document.getElementById('topblastNextBtn').disabled = currentTopblastPage === totalPages;
-            }
-        };
-
-        window.renderGramDedustList = function() {
-            const q = (document.getElementById('gramMemesSearchInput')?.value || '').toLowerCase();
-            const filtered = window.gramDedustTokens.filter(t => t.name.toLowerCase().includes(q) || t.symbol.toLowerCase().includes(q) || t.address.toLowerCase().includes(q));
-            const container = document.getElementById('gramDedustList');
-            const paginationBar = document.getElementById('gramDedustPaginationBar');
-            if(!container) return;
-
-            if (filtered.length === 0) {
-                container.innerHTML = `<div style="text-align:center; padding: 25px; color: var(--text-muted); font-size: 12px;">No DeDust tokens found.</div>`;
-                if(paginationBar) paginationBar.style.display = 'none';
-                return;
-            }
-
-            const totalPages = Math.ceil(filtered.length / itemsPerPage);
-            if (currentDedustPage > totalPages) currentDedustPage = totalPages;
-
-            const startIndex = (currentDedustPage - 1) * itemsPerPage;
-            const paginatedItems = filtered.slice(startIndex, startIndex + itemsPerPage);
-
-            container.innerHTML = '';
-            paginatedItems.forEach(t => {
-                const formattedMcap = formatCompactUSD(t.mcap);
-                const formattedVol = formatCompactUSD(t.vol);
-                const changeVal = parseFloat(t.change24h || 0);
-                const changeColor = changeVal >= 0 ? 'var(--accent-green)' : 'var(--accent-red)';
-                const changeSign = changeVal >= 0 ? '+' : '';
-
-                container.innerHTML += `
-                    <div class="launch-card" onclick="handleTokenCardClick('${t.address}', '${t.symbol}', '${t.poolAddress}')">
-                        <div style="display:flex; align-items:center; gap:12px;">
-                            <div class="token-avatar-wrap">
-                                <span class="token-avatar-fallback">${t.symbol.charAt(0)}</span>
-                                <img src="${t.logo}" onerror="this.style.display='none';">
-                            </div>
-                            <div>
-                                <div style="display:flex; align-items:center; gap:6px;">
-                                    <h4 style="font-size:14px; font-weight:900; color:#fff;">$${t.symbol}</h4>
-                                    <span style="font-size:8px; background:rgba(16,185,129,0.25); color:var(--accent-green); border:1px solid var(--accent-green); padding:1px 5px; border-radius:4px; font-weight:800;">DEDUST</span>
-                                </div>
-                                <span style="font-size:11px; color:var(--text-muted); font-weight:700;">${t.name} • Vol: ${formattedVol}</span>
-                            </div>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <div style="text-align:right;">
-                                <div style="font-size:9px; color:var(--text-muted); text-transform:uppercase; font-weight:800;">MCap <span style="color:${changeColor};">(${changeSign}${changeVal.toFixed(1)}%)</span></div>
-                                <div style="font-size:13px; font-weight:900; color:var(--accent-green);">${formattedMcap}</div>
-                            </div>
-                            <button onclick="event.stopPropagation(); selectTokenForSniper('${t.address}', '${t.symbol}')" style="background: rgba(239,68,68,0.15); border: 1px solid var(--accent-red); color: var(--accent-red); padding: 6px 10px; border-radius: 8px; font-size: 10px; font-weight: 800; cursor: pointer;">🎯 Snipe</button>
-                        </div>
-                    </div>
-                `;
-            });
-
-            if(paginationBar) {
-                paginationBar.style.display = 'flex';
-                document.getElementById('dedustPageIndicator').innerText = `Page ${currentDedustPage} of ${totalPages}`;
-                document.getElementById('dedustPrevBtn').disabled = currentDedustPage === 1;
-                document.getElementById('dedustNextBtn').disabled = currentDedustPage === totalPages;
-            }
-        };
-
-        window.renderGramStonfiList = function() {
-            const q = (document.getElementById('gramMemesSearchInput')?.value || '').toLowerCase();
-            const filtered = window.gramStonfiTokens.filter(t => t.name.toLowerCase().includes(q) || t.symbol.toLowerCase().includes(q) || t.address.toLowerCase().includes(q));
-            const container = document.getElementById('gramStonfiList');
-            const paginationBar = document.getElementById('gramStonfiPaginationBar');
-            if(!container) return;
-
-            if (filtered.length === 0) {
-                container.innerHTML = `<div style="text-align:center; padding: 25px; color: var(--text-muted); font-size: 12px;">No STON.fi tokens found.</div>`;
-                if(paginationBar) paginationBar.style.display = 'none';
-                return;
-            }
-
-            const totalPages = Math.ceil(filtered.length / itemsPerPage);
-            if (currentStonfiPage > totalPages) currentStonfiPage = totalPages;
-
-            const startIndex = (currentStonfiPage - 1) * itemsPerPage;
-            const paginatedItems = filtered.slice(startIndex, startIndex + itemsPerPage);
-
-            container.innerHTML = '';
-            paginatedItems.forEach(t => {
-                const formattedMcap = formatCompactUSD(t.mcap);
-                const formattedVol = formatCompactUSD(t.vol);
-                const changeVal = parseFloat(t.change24h || 0);
-                const changeColor = changeVal >= 0 ? 'var(--accent-green)' : 'var(--accent-red)';
-                const changeSign = changeVal >= 0 ? '+' : '';
-
-                container.innerHTML += `
-                    <div class="launch-card" onclick="handleTokenCardClick('${t.address}', '${t.symbol}', '${t.poolAddress}')">
-                        <div style="display:flex; align-items:center; gap:12px;">
-                            <div class="token-avatar-wrap">
-                                <span class="token-avatar-fallback">${t.symbol.charAt(0)}</span>
-                                <img src="${t.logo}" onerror="this.style.display='none';">
-                            </div>
-                            <div>
-                                <div style="display:flex; align-items:center; gap:6px;">
-                                    <h4 style="font-size:14px; font-weight:900; color:#fff;">$${t.symbol}</h4>
-                                    <span style="font-size:8px; background:rgba(59,130,246,0.25); color:#93c5fd; border:1px solid rgba(59,130,246,0.45); padding:1px 5px; border-radius:4px; font-weight:800;">STON.FI</span>
-                                </div>
-                                <span style="font-size:11px; color:var(--text-muted); font-weight:700;">${t.name} • Vol: ${formattedVol}</span>
-                            </div>
-                        </div>
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <div style="text-align:right;">
-                                <div style="font-size:9px; color:var(--text-muted); text-transform:uppercase; font-weight:800;">MCap <span style="color:${changeColor};">(${changeSign}${changeVal.toFixed(1)}%)</span></div>
-                                <div style="font-size:13px; font-weight:900; color:var(--accent-green);">${formattedMcap}</div>
-                            </div>
-                            <button onclick="event.stopPropagation(); selectTokenForSniper('${t.address}', '${t.symbol}')" style="background: rgba(239,68,68,0.15); border: 1px solid var(--accent-red); color: var(--accent-red); padding: 6px 10px; border-radius: 8px; font-size: 10px; font-weight: 800; cursor: pointer;">🎯 Snipe</button>
-                        </div>
-                    </div>
-                `;
-            });
-
-            if(paginationBar) {
-                paginationBar.style.display = 'flex';
-                document.getElementById('stonfiPageIndicator').innerText = `Page ${currentStonfiPage} of ${totalPages}`;
-                document.getElementById('stonfiPrevBtn').disabled = currentStonfiPage === 1;
-                document.getElementById('stonfiNextBtn').disabled = currentStonfiPage === totalPages;
-            }
-        };
-
-        window.renderAllInstantly = function() {
-            renderTopblastList();
-            renderGramDedustList();
-            renderGramStonfiList();
-        };
-
-        window.selectTokenForTrade = function(address, name, symbol, logo, mcap, liq, vol, priceUSD = 0.01, change24h = 0, graduated = true, migrationDex = 'dedust', poolAddress = '') {
-            window.currentActiveToken = { name, symbol, address, poolAddress, logo, mcap, liq, vol, priceUSD, change24h };
-            document.getElementById('heroTokenName').innerText = `${name} ($${symbol})`;
-            document.getElementById('heroTokenCA').innerText = address;
-            document.getElementById('heroTokenFallback').innerText = symbol.charAt(0);
-            
-            const logoEl = document.getElementById('heroTokenLogo');
-            if(logo) {
-                logoEl.style.display = 'block';
-                logoEl.src = logo;
-            } else {
-                logoEl.style.display = 'none';
-            }
-
-            document.getElementById('receiveTokenSymbol').innerText = symbol;
-            document.getElementById('chartTitle').innerText = `📊 Live Chart: $${symbol}`;
-            document.getElementById('dexChartFrame').src = `https://dexscreener.com/ton/${poolAddress || address}?embed=1&theme=dark&trades=0&info=0`;
-            document.getElementById('externalChartBtn').href = `https://dexscreener.com/ton/${poolAddress || address}`;
-            
-            document.getElementById('tokMcap').innerText = formatCompactUSD(mcap);
-            document.getElementById('tokLiq').innerText = formatCompactUSD(liq);
-            document.getElementById('tokVol').innerText = formatCompactUSD(vol);
-            document.getElementById('heroTokenPrice').innerText = '$' + (priceUSD || 0).toFixed(6);
-
-            const changeEl = document.getElementById('heroTokenChange');
-            const cVal = parseFloat(change24h || 0);
-            changeEl.innerText = `${cVal >= 0 ? '+' : ''}${cVal.toFixed(2)}% (24h)`;
-            changeEl.style.color = cVal >= 0 ? 'var(--accent-green)' : 'var(--accent-red)';
-
-            switchPage('trade', document.querySelectorAll('.nav-tab')[0]);
-            calculateSwapOutput();
-        };
-
-        window.selectTokenForSniper = function(address, symbol, poolAddress) {
-            const sniperInput = document.getElementById('sniperCA');
-            if (sniperInput) sniperInput.value = address;
-            switchPage('sniper', document.querySelectorAll('.nav-tab')[1]);
-        };
-
-        window.calculateSwapOutput = function() {
-            const inputVal = parseFloat(document.getElementById('tradeInputAmount').value) || 0;
-            const resOutput = window.currentTradeMode === 'buy' ? inputVal * 850.5 : inputVal / 850.5;
-            document.getElementById('tradeOutputAmount').value = '~ ' + resOutput.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 });
-        };
-    </script>
 </body>
 </html>
