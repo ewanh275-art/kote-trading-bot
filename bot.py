@@ -8,7 +8,10 @@ CORS(app)
 
 @app.route('/')
 def home():
-    return "Kote Backend is online and working!", 200
+    return jsonify({
+        "status": "online",
+        "message": "Kote Backend is live!"
+    })
 
 @app.route('/api/pools', methods=['GET'])
 def get_pools():
@@ -24,6 +27,9 @@ def get_pools():
         })
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
+
+# Print registered routes to Render logs on startup
+print("Registered Flask Routes:", app.url_map)
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 10000))
