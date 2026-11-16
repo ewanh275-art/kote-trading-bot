@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-axios = require('axios');
+const axios = require('axios');
 
 const app = express();
 app.use(cors());
@@ -24,7 +24,9 @@ function isMemeAsset(symbol) {
     return !BLACKLISTED_SYMBOLS.includes(symbol.toLowerCase());
 }
 
-// Fetch DeDust Meme Pools (TON/GRAM Quote)
+/**
+ * 1. Discover & Filter DeDust Pools & Assets
+ */
 async function fetchDedustMemePools() {
     try {
         const [poolsRes, assetsRes] = await Promise.all([
@@ -80,7 +82,9 @@ async function fetchDedustMemePools() {
     }
 }
 
-// Fetch STON.fi Meme Pools (TON/GRAM Quote)
+/**
+ * 2. Discover & Filter STON.fi Pools & Assets
+ */
 async function fetchStonfiMemePools() {
     try {
         const poolsRes = await axios.get('https://api.ston.fi/v1/pools', { timeout: 8000 });
@@ -126,7 +130,7 @@ async function fetchStonfiMemePools() {
     }
 }
 
-// API Endpoint to get filtered meme pools
+// API Endpoint consumed by your Telegram Mini App frontend
 app.get('/api/memes', async (req, res) => {
     const [dedust, stonfi] = await Promise.all([
         fetchDedustMemePools(),
