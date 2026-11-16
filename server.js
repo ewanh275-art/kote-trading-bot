@@ -2,13 +2,21 @@ const express = require('express');
 const cors = require('cors');
 const fetch = require('node-fetch');
 const path = require('path');
-const { spawn } = require('child_process');
+const { spawn, execSync } = require('child_process');
 
 const app = express();
 app.use(cors());
 
 // Serve static files directly from root directory
 app.use(express.static(__dirname));
+
+// Automatically install Python dependencies on startup
+try {
+    console.log("📦 Installing Python dependencies for bot.py...");
+    execSync('pip3 install python-telegram-bot', { stdio: 'inherit' });
+} catch (err) {
+    console.error("⚠️ Pip install warning:", err);
+}
 
 // Automatically launch your Python Telegram bot in the background
 const pythonBot = spawn('python3', ['bot.py']);
@@ -19,6 +27,10 @@ pythonBot.stdout.on('data', (data) => {
 
 pythonBot.stderr.on('data', (data) => {
     console.error(`[Bot Error]: ${data}`);
+});
+
+pythonBot.on('close', (code) => {
+    console.log(`[Bot Process exited with code ${code}]`);
 });
 
 const GRAM_MASTER_ADDRESS = "EQC47093oX5Xhb0xuk2lCr2RhS8rj-vul61u4W2UH5ORmG_O";
