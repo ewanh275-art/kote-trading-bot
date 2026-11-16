@@ -456,13 +456,12 @@
 
     <!-- --- CINEMATIC INTRO SCREEN --- -->
     <div id="intro-screen">
-        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v12.23</div>
+        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v12.24</div>
         <div class="intro-content">
             <div class="intro-logo-moon">🐱</div>
             <div style="font-size: 24px; font-weight: 900; color: #fff; letter-spacing: 0.5px;">GRAM & TOPBLAST MEMES</div>
         </div>
         <div style="padding-bottom: 20px;">
-            <!-- EXPLICIT ONCLICK ADDED TO GUARANTEE INSTANT RESPONSE -->
             <button class="btn-action btn-red" id="enterTerminalBtn" onclick="enterTerminal()" style="max-width: 300px; margin: 0 auto;">
                 ⚡ Enter Terminal
             </button>
@@ -815,6 +814,7 @@
             document.getElementById('tradeOutputAmount').value = '~ ' + resOutput.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 });
         };
 
+        // Render immediately
         renderAllInstantly();
         calculateSwapOutput();
     </script>
