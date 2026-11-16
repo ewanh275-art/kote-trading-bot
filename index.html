@@ -456,7 +456,7 @@
 
     <!-- --- CINEMATIC INTRO SCREEN --- -->
     <div id="intro-screen">
-        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v12.21</div>
+        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v12.20</div>
         <div class="intro-content">
             <div class="intro-logo-moon">🐱</div>
             <div style="font-size: 24px; font-weight: 900; color: #fff; letter-spacing: 0.5px;">GRAM & TOPBLAST MEMES</div>
@@ -636,7 +636,7 @@
                     </div>
 
                     <div id="tradeAuditBadge" class="audit-badge">
-                        🛡️ Direct DEX Registry & Pool Sync Active (< 20ms)
+                        🛡️ Direct DEX Pool API Active (< 20ms)
                     </div>
 
                     <div class="tokenomics-grid">
@@ -764,13 +764,13 @@
                 </div>
             </section>
 
-            <!-- 5. GRAM MEMES SECTION (ASSET & POOL DIRECT RESOLVER) -->
+            <!-- 5. GRAM MEMES SECTION (POOL-LEVEL API & METRICS) -->
             <section id="page-gram-memes" class="page">
                 <div class="card" style="max-width: 650px; margin: 0 auto; width: 100%;">
                     <div class="card-header">
                         <div>
                             <span class="card-title" style="color: var(--accent-green);">🪙 Gram Memes DEX Pools</span>
-                            <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Live Asset Registry & Pool Metrics</div>
+                            <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Live Pool Metrics from DeDust & STON.fi</div>
                         </div>
                         <button onclick="fetchTokensFromBackend()" style="background: rgba(16,185,129,0.15); border: 1px solid var(--accent-green); color: var(--accent-green); padding: 6px 10px; border-radius: 8px; font-size: 11px; cursor: pointer; font-weight: 800;">↻ Sync Now</button>
                     </div>
@@ -788,7 +788,7 @@
                     <!-- DeDust List Container -->
                     <div id="gramDedustContainer">
                         <div id="gramDedustList">
-                            <div style="text-align:center; padding: 25px; color: var(--text-muted); font-size: 12px;">🔄 Loading DeDust pools & metadata...</div>
+                            <div style="text-align:center; padding: 25px; color: var(--text-muted); font-size: 12px;">🔄 Loading DeDust pools...</div>
                         </div>
                         <div class="pagination-bar" id="gramDedustPaginationBar" style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--border-color);">
                             <button class="page-btn" id="dedustPrevBtn" onclick="changeDedustPage(-1)">← Previous</button>
@@ -800,7 +800,7 @@
                     <!-- STON.fi List Container -->
                     <div id="gramStonfiContainer" style="display: none;">
                         <div id="gramStonfiList">
-                            <div style="text-align:center; padding: 25px; color: var(--text-muted); font-size: 12px;">🔄 Loading STON.fi pools & metadata...</div>
+                            <div style="text-align:center; padding: 25px; color: var(--text-muted); font-size: 12px;">🔄 Loading STON.fi pools...</div>
                         </div>
                         <div class="pagination-bar" id="gramStonfiPaginationBar" style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--border-color);">
                             <button class="page-btn" id="stonfiPrevBtn" onclick="changeStonfiPage(-1)">← Previous</button>
@@ -891,7 +891,7 @@
         </nav>
     </div>
 
-    <!-- ASSET & POOL METRICS SYNC SCRIPT -->
+    <!-- POOL-LEVEL API SYNC & METRICS SCRIPT -->
     <script>
         const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
         if (tg) { tg.ready(); tg.expand(); }
@@ -932,74 +932,35 @@
 
         async function fetchTokensFromBackend() {
             try {
-                const [dedustAssetsRes, dedustPoolsRes, stonfiAssetsRes, stonfiPoolsRes] = await Promise.allSettled([
-                    fetch('https://api.dedust.io/v2/assets').then(r => r.json()),
+                const [dedustRes, stonfiRes] = await Promise.allSettled([
                     fetch('https://api.dedust.io/v2/pools').then(r => r.json()),
-                    fetch('https://api.ston.fi/v1/assets').then(r => r.json()),
                     fetch('https://api.ston.fi/v1/pools').then(r => r.json())
                 ]);
-
-                // 1. Build DeDust Asset Lookup Map
-                const dedustAssetMap = new Map();
-                if (dedustAssetsRes.status === 'fulfilled') {
-                    const rawAssets = dedustAssetsRes.value;
-                    const assetsList = Array.isArray(rawAssets) ? rawAssets : (rawAssets.assets || []);
-                    assetsList.forEach(t => {
-                        const key = t.address || t.kind || 'native';
-                        dedustAssetMap.set(key, {
-                            name: t.name || t.symbol || 'Unknown',
-                            symbol: t.symbol || 'TON',
-                            logo: t.image ? (t.image.startsWith('http') ? t.image : `https://assets.dedust.io/images/${t.image}`) : 'https://asset.ston.fi/img/TON.png'
-                        });
-                    });
-                }
-
-                // 2. Build STON.fi Asset Lookup Map
-                const stonfiAssetMap = new Map();
-                if (stonfiAssetsRes.status === 'fulfilled') {
-                    const rawAssets = stonfiAssetsRes.value;
-                    const assetsList = rawAssets.asset_list || rawAssets.assets || (Array.isArray(rawAssets) ? rawAssets : []);
-                    assetsList.forEach(t => {
-                        const addr = t.contract_address || t.address;
-                        if (addr) {
-                            stonfiAssetMap.set(addr, {
-                                name: t.display_name || t.name || t.symbol || 'Unknown',
-                                symbol: t.symbol || 'TOKEN',
-                                logo: t.image_url || t.image || 'https://asset.ston.fi/img/TON.png'
-                            });
-                        }
-                    });
-                }
 
                 let dedustParsed = [];
                 let stonfiParsed = [];
 
-                // 3. Parse DeDust Pools
-                if (dedustPoolsRes.status === 'fulfilled') {
-                    const rawPools = dedustPoolsRes.value;
-                    const poolsList = Array.isArray(rawPools) ? rawPools : (rawPools.pools || []);
+                if (dedustRes.status === 'fulfilled') {
+                    const raw = dedustRes.value;
+                    const pools = Array.isArray(raw) ? raw : (raw.pools || []);
                     
-                    dedustParsed = poolsList.map((p, idx) => {
-                        const nonTonAsset = p.assets && p.assets.find(a => a.kind !== 'native' && a.address);
-                        const targetAsset = nonTonAsset || (p.assets && p.assets[1]) || (p.assets ? p.assets[0] : {});
-                        const assetKey = targetAsset.address || targetAsset.kind || '';
+                    dedustParsed = pools.map((p, idx) => {
+                        const token = p.assets && p.assets[1] ? p.assets[1] : (p.assets ? p.assets[0] : {});
+                        const symbol = token.symbol || `MEME${idx}`;
+                        const name = token.name || symbol;
+                        const address = token.address || token.kind || `dedust_${idx}`;
+                        const logo = token.image ? `https://assets.dedust.io/images/${token.image}` : `https://asset.ston.fi/img/${symbol}.png`;
                         
-                        const meta = dedustAssetMap.get(assetKey) || {
-                            name: targetAsset.name || targetAsset.symbol || `DeDust Token ${idx}`,
-                            symbol: targetAsset.symbol || `MEME${idx}`,
-                            logo: targetAsset.image ? `https://assets.dedust.io/images/${targetAsset.image}` : 'https://asset.ston.fi/img/TON.png'
-                        };
-
                         const reserveUSD = parseFloat(p.reserveUSD || p.tvl || 0);
                         const mcap = reserveUSD > 0 ? reserveUSD * 2 : (Math.random() * 400000 + 15000);
                         const vol = parseFloat(p.volume24h || p.vol24h || (Math.random() * 50000 + 2000));
                         const priceUSD = parseFloat(p.price || p.tokenPriceUSD || 0.001);
 
                         return {
-                            address: assetKey || targetAsset.address || `dedust_${idx}`,
-                            name: meta.name,
-                            symbol: meta.symbol,
-                            logo: meta.logo,
+                            address: address,
+                            name: name,
+                            symbol: symbol,
+                            logo: logo,
                             mcap: mcap,
                             liq: reserveUSD || mcap * 0.4,
                             vol: vol,
@@ -1010,18 +971,15 @@
                     });
                 }
 
-                // 4. Parse STON.fi Pools
-                if (stonfiPoolsRes.status === 'fulfilled') {
-                    const rawPools = stonfiPoolsRes.value;
-                    const poolsList = rawPools.pool_list || rawPools.pools || (Array.isArray(rawPools) ? rawPools : []);
+                if (stonfiRes.status === 'fulfilled') {
+                    const raw = stonfiRes.value;
+                    const pools = raw.pool_list || raw.pools || (Array.isArray(raw) ? raw : []);
 
-                    stonfiParsed = poolsList.map((p, idx) => {
-                        const addr1 = p.token1_address || p.token0_address || '';
-                        const meta = stonfiAssetMap.get(addr1) || {
-                            name: p.token1_display_name || p.token1_name || p.symbol || `STON Token ${idx}`,
-                            symbol: p.token1_symbol || p.symbol || `STON${idx}`,
-                            logo: p.token1_image_url || p.image_url || 'https://asset.ston.fi/img/TON.png'
-                        };
+                    stonfiParsed = pools.map((p, idx) => {
+                        const symbol = p.token1_symbol || p.symbol || `STON${idx}`;
+                        const name = p.token1_display_name || p.token1_name || symbol;
+                        const address = p.token1_address || `stonfi_${idx}`;
+                        const logo = p.token1_image_url || `https://asset.ston.fi/img/${symbol}.png`;
 
                         const lpTotalValueUsd = parseFloat(p.lp_total_value_usd || p.tvl || 0);
                         const mcap = lpTotalValueUsd > 0 ? lpTotalValueUsd * 2 : (Math.random() * 450000 + 20000);
@@ -1029,10 +987,10 @@
                         const priceUSD = parseFloat(p.lp_unit_price || p.token_price_usd || 0.002);
 
                         return {
-                            address: addr1 || `stonfi_${idx}`,
-                            name: meta.name,
-                            symbol: meta.symbol,
-                            logo: meta.logo,
+                            address: address,
+                            name: name,
+                            symbol: symbol,
+                            logo: logo,
                             mcap: mcap,
                             liq: lpTotalValueUsd || mcap * 0.4,
                             vol: vol,
@@ -1266,8 +1224,8 @@
             if(paginationBar) {
                 paginationBar.style.display = 'flex';
                 document.getElementById('stonfiPageIndicator').innerText = `Page ${currentStonfiPage} of ${totalPages}`;
-                document.getElementById('stonfiPrevBtn'].disabled = currentStonfiPage === 1;
-                document.getElementById('stonfiNextBtn'].disabled = currentStonfiPage === totalPages;
+                document.getElementById('stonfiPrevBtn').disabled = currentStonfiPage === 1;
+                document.getElementById('stonfiNextBtn').disabled = currentStonfiPage === totalPages;
             }
         }
 
