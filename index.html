@@ -222,7 +222,7 @@
             cursor: pointer;
             transition: all 0.2s;
         }
-        .trade-tab-btn.active.buy-mode {
+        .trade-tab-btn.active.buy-mode, .trade-tab-btn.active {
             background: var(--accent-green);
             color: #042f2e;
         }
@@ -456,7 +456,7 @@
 
     <!-- --- CINEMATIC INTRO SCREEN --- -->
     <div id="intro-screen">
-        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v12.15</div>
+        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v12.16</div>
         <div class="intro-content">
             <div class="intro-logo-moon">🐱</div>
             <div style="font-size: 24px; font-weight: 900; color: #fff; letter-spacing: 0.5px;">GRAM & TOPBLAST MEMES</div>
@@ -491,10 +491,12 @@
         window.currentTradeMode = 'buy';
         window.currentActiveToken = { name: 'Select Token', symbol: 'TOKEN', address: '', poolAddress: '', logo: '', mcap: 0, liq: 0, vol: 0, priceUSD: 0, change24h: 0, decimals: 9 };
         window.topblastTokens = [];
-        window.gramMemesTokens = [];
+        window.gramDedustTokens = [];
+        window.gramStonfiTokens = [];
 
         window.handleTokenCardClick = function(address, symbol, poolAddress) {
-            const found = (window.topblastTokens || []).concat(window.gramMemesTokens || []).find(t => t.address.toLowerCase() === address.toLowerCase());
+            const allTokens = (window.topblastTokens || []).concat(window.gramDedustTokens || []).concat(window.gramStonfiTokens || []);
+            const found = allTokens.find(t => t.address.toLowerCase() === address.toLowerCase());
             if (found && typeof window.selectTokenForTrade === 'function') {
                 window.selectTokenForTrade(
                     found.address, 
@@ -643,7 +645,7 @@
                     </div>
 
                     <div id="tradeAuditBadge" class="audit-badge">
-                        🛡️ DeDust SDK Swap Engine Active
+                        🛡️ DeDust & STON.fi SDK Router Active
                     </div>
 
                     <div class="tokenomics-grid">
@@ -686,7 +688,7 @@
                         <button class="quick-btn" onclick="setTradeAmount(10)">10</button>
                     </div>
 
-                    <button class="btn-action" id="executeTradeBtn" style="margin-bottom: 14px;" onclick="alert('Executing On-Chain Swap via DeDust')">
+                    <button class="btn-action" id="executeTradeBtn" style="margin-bottom: 14px;" onclick="alert('Executing On-Chain Swap via DEX Router')">
                         ⚡ Execute In-App Swap
                     </button>
 
@@ -709,7 +711,7 @@
                     </div>
 
                     <div class="input-group">
-                        <div class="input-top"><span>Token Contract or DeDust Pool Address</span></div>
+                        <div class="input-top"><span>Token Contract or Pool Address</span></div>
                         <input type="text" id="sniperCA" class="pro-input" style="width: 100%; font-size: 13px;" placeholder="Paste Token CA or Pool EQ...">
                     </div>
 
@@ -771,29 +773,49 @@
                 </div>
             </section>
 
-            <!-- 5. GRAM MEMES SECTION (LIVE DEDUST POOLS & ASSETS SYNC) -->
+            <!-- 5. GRAM MEMES SECTION (SPLIT: DEDUST POOLS vs STON.FI POOLS) -->
             <section id="page-gram-memes" class="page">
                 <div class="card" style="max-width: 650px; margin: 0 auto; width: 100%;">
                     <div class="card-header">
                         <div>
-                            <span class="card-title" style="color: var(--accent-green);">🪙 Gram Memes (DeDust TON/GRAM Pairs)</span>
-                            <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Filtered from DeDust pools & enriched via DexScreener</div>
+                            <span class="card-title" style="color: var(--accent-green);">🪙 Gram Memes DEX Pools</span>
+                            <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Live TON/GRAM Pools from DeDust & STON.fi</div>
                         </div>
-                        <button onclick="loadGramMemesTokens()" style="background: rgba(16,185,129,0.15); border: 1px solid var(--accent-green); color: var(--accent-green); padding: 6px 10px; border-radius: 8px; font-size: 11px; cursor: pointer; font-weight: 800;">↻ Sync DeDust Pools</button>
+                        <button onclick="loadAllGramMemes()" style="background: rgba(16,185,129,0.15); border: 1px solid var(--accent-green); color: var(--accent-green); padding: 6px 10px; border-radius: 8px; font-size: 11px; cursor: pointer; font-weight: 800;">↻ Sync All DEX Pools</button>
+                    </div>
+
+                    <!-- Sub-split tabs for DeDust vs STON.fi -->
+                    <div class="trade-tabs" style="margin-bottom: 12px;">
+                        <button class="trade-tab-btn active" id="gramSubDedust" onclick="switchGramSubTab('dedust')">🟢 DeDust Pools</button>
+                        <button class="trade-tab-btn" id="gramSubStonfi" onclick="switchGramSubTab('stonfi')">🔵 STON.fi Pools</button>
                     </div>
 
                     <div class="input-group" style="padding: 8px 12px; margin-bottom: 12px;">
-                        <input type="text" id="gramMemesSearchInput" class="pro-input" style="width: 100%; font-size: 13px;" placeholder="🔍 Search DeDust Memes..." oninput="filterGramMemesList()">
+                        <input type="text" id="gramMemesSearchInput" class="pro-input" style="width: 100%; font-size: 13px;" placeholder="🔍 Search Meme Tokens..." oninput="filterGramMemesList()">
                     </div>
 
-                    <div id="gramMemesList">
-                        <div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 12px;">Fetching live DeDust assets & pools...</div>
+                    <!-- DeDust List Container -->
+                    <div id="gramDedustContainer">
+                        <div id="gramDedustList">
+                            <div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 12px;">Loading DeDust TON/GRAM pools...</div>
+                        </div>
+                        <div class="pagination-bar" id="gramDedustPaginationBar" style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--border-color);">
+                            <button class="page-btn" id="dedustPrevBtn" onclick="changeDedustPage(-1)">← Previous</button>
+                            <span id="dedustPageIndicator" style="font-size: 11px; font-weight: 800; color: var(--text-muted);">Page 1 of 1</span>
+                            <button class="page-btn" id="dedustNextBtn" onclick="changeDedustPage(1)">Next →</button>
+                        </div>
                     </div>
 
-                    <div class="pagination-bar" id="gramPaginationBar" style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--border-color);">
-                        <button class="page-btn" id="gramPrevBtn" onclick="changeGramPage(-1)">← Previous</button>
-                        <span id="gramPageIndicator" style="font-size: 11px; font-weight: 800; color: var(--text-muted);">Page 1 of 1</span>
-                        <button class="page-btn" id="gramNextBtn" onclick="changeGramPage(1)">Next →</button>
+                    <!-- STON.fi List Container (Hidden by default) -->
+                    <div id="gramStonfiContainer" style="display: none;">
+                        <div id="gramStonfiList">
+                            <div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 12px;">Loading STON.fi TON/GRAM pools...</div>
+                        </div>
+                        <div class="pagination-bar" id="gramStonfiPaginationBar" style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--border-color);">
+                            <button class="page-btn" id="stonfiPrevBtn" onclick="changeStonfiPage(-1)">← Previous</button>
+                            <span id="stonfiPageIndicator" style="font-size: 11px; font-weight: 800; color: var(--text-muted);">Page 1 of 1</span>
+                            <button class="page-btn" id="stonfiNextBtn" onclick="changeStonfiPage(1)">Next →</button>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -851,7 +873,7 @@
                     </div>
 
                     <div class="input-group" style="border-color: rgba(125, 0, 255, 0.35);">
-                        <div class="input-top"><span>Purchase Amount (USD)<span>Min: $20</span></div>
+                        <div class="input-top"><span>Purchase Amount (USD)</span><span>Min: $20</span></div>
                         <div class="input-main">
                             <input type="number" id="fiatAmount" class="pro-input" value="100" min="20">
                             <div class="token-badge" style="background: #1c1033; color: #e9d5ff; border-color: #581c87;">USD 💵</div>
@@ -872,7 +894,7 @@
             <button class="nav-tab" onclick="switchPage('sniper', this)"><span>🎯</span><span>Sniper</span></button>
             <button class="nav-tab" onclick="switchPage('page-active-trades', this)"><span>⚡</span><span>Active</span></button>
             <button class="nav-tab" onclick="switchPage('page-topblast', this); loadTopblastTokens();"><span>🔥</span><span>Topblast</span></button>
-            <button class="nav-tab" onclick="switchPage('page-gram-memes', this); loadGramMemesTokens();"><span>🪙</span><span>Gram Memes</span></button>
+            <button class="nav-tab" onclick="switchPage('page-gram-memes', this); loadAllGramMemes();"><span>🪙</span><span>Gram Memes</span></button>
             <button class="nav-tab" onclick="switchPage('page-profile', this)"><span>👤</span><span>Profile</span></button>
             <button class="nav-tab" onclick="switchPage('page-buy', this)"><span>💳</span><span>MoonPay</span></button>
         </nav>
@@ -884,12 +906,18 @@
         if (tg) { tg.ready(); tg.expand(); }
 
         const GRAM_MASTER_ADDRESS = "EQC47093oX5Xhb0xuk2lCr2RhS8rj-vul61u4W2UH5ORmG_O";
+        const NATIVE_TON_ADDRESS = "EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM9c";
+        const STON_TON_WRAPPER = "EQBynBO23ywHy_CgarY9NK9FTz0yDsG82PtcbSTQgGoXwiuA";
+
         const EXCLUDED_SYMBOLS = new Set([
             "TON", "GRAM", "JUSDT", "USDT", "JUSDC", "USDC", "STTON", "TSTON", 
-            "SCALE", "DUST", "WTON", "PTON", "JWBTC", "JWETH", "DAI", "USDE"
+            "STD", "SCALE", "DUST", "WTON", "PTON", "JWBTC", "JWETH", "DAI", "USDE"
         ]);
+        
         const EXCLUDED_ADDRESSES = new Set([
             GRAM_MASTER_ADDRESS.toLowerCase(),
+            NATIVE_TON_ADDRESS.toLowerCase(),
+            STON_TON_WRAPPER.toLowerCase(),
             "eqaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaam9c".toLowerCase()
         ]);
 
@@ -955,11 +983,32 @@
         ];
 
         window.topblastTokens = [];
-        window.gramMemesTokens = [];
-        
+        window.gramDedustTokens = [];
+        window.gramStonfiTokens = [];
+
+        let currentDedustPage = 1;
+        let currentStonfiPage = 1;
         let currentTopblastPage = 1;
-        let currentGramPage = 1;
         const itemsPerPage = 10;
+
+        window.switchGramSubTab = function(tabName) {
+            const dedustBtn = document.getElementById('gramSubDedust');
+            const stonfiBtn = document.getElementById('gramSubStonfi');
+            const dedustContainer = document.getElementById('gramDedustContainer');
+            const stonfiContainer = document.getElementById('gramStonfiContainer');
+
+            if (tabName === 'dedust') {
+                dedustBtn.classList.add('active');
+                stonfiBtn.classList.remove('active');
+                dedustContainer.style.display = 'block';
+                stonfiContainer.style.display = 'none';
+            } else {
+                stonfiBtn.classList.add('active');
+                dedustBtn.classList.remove('active');
+                dedustContainer.style.display = 'none';
+                stonfiContainer.style.display = 'block';
+            }
+        };
 
         // --- TOPBLAST LOGIC ---
         async function loadTopblastTokens() {
@@ -1009,13 +1058,7 @@
         }
 
         function sortAndRenderTopblast() {
-            window.topblastTokens.sort((a, b) => {
-                const aIsTB = a.symbol.startsWith('TB') || a.name.startsWith('Topblast Token');
-                const bIsTB = b.symbol.startsWith('TB') || b.name.startsWith('Topblast Token');
-                if (aIsTB && !bIsTB) return 1;
-                if (!aIsTB && bIsTB) return -1;
-                return b.mcap - a.mcap;
-            });
+            window.topblastTokens.sort((a, b) => b.mcap - a.mcap);
             renderTopblastList();
         }
 
@@ -1088,7 +1131,17 @@
             }
         }
 
-        // --- GRAM MEMES: DEDUST POOLS & ASSETS SYNC WITH TON/GRAM QUOTE FILTER ---
+        // --- HELPER FOR IS_TON_OR_GRAM ---
+        function isTonOrGramAddress(addr) {
+            if (!addr) return false;
+            const al = addr.toLowerCase();
+            return al === NATIVE_TON_ADDRESS.toLowerCase() || 
+                   al === STON_TON_WRAPPER.toLowerCase() || 
+                   al === GRAM_MASTER_ADDRESS.toLowerCase() ||
+                   al === "eqaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaam9c".toLowerCase();
+        }
+
+        // --- DEDUST SYNC ---
         function parseDeDustAsset(asset) {
             if (!asset) return null;
             if (typeof asset === 'string') {
@@ -1103,17 +1156,9 @@
             return null;
         }
 
-        function isTonOrGramQuote(parsedAsset) {
-            if (!parsedAsset) return false;
-            if (parsedAsset.type === 'native') return true;
-            return parsedAsset.address.toLowerCase() === GRAM_MASTER_ADDRESS.toLowerCase();
-        }
-
-        async function loadGramMemesTokens() {
-            const container = document.getElementById('gramMemesList');
-            const paginationBar = document.getElementById('gramPaginationBar');
+        async function loadGramDedustTokens() {
+            const container = document.getElementById('gramDedustList');
             if(!container) return;
-
             container.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 12px;">Querying DeDust assets & pools...</div>`;
 
             try {
@@ -1140,7 +1185,6 @@
                 });
 
                 const uniqueMemeAddresses = new Set();
-
                 poolsList.forEach(pool => {
                     const rawAssets = pool.assets || [];
                     if (rawAssets.length < 2) return;
@@ -1149,10 +1193,9 @@
                     const a1 = parseDeDustAsset(rawAssets[1]);
                     if (!a0 || !a1) return;
 
-                    const a0IsQuote = isTonOrGramQuote(a0);
-                    const a1IsQuote = isTonOrGramQuote(a1);
+                    const a0IsQuote = a0.type === 'native' || isTonOrGramAddress(a0.address);
+                    const a1IsQuote = a1.type === 'native' || isTonOrGramAddress(a1.address);
 
-                    // Ensure one side is TON or GRAM, and the other is a jetton
                     if (a0IsQuote === a1IsQuote) return;
 
                     const baseAsset = a0IsQuote ? a1 : a0;
@@ -1169,7 +1212,7 @@
                 });
 
                 const addressesArray = Array.from(uniqueMemeAddresses);
-                window.gramMemesTokens = addressesArray.map(ca => {
+                window.gramDedustTokens = addressesArray.map(ca => {
                     const meta = assetMap.get(ca.toLowerCase());
                     return {
                         name: meta?.name || 'DeDust Meme',
@@ -1177,29 +1220,21 @@
                         address: ca,
                         poolAddress: ca,
                         logo: meta?.image || '',
-                        mcap: 0,
-                        liq: 0,
-                        vol: 0,
-                        priceUSD: 0,
-                        change24h: 0,
-                        graduated: true,
-                        migrationDex: 'dedust'
+                        mcap: 0, liq: 0, vol: 0, priceUSD: 0, change24h: 0,
+                        graduated: true, migrationDex: 'dedust'
                     };
                 });
 
-                if (window.gramMemesTokens.length === 0) {
-                    container.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 12px;">No meme tokens found matching DeDust TON/GRAM pairs.</div>`;
-                    if(paginationBar) paginationBar.style.display = 'none';
+                if (window.gramDedustTokens.length === 0) {
+                    container.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 12px;">No DeDust meme pools found.</div>`;
                     return;
                 }
 
-                renderGramMemesList();
+                renderGramDedustList();
 
-                // Batch fetch real-time market data from DexScreener in chunks of 30
                 for (let i = 0; i < addressesArray.length; i += 30) {
                     const chunk = addressesArray.slice(i, i + 30).join(',');
                     if (!chunk) continue;
-
                     try {
                         const dsRes = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${chunk}`);
                         const dsData = await dsRes.json();
@@ -1208,7 +1243,7 @@
                         pairs.forEach(p => {
                             const baseAddr = p.baseToken?.address;
                             if (!baseAddr) return;
-                            const match = window.gramMemesTokens.find(t => t.address.toLowerCase() === baseAddr.toLowerCase());
+                            const match = window.gramDedustTokens.find(t => t.address.toLowerCase() === baseAddr.toLowerCase());
                             if (match) {
                                 match.name = p.baseToken?.name || match.name;
                                 match.symbol = p.baseToken?.symbol || match.symbol;
@@ -1221,30 +1256,149 @@
                                 match.change24h = p.priceChange?.h24 || 0;
                             }
                         });
-
-                        window.gramMemesTokens.sort((a, b) => b.mcap - a.mcap);
-                        renderGramMemesList();
-                    } catch (dsErr) {
-                        console.error("DexScreener batch fetch error:", dsErr);
-                    }
+                        window.gramDedustTokens.sort((a, b) => b.mcap - a.mcap);
+                        renderGramDedustList();
+                    } catch (e) { console.error(e); }
                 }
             } catch (err) {
-                console.error("DeDust pools fetch error:", err);
-                container.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--accent-red); font-size: 12px;">Failed to load DeDust pools. Check network connection.</div>`;
+                console.error("DeDust sync error:", err);
+                container.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--accent-red); font-size: 12px;">Failed to load DeDust pools.</div>`;
             }
         }
 
-        window.changeGramPage = function(direction) {
+        // --- STON.FI SYNC ---
+        async function loadGramStonfiTokens() {
+            const container = document.getElementById('gramStonfiList');
+            if(!container) return;
+            container.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 12px;">Querying STON.fi assets & pools...</div>`;
+
+            try {
+                const [assetsRes, poolsRes] = await Promise.all([
+                    fetch('https://api.ston.fi/v1/assets'),
+                    fetch('https://api.ston.fi/v1/pools')
+                ]);
+
+                const assetsRaw = await assetsRes.json();
+                const poolsRaw = await poolsRes.json();
+
+                const assetsList = assetsRaw.asset_list || assetsRaw || [];
+                const poolsList = poolsRaw.pool_list || poolsRaw || [];
+
+                const assetMap = new Map();
+                assetsList.forEach(a => {
+                    const addr = a.contract_address || a.address;
+                    if (addr) {
+                        assetMap.set(addr.toLowerCase(), {
+                            name: a.display_name || a.name || 'STON.fi Jetton',
+                            symbol: a.symbol || 'MEME',
+                            image: a.image_url || a.image || ''
+                        });
+                    }
+                });
+
+                const uniqueMemeAddresses = new Set();
+                poolsList.forEach(pool => {
+                    const token0 = pool.token0_address || pool.coin0_address;
+                    const token1 = pool.token1_address || pool.coin1_address;
+                    if (!token0 || !token1) return;
+
+                    const t0IsQuote = isTonOrGramAddress(token0);
+                    const t1IsQuote = isTonOrGramAddress(token1);
+
+                    if (t0IsQuote === t1IsQuote) return;
+
+                    const baseToken = t0IsQuote ? token1 : token0;
+                    const addrLower = baseToken.toLowerCase();
+                    if (EXCLUDED_ADDRESSES.has(addrLower)) return;
+
+                    const meta = assetMap.get(addrLower);
+                    const symbol = meta?.symbol || '';
+                    if (symbol && EXCLUDED_SYMBOLS.has(symbol.toUpperCase())) return;
+
+                    uniqueMemeAddresses.add(baseToken);
+                });
+
+                const addressesArray = Array.from(uniqueMemeAddresses);
+                window.gramStonfiTokens = addressesArray.map(ca => {
+                    const meta = assetMap.get(ca.toLowerCase());
+                    return {
+                        name: meta?.name || 'STON.fi Meme',
+                        symbol: meta?.symbol || 'MEME',
+                        address: ca,
+                        poolAddress: ca,
+                        logo: meta?.image || '',
+                        mcap: 0, liq: 0, vol: 0, priceUSD: 0, change24h: 0,
+                        graduated: true, migrationDex: 'stonfi'
+                    };
+                });
+
+                if (window.gramStonfiTokens.length === 0) {
+                    container.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 12px;">No STON.fi meme pools found.</div>`;
+                    return;
+                }
+
+                renderGramStonfiList();
+
+                for (let i = 0; i < addressesArray.length; i += 30) {
+                    const chunk = addressesArray.slice(i, i + 30).join(',');
+                    if (!chunk) continue;
+                    try {
+                        const dsRes = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${chunk}`);
+                        const dsData = await dsRes.json();
+                        const pairs = (dsData.pairs || []).filter(p => p.chainId === 'ton');
+
+                        pairs.forEach(p => {
+                            const baseAddr = p.baseToken?.address;
+                            if (!baseAddr) return;
+                            const match = window.gramStonfiTokens.find(t => t.address.toLowerCase() === baseAddr.toLowerCase());
+                            if (match) {
+                                match.name = p.baseToken?.name || match.name;
+                                match.symbol = p.baseToken?.symbol || match.symbol;
+                                match.poolAddress = p.pairAddress || match.poolAddress;
+                                match.logo = match.logo || p.info?.imageUrl || p.baseToken?.logoURI || '';
+                                match.mcap = p.marketCap || p.fdv || match.mcap;
+                                match.liq = p.liquidity?.usd || match.liq;
+                                match.vol = p.volume?.h24 || match.vol;
+                                match.priceUSD = parseFloat(p.priceUsd) || match.priceUSD;
+                                match.change24h = p.priceChange?.h24 || 0;
+                            }
+                        });
+                        window.gramStonfiTokens.sort((a, b) => b.mcap - a.mcap);
+                        renderGramStonfiList();
+                    } catch (e) { console.error(e); }
+                }
+            } catch (err) {
+                console.error("STON.fi sync error:", err);
+                container.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--accent-red); font-size: 12px;">Failed to load STON.fi pools.</div>`;
+            }
+        }
+
+        window.loadAllGramMemes = function() {
+            loadGramDedustTokens();
+            loadGramStonfiTokens();
+        };
+
+        window.changeDedustPage = function(dir) {
             const q = (document.getElementById('gramMemesSearchInput')?.value || '').toLowerCase();
-            const filtered = window.gramMemesTokens.filter(t => t.name.toLowerCase().includes(q) || t.symbol.toLowerCase().includes(q) || t.address.toLowerCase().includes(q));
+            const filtered = window.gramDedustTokens.filter(t => t.name.toLowerCase().includes(q) || t.symbol.toLowerCase().includes(q) || t.address.toLowerCase().includes(q));
             const totalPages = Math.ceil(filtered.length / itemsPerPage) || 1;
-            currentGramPage = Math.min(Math.max(1, currentGramPage + direction), totalPages);
-            renderGramMemesList();
+            currentDedustPage = Math.min(Math.max(1, currentDedustPage + dir), totalPages);
+            renderGramDedustList();
+        };
+
+        window.changeStonfiPage = function(dir) {
+            const q = (document.getElementById('gramMemesSearchInput')?.value || '').toLowerCase();
+            const filtered = window.gramStonfiTokens.filter(t => t.name.toLowerCase().includes(q) || t.symbol.toLowerCase().includes(q) || t.address.toLowerCase().includes(q));
+            const totalPages = Math.ceil(filtered.length / itemsPerPage) || 1;
+            currentStonfiPage = Math.min(Math.max(1, currentStonfiPage + dir), totalPages);
+            renderGramStonfiList();
         };
 
         window.filterGramMemesList = function() {
-            currentGramPage = 1;
-            renderGramMemesList();
+            currentDedustPage = 1;
+            currentStonfiPage = 1;
+            renderGramDedustList();
+            renderGramStonfiList();
         };
 
         function formatCompactUSD(val) {
@@ -1254,23 +1408,23 @@
             return '$' + val.toFixed(2);
         }
 
-        function renderGramMemesList() {
+        function renderGramDedustList() {
             const q = (document.getElementById('gramMemesSearchInput')?.value || '').toLowerCase();
-            const filtered = window.gramMemesTokens.filter(t => t.name.toLowerCase().includes(q) || t.symbol.toLowerCase().includes(q) || t.address.toLowerCase().includes(q));
-            const container = document.getElementById('gramMemesList');
-            const paginationBar = document.getElementById('gramPaginationBar');
+            const filtered = window.gramDedustTokens.filter(t => t.name.toLowerCase().includes(q) || t.symbol.toLowerCase().includes(q) || t.address.toLowerCase().includes(q));
+            const container = document.getElementById('gramDedustList');
+            const paginationBar = document.getElementById('gramDedustPaginationBar');
             if(!container) return;
 
             if (filtered.length === 0) {
-                container.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 12px;">No Gram Memes tokens found.</div>`;
+                container.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 12px;">No DeDust tokens found.</div>`;
                 if(paginationBar) paginationBar.style.display = 'none';
                 return;
             }
 
             const totalPages = Math.ceil(filtered.length / itemsPerPage);
-            if (currentGramPage > totalPages) currentGramPage = totalPages;
+            if (currentDedustPage > totalPages) currentDedustPage = totalPages;
 
-            const startIndex = (currentGramPage - 1) * itemsPerPage;
+            const startIndex = (currentDedustPage - 1) * itemsPerPage;
             const paginatedItems = filtered.slice(startIndex, startIndex + itemsPerPage);
 
             container.innerHTML = '';
@@ -1291,7 +1445,7 @@
                             <div>
                                 <div style="display:flex; align-items:center; gap:6px;">
                                     <h4 style="font-size:14px; font-weight:900; color:#fff;">$${t.symbol}</h4>
-                                    <span style="font-size:8px; background:rgba(125,0,255,0.25); color:#d8b4fe; border:1px solid rgba(125,0,255,0.45); padding:1px 5px; border-radius:4px; font-weight:800;">DEDUST / TON</span>
+                                    <span style="font-size:8px; background:rgba(16,185,129,0.25); color:var(--accent-green); border:1px solid var(--accent-green); padding:1px 5px; border-radius:4px; font-weight:800;">DEDUST</span>
                                 </div>
                                 <span style="font-size:11px; color:var(--text-muted); font-weight:700;">${t.name} • Vol: ${formattedVol}</span>
                             </div>
@@ -1309,9 +1463,70 @@
 
             if(paginationBar) {
                 paginationBar.style.display = 'flex';
-                document.getElementById('gramPageIndicator').innerText = `Page ${currentGramPage} of ${totalPages}`;
-                document.getElementById('gramPrevBtn').disabled = currentGramPage === 1;
-                document.getElementById('gramNextBtn').disabled = currentGramPage === totalPages;
+                document.getElementById('dedustPageIndicator').innerText = `Page ${currentDedustPage} of ${totalPages}`;
+                document.getElementById('dedustPrevBtn').disabled = currentDedustPage === 1;
+                document.getElementById('dedustNextBtn').disabled = currentDedustPage === totalPages;
+            }
+        }
+
+        function renderGramStonfiList() {
+            const q = (document.getElementById('gramMemesSearchInput')?.value || '').toLowerCase();
+            const filtered = window.gramStonfiTokens.filter(t => t.name.toLowerCase().includes(q) || t.symbol.toLowerCase().includes(q) || t.address.toLowerCase().includes(q));
+            const container = document.getElementById('gramStonfiList');
+            const paginationBar = document.getElementById('gramStonfiPaginationBar');
+            if(!container) return;
+
+            if (filtered.length === 0) {
+                container.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 12px;">No STON.fi tokens found.</div>`;
+                if(paginationBar) paginationBar.style.display = 'none';
+                return;
+            }
+
+            const totalPages = Math.ceil(filtered.length / itemsPerPage);
+            if (currentStonfiPage > totalPages) currentStonfiPage = totalPages;
+
+            const startIndex = (currentStonfiPage - 1) * itemsPerPage;
+            const paginatedItems = filtered.slice(startIndex, startIndex + itemsPerPage);
+
+            container.innerHTML = '';
+            paginatedItems.forEach(t => {
+                const formattedMcap = formatCompactUSD(t.mcap);
+                const formattedVol = formatCompactUSD(t.vol);
+                const changeVal = parseFloat(t.change24h || 0);
+                const changeColor = changeVal >= 0 ? 'var(--accent-green)' : 'var(--accent-red)';
+                const changeSign = changeVal >= 0 ? '+' : '';
+
+                container.innerHTML += `
+                    <div class="launch-card" onclick="handleTokenCardClick('${t.address}', '${t.symbol}', '${t.poolAddress}')">
+                        <div style="display:flex; align-items:center; gap:12px;">
+                            <div class="token-avatar-wrap">
+                                <span class="token-avatar-fallback">${t.symbol.charAt(0)}</span>
+                                <img src="${t.logo}" onerror="this.style.display='none';">
+                            </div>
+                            <div>
+                                <div style="display:flex; align-items:center; gap:6px;">
+                                    <h4 style="font-size:14px; font-weight:900; color:#fff;">$${t.symbol}</h4>
+                                    <span style="font-size:8px; background:rgba(59,130,246,0.25); color:#93c5fd; border:1px solid rgba(59,130,246,0.45); padding:1px 5px; border-radius:4px; font-weight:800;">STON.FI</span>
+                                </div>
+                                <span style="font-size:11px; color:var(--text-muted); font-weight:700;">${t.name} • Vol: ${formattedVol}</span>
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div style="text-align:right;">
+                                <div style="font-size:9px; color:var(--text-muted); text-transform:uppercase; font-weight:800;">MCap <span style="color:${changeColor};">(${changeSign}${changeVal.toFixed(1)}%)</span></div>
+                                <div style="font-size:13px; font-weight:900; color:var(--accent-green);">${formattedMcap}</div>
+                            </div>
+                            <button onclick="event.stopPropagation(); selectTokenForSniper('${t.address}', '${t.symbol}')" style="background: rgba(239,68,68,0.15); border: 1px solid var(--accent-red); color: var(--accent-red); padding: 6px 10px; border-radius: 8px; font-size: 10px; font-weight: 800; cursor: pointer;">🎯 Snipe</button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            if(paginationBar) {
+                paginationBar.style.display = 'flex';
+                document.getElementById('stonfiPageIndicator').innerText = `Page ${currentStonfiPage} of ${totalPages}`;
+                document.getElementById('stonfiPrevBtn').disabled = currentStonfiPage === 1;
+                document.getElementById('stonfiNextBtn').disabled = currentStonfiPage === totalPages;
             }
         }
 
@@ -1362,7 +1577,7 @@
 
         // Initialize on load
         loadTopblastTokens();
-        loadGramMemesTokens();
+        loadAllGramMemes();
         calculateSwapOutput();
     </script>
 </body>
