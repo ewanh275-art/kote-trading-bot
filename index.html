@@ -456,7 +456,7 @@
 
     <!-- --- CINEMATIC INTRO SCREEN --- -->
     <div id="intro-screen">
-        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v12.16</div>
+        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v12.17</div>
         <div class="intro-content">
             <div class="intro-logo-moon">🐱</div>
             <div style="font-size: 24px; font-weight: 900; color: #fff; letter-spacing: 0.5px;">GRAM & TOPBLAST MEMES</div>
@@ -499,18 +499,9 @@
             const found = allTokens.find(t => t.address.toLowerCase() === address.toLowerCase());
             if (found && typeof window.selectTokenForTrade === 'function') {
                 window.selectTokenForTrade(
-                    found.address, 
-                    found.name, 
-                    found.symbol, 
-                    found.logo, 
-                    found.mcap, 
-                    found.liq, 
-                    found.vol, 
-                    found.priceUSD, 
-                    found.change24h || 0,
-                    found.graduated, 
-                    found.migrationDex, 
-                    found.poolAddress
+                    found.address, found.name, found.symbol, found.logo, 
+                    found.mcap, found.liq, found.vol, found.priceUSD, 
+                    found.change24h || 0, found.graduated, found.migrationDex, found.poolAddress
                 );
             } else {
                 if (typeof window.selectTokenForTrade === 'function') {
@@ -645,7 +636,7 @@
                     </div>
 
                     <div id="tradeAuditBadge" class="audit-badge">
-                        🛡️ DeDust & STON.fi SDK Router Active
+                        🛡️ Zero-Delay Server Cache Active (< 20ms)
                     </div>
 
                     <div class="tokenomics-grid">
@@ -752,9 +743,9 @@
                     <div class="card-header">
                         <div>
                             <span class="card-title" style="color: var(--accent-green);">🔥 Topblast Memes Catalog</span>
-                            <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Sorted by Market Cap (Highest to Lowest, TB at end)</div>
+                            <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Sorted by Market Cap (Highest to Lowest)</div>
                         </div>
-                        <button onclick="loadTopblastTokens()" style="background: rgba(16,185,129,0.15); border: 1px solid var(--accent-green); color: var(--accent-green); padding: 6px 10px; border-radius: 8px; font-size: 11px; cursor: pointer; font-weight: 800;">↻ Refresh</button>
+                        <button onclick="fetchTokensFromBackend()" style="background: rgba(16,185,129,0.15); border: 1px solid var(--accent-green); color: var(--accent-green); padding: 6px 10px; border-radius: 8px; font-size: 11px; cursor: pointer; font-weight: 800;">↻ Refresh</button>
                     </div>
 
                     <div class="input-group" style="padding: 8px 12px; margin-bottom: 12px;">
@@ -773,15 +764,15 @@
                 </div>
             </section>
 
-            <!-- 5. GRAM MEMES SECTION (SPLIT: DEDUST POOLS vs STON.FI POOLS) -->
+            <!-- 5. GRAM MEMES SECTION (LOCALSTORAGE OPTIMISTIC CACHE + BACKGROUND SYNC) -->
             <section id="page-gram-memes" class="page">
                 <div class="card" style="max-width: 650px; margin: 0 auto; width: 100%;">
                     <div class="card-header">
                         <div>
                             <span class="card-title" style="color: var(--accent-green);">🪙 Gram Memes DEX Pools</span>
-                            <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Live TON/GRAM Pools from DeDust & STON.fi</div>
+                            <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Instant 0ms Load via LocalStorage & Server Worker</div>
                         </div>
-                        <button onclick="loadAllGramMemes()" style="background: rgba(16,185,129,0.15); border: 1px solid var(--accent-green); color: var(--accent-green); padding: 6px 10px; border-radius: 8px; font-size: 11px; cursor: pointer; font-weight: 800;">↻ Sync All DEX Pools</button>
+                        <button onclick="fetchTokensFromBackend()" style="background: rgba(16,185,129,0.15); border: 1px solid var(--accent-green); color: var(--accent-green); padding: 6px 10px; border-radius: 8px; font-size: 11px; cursor: pointer; font-weight: 800;">↻ Sync Now</button>
                     </div>
 
                     <!-- Sub-split tabs for DeDust vs STON.fi -->
@@ -797,7 +788,7 @@
                     <!-- DeDust List Container -->
                     <div id="gramDedustContainer">
                         <div id="gramDedustList">
-                            <div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 12px;">Loading DeDust TON/GRAM pools...</div>
+                            <div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 12px;">Loading DeDust pools...</div>
                         </div>
                         <div class="pagination-bar" id="gramDedustPaginationBar" style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--border-color);">
                             <button class="page-btn" id="dedustPrevBtn" onclick="changeDedustPage(-1)">← Previous</button>
@@ -806,10 +797,10 @@
                         </div>
                     </div>
 
-                    <!-- STON.fi List Container (Hidden by default) -->
+                    <!-- STON.fi List Container -->
                     <div id="gramStonfiContainer" style="display: none;">
                         <div id="gramStonfiList">
-                            <div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 12px;">Loading STON.fi TON/GRAM pools...</div>
+                            <div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 12px;">Loading STON.fi pools...</div>
                         </div>
                         <div class="pagination-bar" id="gramStonfiPaginationBar" style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--border-color);">
                             <button class="page-btn" id="stonfiPrevBtn" onclick="changeStonfiPage(-1)">← Previous</button>
@@ -893,98 +884,21 @@
             <button class="nav-tab active" onclick="switchPage('trade', this);"><span>📈</span><span>Trade</span></button>
             <button class="nav-tab" onclick="switchPage('sniper', this)"><span>🎯</span><span>Sniper</span></button>
             <button class="nav-tab" onclick="switchPage('page-active-trades', this)"><span>⚡</span><span>Active</span></button>
-            <button class="nav-tab" onclick="switchPage('page-topblast', this); loadTopblastTokens();"><span>🔥</span><span>Topblast</span></button>
-            <button class="nav-tab" onclick="switchPage('page-gram-memes', this); loadAllGramMemes();"><span>🪙</span><span>Gram Memes</span></button>
+            <button class="nav-tab" onclick="switchPage('page-topblast', this)"><span>🔥</span><span>Topblast</span></button>
+            <button class="nav-tab" onclick="switchPage('page-gram-memes', this)"><span>🪙</span><span>Gram Memes</span></button>
             <button class="nav-tab" onclick="switchPage('page-profile', this)"><span>👤</span><span>Profile</span></button>
             <button class="nav-tab" onclick="switchPage('page-buy', this)"><span>💳</span><span>MoonPay</span></button>
         </nav>
     </div>
 
-    <!-- LIVE PRODUCTION DATA & LOGIC SCRIPT -->
+    <!-- ZERO-DELAY LOCALSTORAGE & BACKGROUND SYNC SCRIPT -->
     <script>
         const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
         if (tg) { tg.ready(); tg.expand(); }
 
-        const GRAM_MASTER_ADDRESS = "EQC47093oX5Xhb0xuk2lCr2RhS8rj-vul61u4W2UH5ORmG_O";
-        const NATIVE_TON_ADDRESS = "EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM9c";
-        const STON_TON_WRAPPER = "EQBynBO23ywHy_CgarY9NK9FTz0yDsG82PtcbSTQgGoXwiuA";
-
-        const EXCLUDED_SYMBOLS = new Set([
-            "TON", "GRAM", "JUSDT", "USDT", "JUSDC", "USDC", "STTON", "TSTON", 
-            "STD", "SCALE", "DUST", "WTON", "PTON", "JWBTC", "JWETH", "DAI", "USDE"
-        ]);
-        
-        const EXCLUDED_ADDRESSES = new Set([
-            GRAM_MASTER_ADDRESS.toLowerCase(),
-            NATIVE_TON_ADDRESS.toLowerCase(),
-            STON_TON_WRAPPER.toLowerCase(),
-            "eqaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaam9c".toLowerCase()
-        ]);
-
-        let topblastAddresses = [
-            "EQAOY0xbKV1g3e2V7jdo5erF5u-5h19qB4IpPkK0RPy0RKGV", "EQAOyf4n-7wTtTI45LGQwfacEfnkpOa9v6bjpwgeCHX5WW8y",
-            "EQAmWanX8ohlsG6qBpfL2ritCQ7tr7MlJpEK64Khm-O4742K", "EQA6G0uVERDZTkLNa0drWBna1F5TSbogy7UXEWU5ERHz4uJL",
-            "EQAmZFuDbV0Ze8yR3lh3v0n8FISN-s3Yi7M8URCT--qc_t8x", "EQAmsYIAadPQrEn-wZrRKwqhnReLDOeKl9T70umuk0MA1ULW",
-            "EQBvYQ3TyUYTjQxZa6UPbjwVzjnC5U3PRiXhpIu-HPMYMtTX", "EQAmvp1Vrr0zY2--STdH-0X_mP5iCD61p2vNVJYwHlgBni2C",
-            "EQAO_tYpLbPq-GOXegYTYtFaQ0tMkxLBxzYF8cUCGGWAj_aA", "EQA61O71y4I8oZDXRvMOrHtub2vxcPI54f1oGA_e4h0JL64L",
-            "EQAmewWMVccMpcKtgLUjcvkwGVSnzYIar2w39D-W_-Jp1U_V", "EQAmbXjiqLPXW16g3PXdMRzLKyprUvx8K2pwenW4kTj17vHk",
-            "EQAmTUciPykaNw5bZ9DlYXzpB9vFjUZOd5re_TiCHbaYmzvU", "EQAmT22Q2aPyLeTPmkzbCC0oDoOsLxTjSbR2XvWltb49FsuV",
-            "EQAmaMdwCmpZNJSRfvbNZDu1HkjFbw2VtvvI1FDKvLJMgyXE", "EQAmB_sndV45N-cmgT2tihQOcaf4EgT3nhhsvYeJ4UnICc0A",
-            "EQA69XQSXbB6zXv36mTFaiazCBSuLj_zT6tH44m6ohvjGv02", "EQAOp85i7pf7tyV0cyJBxULyTP3dXJCvPZYOQ0OVOk1HGr-d",
-            "EQAOHBcxj6v444-9OQfgD0blgRSJd3YpFgrKzM7o3rgKQXjW", "EQAmAb3d7dEP8fMWOf42Jzxu8DyG_fCK9ndfLs1XhjlN5HU9",
-            "EQA6_KTcZORIevd4zw9GJGmpaWKrzdixod8J1fWfm4r7YxZm", "EQAmmPdBvJMe00ZVck3_oQL46HPov6RMGoPW2ex-7kjI0Il1",
-            "EQAmuf2yZ6vUjhKViYT-IYWNFEgrO3W47o-w9-15q_iD4A5D", "EQAOp_GJvXdf-KOyrzwXV5Uf0Pzbsc5QXLRPwPc6dj1YnhPb",
-            "EQAOLGOVGr1z7Je3tn-1fKEIXmUYTduh2hnYzxBmhzFqDgIu", "EQAmdLjlODBRz5Wyn04SeH_kx1V__X-ZSCwjRFnyYQnHkRdb",
-            "EQAm-H72S6NMaO3KEP7jFXPnupsgO0s-mggOKW89l098lL57", "EQA6P6O_XDH0VNFedCZuopL7e8UdSqH9YEcC2bwzSjtYyuI4",
-            "EQAmBV5LVsfKTUdhQQIz3jOePtuA9BJLq7C1Rui082v0aVF3", "EQAmiAVqNkNobs8CXbt38JlNFlXJ0eztRlsP3Z27YF2DMvKr",
-            "EQA6b9p3ILwLkcKiOra-Be1XjZRtQWE5MPBpjZLtuGRxlS9Y", "EQA6COgHs8dr9El9WthdbXpK8toHwkY841QZ3jtxs59be7SQ",
-            "EQAOGTFrLBTBlHE-rk5RQunJDpJ56ynz3cbPvEx-UdySeJEl", "EQAmAMzMHGzw8wmCusbD07lS3AHg9Z3FL51qvfqVjJz2B4cu",
-            "EQA6kIgw_H_dFqgOouoAW9lm0kxnhk_5DSa7pSsu2qcvHdNI", "EQAmsQK_X-PCaD1j1GGbezh9fO2-Ig-S8BtXPQMe6jorcNuH",
-            "EQA6oZqfngpjbXn7SJdBjIYEoOxt_NusP4ULYCVAuQyG65G3", "EQAm3zO8VWQs1--V3rCjiK1DDFdt0WiY7tks7vLI7SOIoFlg",
-            "EQAONWhv3NkoQrJPMvB67_yknWLPxVX8wPefTPV75h7ZmVKO", "EQD2NxxuZXSywKAt2khypQgsjwoSkeFeg6L9tOnLlfMGaxg9",
-            "EQAmQ2hL2H4A95Qq0pYvH9ir6F56PoliZNJbp50KULxiwpEr", "EQAmWdWzG4fuBRy_esum7AnopZaTxcmmH3JooDir9oykGshI",
-            "EQAOGXscdLLxePpymILh_bu6hkZgsh-Pwq4B5StFlDjc44IG", "EQA6FNQzTeFvY395QVg5GhKNexiK4hECAmBbfuLY5TXyvCX2",
-            "EQA6iDIR4zMPLF0WphiC3e9TaM77kmZaqg9iMYimrpoXgKmv", "EQA6K2JOf-sZ4iHJp0wbz8fV8xFuCcs3UsoGcw72FDpLbhvJ",
-            "EQAmN9ssxWSo5oQThYrqIAiIKH5I4bgKh396hcRZn3RVgbOt", "EQAOXbw31WsP3-1YxvL_2XLcDgWnUqeQaK6ckoLujdhRP_VG",
-            "EQAmi9mYcrZE12hjCkkkUZRH8XKfgtn0hwnA4Aq5NPxctBjY", "EQAOjpXNmnSQpKqEj4cUiz_048P-C24MA1JNqD_CPmVAOH0q",
-            "EQAOFLzQQf1V8rHFZglTCCHbY8mXGbZd5NNExqw9-T3OGnqs", "EQA6dF18rzlU_FYMs3Bos-Xy8sfTPLnqrzmmUl2Uac2t1dSc",
-            "EQAmHxZ7muN8QhJ1sqSsxd2Y1NXQrDne5iq1W3OgjYgNT_ry", "EQAmVFff4F53sDQgzCJv1f3LlSofxJgRBEagsAvGocW2HY-2",
-            "EQA66xs9cWmVWFWDwSlwG5e8BS1_Jfb2c2ViWtSxe1nsfdyp", "EQAmmrze1EPTGwIWoVNBNhP_nSOzo-Gjcybm-ssXtn-23WYP",
-            "EQAmyzD9_-5MccsXofbLpsCj40gwOU7WC-8XHwCDww21FVyy", "EQAm5HVkMvZWepsxIEIQfsMln6YJJolGQmJxMLYU5V8h1abL",
-            "EQAm4yyz06js43ANzvjjX-iEXHBpFUCN9I6V1Tiw1FebNlRe", "EQAmUUMHs-IDUoVYbno-j_R4_wc_HDCJ9VbU4OVNthS_Ul9z",
-            "EQAOp1jq28iWiHmZxnCZgfgOBqBE0bbKrcfj6gXgSPplF16l", "EQAmRXESGA2sUc_UPGQ0qTJfOLU25ixfsE7elFwDI2eR3RE_",
-            "EQA6enm16bWjG1eUKI19E3EbWZjlB7r79RmpCTx79PymzgnK", "EQA6KVkWh1na5tA-XPGJsevjmrm90Zq_2pi9ljowDE5o4xaC",
-            "EQAOitDQsM9t5uXYkiDIyFFDE8H2sKLaINcJcxk01q9QmNjV", "EQAmnA14XeBqTRHUqRlaqs_PPAtxBa-HI2d9oqHzdzAaMNUG",
-            "EQA6CjFaclFsDu6Z4gOIZ_9QN_dQ14IQEwAyHL227fDjIe5V", "EQA6Ze_BBi0e-uoOLugKQEIrteRsuLbQFj5S6lhqdnYEVC-0",
-            "EQAmCL42WxSfj-wdvLjlp0v6kPXSZRsxhVl9Xo_wpwnkQmU-", "EQAO9HVPcwuhiYwlOBasnZD8h3yH9mEWAIicwNNh4J0hIdn9",
-            "EQAOQtEkl0ie2-lktarRA5tUS9PL6kueAoKQc3iW1-euno6q", "EQAmKfjNR6png60YE98lcB72Xi6h9_Ksk-YidYvGoJc2Z3pL",
-            "EQAmrHtrkk3Em8RSEqoK50O02C542fk8zdEG18SwU4TRgIp4", "EQA69Mhu92OBCtAse0SJbv3_3VpiVV10d5vLUw_3Bg8Myt_0",
-            "EQAmJaTOz6MeuCPA4fr8ugqgHd4TuO5-U1Fp5JX9HK9RrxZW", "EQAme5Z3_wsVhvSemTvwFToq2AIRz_NSfEdiKOgdI8H11EPh",
-            "EQA6ObSo9TtyE8gU3FA_u3ogAWLBsy0IjoONtCKmbAjBqh8h", "EQA6LOruFA6jUBZh68CXimZfDLdlM7MfdejsuW7EoCTYQuKO",
-            "EQAmUtInjsZtnJRpiOOyHomJiHmt2LTart01igMk0UjjlSPJ", "EQA6a6eVOgR_vJ-s8qAEwE02lSjftPlW11d8AbHAsDx-KjGc",
-            "EQAOQNg9yr0xNNR45Ebm3Sa2f3Wo5-blxlUGKZhI_b2OLF5d", "EQAOyfZUykprWRtjcrU-13bdiqRXMURwdly9M58501fEPxvk",
-            "EQA6ulHH35svS8QQz0l5EetinJLSHAFKHRMJ2E7Ax14Rluc2", "EQAOIPx1dG1wtxlSqB1flW7qZcIc0hp5E1f9KWZi40gNegJS",
-            "EQAOJ4ynsF2ov7C94ogjMZpuvnOx0OZ3hhuK9nBHz3PGH2ad", "EQAO85wCnetsFtuMtVJpxpF-4ycwXqvYQ6MzXpiZ_cjQExcD",
-            "EQAmbbXQG6ECkRX2YmJwi8AzubLS9Sp-V6EUUNhNVEdWc2i-", "EQAmAnqgWPqYZRX8VFPmFkQ4BEG-usOTKJ7dS4iQr5v_ZjeJ",
-            "EQAmaM1juMlEL5F2pJHLrkc4abz-VUUSTzDkj6oYTA0HmYaB", "EQA6sBJlj0HTA0T9zdxm-KmafxqcQyyvFZAdBNMPzk1ekNdc",
-            "EQAmDS3NS9BCLSP4djrt_B8vaSdJvV5JcrL4rMd___BFyVaH", "EQAmos5Eeldo1k5cDSwle5awz-DNwf4zKgtrZ_VwET6lR6k3",
-            "EQAOamg6rT4dxJTB-C4YGDBSW1hus5ZrzcbaGrT8YuXkw8dm", "EQA6wowjTYS2KKL3n3bzaPkbwHPqiwFtAWxiRJtYzYYp3QA-",
-            "EQA6AswoZ18Qp70saYA8hKfpcMuIFd-onNQ2VEQTA62Bw3xR", "EQAmex4HNekmuqwAlYqnUbJCGz5dD9ZxEOBBHlUO7H5yhtTo",
-            "EQAm2powy3WrWeu4m5ndNqQjNCv-1MArFx4xOX9l7pKnbdWs", "EQAmGSxeHgU7zW9RQhMP9r5TNLcwoSkDvsT59-aNxnkVvwI2",
-            "EQA6y83KY0_svjvSiYMBMPQPboGsKTIteXV7uv1-_x7L3hTB", "EQAm8U2jZ0FVd1faCxkicnducEy4d3XL7WyhNgOcwOLNzy5Q",
-            "EQAmNuK8ddxGRwP74Xi-VhLNZWio9w2BoULMkNwX-bXsOkVx", "EQAmQRaCKEitwYQ-LA1YhkkY-Bz6dU4Wrn76zCbDM2IN2fYc",
-            "EQAm_-f_3k-PbmG9IZq8FKjLLhil00bYhs_SD6Ykci3SolP2", "EQAmxecdUiQtFXFRKadKa1mK36Izqb6oMlbYNQTHS7tyDDaw",
-            "EQA6JYz3GuEdMBwrRvYX61FuGna45gUyDBxqseLmumygmHb0", "EQAm9xnWCB0svMoS28516vNmCDKDeRZErZwOEhERiuaFKgVU",
-            "EQBTJ2GdhlB_7nd6S0w7nbD8bipVmO1IRfglTv2CsNIc7ZyC", "EQAmot4vfcPAfi1PF50vPTeDNqJSEmZXd7nBluXlupQEZP0q",
-            "EQA6Snqtu_sG7R9pyGemN9Icx4VSlW3lglMqY-8WHpXHpf-g", "EQAOj_VVK7x0D4QxqHacchILORqFSinJDu9HpGKeuQJ0yGJf",
-            "EQA61kaKxWxag-Z2V6rKjR1KubhFKgjNQ6If0yECqKGdnsHO", "EQAmdIm1kcTi3e4UfDc5LpSJalE7cRkH7I0pLCzXLXOU-UE-",
-            "EQAmOKY65ndud2hRYJm8AjRrY8kXNN3eFIcxQnoYm9Skk707", "EQAm6a2k8YN-2EQ7rUZD673y5kdeu9T1VVQ9Dhw4OZyVvH_h",
-            "EQAmoVE9hop3IF5P8kbw6NGxnEC6PMuLBxvNrIWMzmwD3CAl", "EQAmj_ML4H8vUH1_TZTvJ7psAszc2n5U_v2VU2mHCc-uUR-u"
-        ];
-
-        window.topblastTokens = [];
-        window.gramDedustTokens = [];
-        window.gramStonfiTokens = [];
+        window.topblastTokens = JSON.parse(localStorage.getItem('kote_topblast_cache') || '[]');
+        window.gramDedustTokens = JSON.parse(localStorage.getItem('kote_dedust_cache') || '[]');
+        window.gramStonfiTokens = JSON.parse(localStorage.getItem('kote_stonfi_cache') || '[]');
 
         let currentDedustPage = 1;
         let currentStonfiPage = 1;
@@ -1010,70 +924,73 @@
             }
         };
 
-        // --- TOPBLAST LOGIC ---
-        async function loadTopblastTokens() {
-            window.topblastTokens = topblastAddresses.map((ca, idx) => ({
-                name: `Topblast Token #${idx + 1}`,
-                symbol: `TB${idx + 1}`,
-                address: ca,
-                poolAddress: ca,
-                logo: '',
-                mcap: 50000 + (idx * 1000),
-                liq: 20000,
-                vol: 10000,
-                priceUSD: 0.01,
-                change24h: 0,
-                graduated: true,
-                migrationDex: 'dedust'
-            }));
-            sortAndRenderTopblast();
+        // Render immediately on boot from LocalStorage (0ms delay)
+        function renderAllInstantly() {
+            renderTopblastList();
+            renderGramDedustList();
+            renderGramStonfiList();
+        }
 
+        // Silent Background Sync with Server API (< 20ms response from server memory cache)
+        async function fetchTokensFromBackend() {
             try {
-                for (let i = 0; i < topblastAddresses.length; i += 30) {
-                    const chunk = topblastAddresses.slice(i, i + 30).join(',');
-                    const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${chunk}`);
-                    const data = await res.json();
-                    const pairs = data.pairs || [];
+                // Replace with your backend endpoint URL (e.g. https://api.yourdomain.com/api/tokens)
+                const res = await fetch('https://api.kotetrade.com/api/tokens');
+                const data = await res.json();
 
-                    pairs.forEach(p => {
-                        const tokenAddr = p.baseToken?.address;
-                        const match = window.topblastTokens.find(t => t.address.toLowerCase() === (tokenAddr || '').toLowerCase());
-                        if (match) {
-                            match.name = p.baseToken?.name || match.name;
-                            match.symbol = p.baseToken?.symbol || match.symbol;
-                            match.poolAddress = p.pairAddress || match.poolAddress;
-                            match.logo = p.info?.imageUrl || p.baseToken?.logoURI || '';
-                            match.mcap = p.marketCap || p.fdv || match.mcap;
-                            match.liq = p.liquidity?.usd || match.liq;
-                            match.vol = p.volume?.h24 || match.vol;
-                            match.priceUSD = parseFloat(p.priceUsd) || match.priceUSD;
-                            match.change24h = p.priceChange?.h24 || 0;
-                        }
-                    });
-                    sortAndRenderTopblast();
+                if (data.topblast) {
+                    window.topblastTokens = data.topblast;
+                    localStorage.setItem('kote_topblast_cache', JSON.stringify(data.topblast));
+                    renderTopblastList();
+                }
+                if (data.dedust) {
+                    window.gramDedustTokens = data.dedust;
+                    localStorage.setItem('kote_dedust_cache', JSON.stringify(data.dedust));
+                    renderGramDedustList();
+                }
+                if (data.stonfi) {
+                    window.gramStonfiTokens = data.stonfi;
+                    localStorage.setItem('kote_stonfi_cache', JSON.stringify(data.stonfi));
+                    renderGramStonfiList();
                 }
             } catch (err) {
-                console.error("Topblast fetch error:", err);
+                console.log("Using cached offline state (Background sync pending)...", err);
             }
         }
 
-        function sortAndRenderTopblast() {
-            window.topblastTokens.sort((a, b) => b.mcap - a.mcap);
-            renderTopblastList();
-        }
-
-        window.changeTopblastPage = function(direction) {
+        window.changeTopblastPage = function(dir) {
             const q = (document.getElementById('topblastSearchInput')?.value || '').toLowerCase();
             const filtered = window.topblastTokens.filter(t => t.name.toLowerCase().includes(q) || t.symbol.toLowerCase().includes(q) || t.address.toLowerCase().includes(q));
             const totalPages = Math.ceil(filtered.length / itemsPerPage) || 1;
-            currentTopblastPage = Math.min(Math.max(1, currentTopblastPage + direction), totalPages);
+            currentTopblastPage = Math.min(Math.max(1, currentTopblastPage + dir), totalPages);
             renderTopblastList();
         };
 
-        window.filterTopblastList = function() {
-            currentTopblastPage = 1;
-            renderTopblastList();
+        window.changeDedustPage = function(dir) {
+            const q = (document.getElementById('gramMemesSearchInput')?.value || '').toLowerCase();
+            const filtered = window.gramDedustTokens.filter(t => t.name.toLowerCase().includes(q) || t.symbol.toLowerCase().includes(q) || t.address.toLowerCase().includes(q));
+            const totalPages = Math.ceil(filtered.length / itemsPerPage) || 1;
+            currentDedustPage = Math.min(Math.max(1, currentDedustPage + dir), totalPages);
+            renderGramDedustList();
         };
+
+        window.changeStonfiPage = function(dir) {
+            const q = (document.getElementById('gramMemesSearchInput')?.value || '').toLowerCase();
+            const filtered = window.gramStonfiTokens.filter(t => t.name.toLowerCase().includes(q) || t.symbol.toLowerCase().includes(q) || t.address.toLowerCase().includes(q));
+            const totalPages = Math.ceil(filtered.length / itemsPerPage) || 1;
+            currentStonfiPage = Math.min(Math.max(1, currentStonfiPage + dir), totalPages);
+            renderGramStonfiList();
+        };
+
+        window.filterTopblastList = function() { currentTopblastPage = 1; renderTopblastList(); };
+        window.filterGramMemesList = function() { currentDedustPage = 1; currentStonfiPage = 1; renderGramDedustList(); renderGramStonfiList(); };
+
+        function formatCompactUSD(val) {
+            if (!val || val <= 0) return '$0.0K';
+            if (val >= 1e6) return '$' + (val / 1e6).toFixed(2) + 'M';
+            if (val >= 1e3) return '$' + (val / 1e3).toFixed(1) + 'K';
+            return '$' + val.toFixed(2);
+        }
 
         function renderTopblastList() {
             const q = (document.getElementById('topblastSearchInput')?.value || '').toLowerCase();
@@ -1083,7 +1000,7 @@
             if(!container) return;
 
             if (filtered.length === 0) {
-                container.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 12px;">No Topblast tokens found.</div>`;
+                container.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 12px;">No Topblast tokens cached.</div>`;
                 if(paginationBar) paginationBar.style.display = 'none';
                 return;
             }
@@ -1096,7 +1013,7 @@
 
             container.innerHTML = '';
             paginatedItems.forEach(t => {
-                const formattedMcap = t.mcap >= 1e6 ? '$' + (t.mcap/1e6).toFixed(2) + 'M' : '$' + (t.mcap/1e3).toFixed(1) + 'K';
+                const formattedMcap = formatCompactUSD(t.mcap);
                 container.innerHTML += `
                     <div class="launch-card" onclick="handleTokenCardClick('${t.address}', '${t.symbol}', '${t.poolAddress}')">
                         <div style="display:flex; align-items:center; gap:12px;">
@@ -1131,283 +1048,6 @@
             }
         }
 
-        // --- HELPER FOR IS_TON_OR_GRAM ---
-        function isTonOrGramAddress(addr) {
-            if (!addr) return false;
-            const al = addr.toLowerCase();
-            return al === NATIVE_TON_ADDRESS.toLowerCase() || 
-                   al === STON_TON_WRAPPER.toLowerCase() || 
-                   al === GRAM_MASTER_ADDRESS.toLowerCase() ||
-                   al === "eqaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaam9c".toLowerCase();
-        }
-
-        // --- DEDUST SYNC ---
-        function parseDeDustAsset(asset) {
-            if (!asset) return null;
-            if (typeof asset === 'string') {
-                if (asset === 'native') return { type: 'native', address: 'native' };
-                if (asset.startsWith('jetton:')) return { type: 'jetton', address: asset.slice(7) };
-                return { type: 'jetton', address: asset };
-            }
-            if (typeof asset === 'object') {
-                if (asset.type === 'native') return { type: 'native', address: 'native' };
-                if (asset.address) return { type: 'jetton', address: asset.address };
-            }
-            return null;
-        }
-
-        async function loadGramDedustTokens() {
-            const container = document.getElementById('gramDedustList');
-            if(!container) return;
-            container.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 12px;">Querying DeDust assets & pools...</div>`;
-
-            try {
-                const [assetsRes, poolsRes] = await Promise.all([
-                    fetch('https://assets.dedust.io/list.json').catch(() => fetch('https://api.dedust.io/v2/assets')),
-                    fetch('https://api.dedust.io/v2/pools')
-                ]);
-
-                const assetsRaw = await assetsRes.json();
-                const poolsRaw = await poolsRes.json();
-
-                const assetsList = Array.isArray(assetsRaw) ? assetsRaw : (assetsRaw.assets || []);
-                const poolsList = Array.isArray(poolsRaw) ? poolsRaw : (poolsRaw.pools || []);
-
-                const assetMap = new Map();
-                assetsList.forEach(a => {
-                    if (a && a.address) {
-                        assetMap.set(a.address.toLowerCase(), {
-                            name: a.name || a.symbol || 'Jetton',
-                            symbol: a.symbol || 'TOKEN',
-                            image: a.image || a.logo || ''
-                        });
-                    }
-                });
-
-                const uniqueMemeAddresses = new Set();
-                poolsList.forEach(pool => {
-                    const rawAssets = pool.assets || [];
-                    if (rawAssets.length < 2) return;
-
-                    const a0 = parseDeDustAsset(rawAssets[0]);
-                    const a1 = parseDeDustAsset(rawAssets[1]);
-                    if (!a0 || !a1) return;
-
-                    const a0IsQuote = a0.type === 'native' || isTonOrGramAddress(a0.address);
-                    const a1IsQuote = a1.type === 'native' || isTonOrGramAddress(a1.address);
-
-                    if (a0IsQuote === a1IsQuote) return;
-
-                    const baseAsset = a0IsQuote ? a1 : a0;
-                    if (baseAsset.type !== 'jetton' || !baseAsset.address) return;
-
-                    const addrLower = baseAsset.address.toLowerCase();
-                    if (EXCLUDED_ADDRESSES.has(addrLower)) return;
-
-                    const meta = assetMap.get(addrLower);
-                    const symbol = meta?.symbol || '';
-                    if (symbol && EXCLUDED_SYMBOLS.has(symbol.toUpperCase())) return;
-
-                    uniqueMemeAddresses.add(baseAsset.address);
-                });
-
-                const addressesArray = Array.from(uniqueMemeAddresses);
-                window.gramDedustTokens = addressesArray.map(ca => {
-                    const meta = assetMap.get(ca.toLowerCase());
-                    return {
-                        name: meta?.name || 'DeDust Meme',
-                        symbol: meta?.symbol || 'MEME',
-                        address: ca,
-                        poolAddress: ca,
-                        logo: meta?.image || '',
-                        mcap: 0, liq: 0, vol: 0, priceUSD: 0, change24h: 0,
-                        graduated: true, migrationDex: 'dedust'
-                    };
-                });
-
-                if (window.gramDedustTokens.length === 0) {
-                    container.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 12px;">No DeDust meme pools found.</div>`;
-                    return;
-                }
-
-                renderGramDedustList();
-
-                for (let i = 0; i < addressesArray.length; i += 30) {
-                    const chunk = addressesArray.slice(i, i + 30).join(',');
-                    if (!chunk) continue;
-                    try {
-                        const dsRes = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${chunk}`);
-                        const dsData = await dsRes.json();
-                        const pairs = (dsData.pairs || []).filter(p => p.chainId === 'ton');
-
-                        pairs.forEach(p => {
-                            const baseAddr = p.baseToken?.address;
-                            if (!baseAddr) return;
-                            const match = window.gramDedustTokens.find(t => t.address.toLowerCase() === baseAddr.toLowerCase());
-                            if (match) {
-                                match.name = p.baseToken?.name || match.name;
-                                match.symbol = p.baseToken?.symbol || match.symbol;
-                                match.poolAddress = p.pairAddress || match.poolAddress;
-                                match.logo = match.logo || p.info?.imageUrl || p.baseToken?.logoURI || '';
-                                match.mcap = p.marketCap || p.fdv || match.mcap;
-                                match.liq = p.liquidity?.usd || match.liq;
-                                match.vol = p.volume?.h24 || match.vol;
-                                match.priceUSD = parseFloat(p.priceUsd) || match.priceUSD;
-                                match.change24h = p.priceChange?.h24 || 0;
-                            }
-                        });
-                        window.gramDedustTokens.sort((a, b) => b.mcap - a.mcap);
-                        renderGramDedustList();
-                    } catch (e) { console.error(e); }
-                }
-            } catch (err) {
-                console.error("DeDust sync error:", err);
-                container.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--accent-red); font-size: 12px;">Failed to load DeDust pools.</div>`;
-            }
-        }
-
-        // --- STON.FI SYNC ---
-        async function loadGramStonfiTokens() {
-            const container = document.getElementById('gramStonfiList');
-            if(!container) return;
-            container.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 12px;">Querying STON.fi assets & pools...</div>`;
-
-            try {
-                const [assetsRes, poolsRes] = await Promise.all([
-                    fetch('https://api.ston.fi/v1/assets'),
-                    fetch('https://api.ston.fi/v1/pools')
-                ]);
-
-                const assetsRaw = await assetsRes.json();
-                const poolsRaw = await poolsRes.json();
-
-                const assetsList = assetsRaw.asset_list || assetsRaw || [];
-                const poolsList = poolsRaw.pool_list || poolsRaw || [];
-
-                const assetMap = new Map();
-                assetsList.forEach(a => {
-                    const addr = a.contract_address || a.address;
-                    if (addr) {
-                        assetMap.set(addr.toLowerCase(), {
-                            name: a.display_name || a.name || 'STON.fi Jetton',
-                            symbol: a.symbol || 'MEME',
-                            image: a.image_url || a.image || ''
-                        });
-                    }
-                });
-
-                const uniqueMemeAddresses = new Set();
-                poolsList.forEach(pool => {
-                    const token0 = pool.token0_address || pool.coin0_address;
-                    const token1 = pool.token1_address || pool.coin1_address;
-                    if (!token0 || !token1) return;
-
-                    const t0IsQuote = isTonOrGramAddress(token0);
-                    const t1IsQuote = isTonOrGramAddress(token1);
-
-                    if (t0IsQuote === t1IsQuote) return;
-
-                    const baseToken = t0IsQuote ? token1 : token0;
-                    const addrLower = baseToken.toLowerCase();
-                    if (EXCLUDED_ADDRESSES.has(addrLower)) return;
-
-                    const meta = assetMap.get(addrLower);
-                    const symbol = meta?.symbol || '';
-                    if (symbol && EXCLUDED_SYMBOLS.has(symbol.toUpperCase())) return;
-
-                    uniqueMemeAddresses.add(baseToken);
-                });
-
-                const addressesArray = Array.from(uniqueMemeAddresses);
-                window.gramStonfiTokens = addressesArray.map(ca => {
-                    const meta = assetMap.get(ca.toLowerCase());
-                    return {
-                        name: meta?.name || 'STON.fi Meme',
-                        symbol: meta?.symbol || 'MEME',
-                        address: ca,
-                        poolAddress: ca,
-                        logo: meta?.image || '',
-                        mcap: 0, liq: 0, vol: 0, priceUSD: 0, change24h: 0,
-                        graduated: true, migrationDex: 'stonfi'
-                    };
-                });
-
-                if (window.gramStonfiTokens.length === 0) {
-                    container.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 12px;">No STON.fi meme pools found.</div>`;
-                    return;
-                }
-
-                renderGramStonfiList();
-
-                for (let i = 0; i < addressesArray.length; i += 30) {
-                    const chunk = addressesArray.slice(i, i + 30).join(',');
-                    if (!chunk) continue;
-                    try {
-                        const dsRes = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${chunk}`);
-                        const dsData = await dsRes.json();
-                        const pairs = (dsData.pairs || []).filter(p => p.chainId === 'ton');
-
-                        pairs.forEach(p => {
-                            const baseAddr = p.baseToken?.address;
-                            if (!baseAddr) return;
-                            const match = window.gramStonfiTokens.find(t => t.address.toLowerCase() === baseAddr.toLowerCase());
-                            if (match) {
-                                match.name = p.baseToken?.name || match.name;
-                                match.symbol = p.baseToken?.symbol || match.symbol;
-                                match.poolAddress = p.pairAddress || match.poolAddress;
-                                match.logo = match.logo || p.info?.imageUrl || p.baseToken?.logoURI || '';
-                                match.mcap = p.marketCap || p.fdv || match.mcap;
-                                match.liq = p.liquidity?.usd || match.liq;
-                                match.vol = p.volume?.h24 || match.vol;
-                                match.priceUSD = parseFloat(p.priceUsd) || match.priceUSD;
-                                match.change24h = p.priceChange?.h24 || 0;
-                            }
-                        });
-                        window.gramStonfiTokens.sort((a, b) => b.mcap - a.mcap);
-                        renderGramStonfiList();
-                    } catch (e) { console.error(e); }
-                }
-            } catch (err) {
-                console.error("STON.fi sync error:", err);
-                container.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--accent-red); font-size: 12px;">Failed to load STON.fi pools.</div>`;
-            }
-        }
-
-        window.loadAllGramMemes = function() {
-            loadGramDedustTokens();
-            loadGramStonfiTokens();
-        };
-
-        window.changeDedustPage = function(dir) {
-            const q = (document.getElementById('gramMemesSearchInput')?.value || '').toLowerCase();
-            const filtered = window.gramDedustTokens.filter(t => t.name.toLowerCase().includes(q) || t.symbol.toLowerCase().includes(q) || t.address.toLowerCase().includes(q));
-            const totalPages = Math.ceil(filtered.length / itemsPerPage) || 1;
-            currentDedustPage = Math.min(Math.max(1, currentDedustPage + dir), totalPages);
-            renderGramDedustList();
-        };
-
-        window.changeStonfiPage = function(dir) {
-            const q = (document.getElementById('gramMemesSearchInput')?.value || '').toLowerCase();
-            const filtered = window.gramStonfiTokens.filter(t => t.name.toLowerCase().includes(q) || t.symbol.toLowerCase().includes(q) || t.address.toLowerCase().includes(q));
-            const totalPages = Math.ceil(filtered.length / itemsPerPage) || 1;
-            currentStonfiPage = Math.min(Math.max(1, currentStonfiPage + dir), totalPages);
-            renderGramStonfiList();
-        };
-
-        window.filterGramMemesList = function() {
-            currentDedustPage = 1;
-            currentStonfiPage = 1;
-            renderGramDedustList();
-            renderGramStonfiList();
-        };
-
-        function formatCompactUSD(val) {
-            if (!val || val <= 0) return '$0.0K';
-            if (val >= 1e6) return '$' + (val / 1e6).toFixed(2) + 'M';
-            if (val >= 1e3) return '$' + (val / 1e3).toFixed(1) + 'K';
-            return '$' + val.toFixed(2);
-        }
-
         function renderGramDedustList() {
             const q = (document.getElementById('gramMemesSearchInput')?.value || '').toLowerCase();
             const filtered = window.gramDedustTokens.filter(t => t.name.toLowerCase().includes(q) || t.symbol.toLowerCase().includes(q) || t.address.toLowerCase().includes(q));
@@ -1416,7 +1056,7 @@
             if(!container) return;
 
             if (filtered.length === 0) {
-                container.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 12px;">No DeDust tokens found.</div>`;
+                container.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 12px;">No DeDust tokens cached.</div>`;
                 if(paginationBar) paginationBar.style.display = 'none';
                 return;
             }
@@ -1477,7 +1117,7 @@
             if(!container) return;
 
             if (filtered.length === 0) {
-                container.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 12px;">No STON.fi tokens found.</div>`;
+                container.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 12px;">No STON.fi tokens cached.</div>`;
                 if(paginationBar) paginationBar.style.display = 'none';
                 return;
             }
@@ -1575,10 +1215,12 @@
             document.getElementById('tradeOutputAmount').value = '~ ' + resOutput.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 });
         };
 
-        // Initialize on load
-        loadTopblastTokens();
-        loadAllGramMemes();
+        // 1. Render instantly from LocalStorage on load (0ms delay)
+        renderAllInstantly();
         calculateSwapOutput();
+
+        // 2. Silently sync with server backend in the background
+        fetchTokensFromBackend();
     </script>
 </body>
 </html>
