@@ -456,7 +456,7 @@
 
     <!-- --- CINEMATIC INTRO SCREEN --- -->
     <div id="intro-screen">
-        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v12.9</div>
+        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v12.10</div>
         <div class="intro-content">
             <div class="intro-logo-moon">🐱</div>
             <div style="font-size: 24px; font-weight: 900; color: #fff; letter-spacing: 0.5px;">GRAM & TOPBLAST MEMES</div>
@@ -771,7 +771,7 @@
                 </div>
             </section>
 
-            <!-- 5. GRAM MEMES SECTION (DEDUST POOLS + ASSETS + DEXSCREENER) -->
+            <!-- 5. GRAM MEMES SECTION (INSTANT CACHE + DEDUST POOLS & ASSETS) -->
             <section id="page-gram-memes" class="page">
                 <div class="card" style="max-width: 650px; margin: 0 auto; width: 100%;">
                     <div class="card-header">
@@ -886,7 +886,6 @@
         const GRAM_MASTER_ADDRESS = "EQC47093oX5Xhb0xuk2lCr2RhS8rj-vul61u4W2UH5ORmG_O";
         const NATIVE_TON_DEXSCREENER = "EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM9c";
 
-        // Stablecoins and infrastructure tokens to exclude from meme list
         const EXCLUDED_SYMBOLS = new Set([
             "TON", "GRAM", "JUSDT", "USDT", "JUSDC", "USDC", "STTON", "TSTON", 
             "SCALE", "DUST", "WTON", "PTON", "JWBTC", "JWETH", "DAI", "USDE"
@@ -894,13 +893,11 @@
         const EXCLUDED_ADDRESSES = new Set([
             GRAM_MASTER_ADDRESS.toLowerCase(),
             NATIVE_TON_DEXSCREENER.toLowerCase(),
-            "eqb3ncybutjzzg50htq255pmwxyf5gpo5lmw6oh2f3y7al24", // jUSDT
-            "eqcxe6mutqjkfngf5ot91shk5b_70521265083415730264",
+            "eqb3ncybutjzzg50htq255pmwxyf5gpo5lmw6oh2f3y7al24",
             "eqcxe6mutqjkfngf5ot91shk5b_70521265083415730264".toLowerCase(),
-            "eqb-mpwrd1g6wknk1lq1a0m3j057s5u3m1k34k1e9g5-w1a1", // jUSDC
-            "eqblqsm144dq6sjbpi4jjzva1hqtip3cvhovbifw_t-scale", // SCALE
-            "eqc98_qAmNEptUtPc7W6xdHh_ZHrBUFpw5Ft_IzNU20QAJav".toLowerCase(), // tsTON
-            "eqdn6bd56m1s10325m107867879187165656565656565656"
+            "eqb-mpwrd1g6wknk1lq1a0m3j057s5u3m1k34k1e9g5-w1a1",
+            "eqblqsm144dq6sjbpi4jjzva1hqtip3cvhovbifw_t-scale".toLowerCase(),
+            "eqc98_qAmNEptUtPc7W6xdHh_ZHrBUFpw5Ft_IzNU20QAJav".toLowerCase()
         ]);
 
         let topblastAddresses = [
@@ -1098,7 +1095,7 @@
             }
         }
 
-        // --- GRAM MEMES: DEDUST POOLS + ASSET METADATA + DEXSCREENER BATCH API ---
+        // --- GRAM MEMES: INSTANT LOCALSTORAGE CACHING & BACKGROUND SYNC ---
         function parseDeDustAsset(asset) {
             if (!asset) return null;
             if (typeof asset === 'string') {
@@ -1129,11 +1126,25 @@
             const container = document.getElementById('gramMemesList');
             const paginationBar = document.getElementById('gramPaginationBar');
             if(!container) return;
-            container.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 12px;">Pulling DeDust pools & asset metadata...</div>`;
-            if(paginationBar) paginationBar.style.display = 'none';
+
+            // 1. INSTANT LOAD FROM LOCALSTORAGE IF AVAILABLE
+            const cachedData = localStorage.getItem('kote_gram_memes_cache');
+            if (cachedData) {
+                try {
+                    window.gramMemesTokens = JSON.parse(cachedData);
+                    currentGramPage = 1;
+                    renderGramMemesList();
+                } catch(e) {
+                    console.error("Cache parse error", e);
+                }
+            }
+
+            if (!window.gramMemesTokens || window.gramMemesTokens.length === 0) {
+                container.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 12px;">Loading DeDust TON/GRAM pools...</div>`;
+                if(paginationBar) paginationBar.style.display = 'none';
+            }
 
             try {
-                // 1. Fetch DeDust Asset Metadata (list.json with fallback to v2/assets) & DeDust Pools in parallel
                 const [assetsRes, poolsRes] = await Promise.all([
                     fetch('https://assets.dedust.io/list.json').catch(() => fetch('https://api.dedust.io/v2/assets')),
                     fetch('https://api.dedust.io/v2/pools')
@@ -1145,7 +1156,6 @@
                 const assetsList = Array.isArray(assetsRaw) ? assetsRaw : (assetsRaw.assets || []);
                 const poolsList = Array.isArray(poolsRaw) ? poolsRaw : (poolsRaw.pools || []);
 
-                // Map DeDust Asset Metadata & Logos by Jetton Address
                 const assetMap = new Map();
                 assetsList.forEach(a => {
                     if (a && a.address) {
@@ -1158,7 +1168,6 @@
                     }
                 });
 
-                // 2. Filter DeDust Pools for TON or GRAM Quote Assets & Isolate Meme Coins
                 const memeTokenMap = new Map();
 
                 poolsList.forEach(pool => {
@@ -1172,7 +1181,6 @@
                     const a0IsQuote = isTonOrGramQuote(a0);
                     const a1IsQuote = isTonOrGramQuote(a1);
 
-                    // Require exactly one side to be TON or GRAM
                     if (a0IsQuote === a1IsQuote) return;
 
                     const baseAsset = a0IsQuote ? a1 : a0;
@@ -1187,7 +1195,6 @@
                     const quoteLabel = quoteAsset.type === 'native' ? 'TON' : 'GRAM';
                     const key = baseAsset.address.toLowerCase();
 
-                    // Prefer TON pair if both TON and GRAM pools exist, or store first valid pool
                     if (!memeTokenMap.has(key) || quoteLabel === 'TON') {
                         memeTokenMap.set(key, {
                             name: meta?.name || `Jetton (${baseAsset.address.slice(0, 6)}...)`,
@@ -1209,33 +1216,25 @@
                     }
                 });
 
-                window.gramMemesTokens = Array.from(memeTokenMap.values());
-                currentGramPage = 1;
-                renderGramMemesList();
-
-                // 3. Batch Query DexScreener API for Real-Time Prices, Volume, 24h Change & Market Cap
-                const allAddresses = window.gramMemesTokens.map(t => t.address);
+                // Batch DexScreener query
+                const allAddresses = Array.from(memeTokenMap.keys());
                 for (let i = 0; i < allAddresses.length; i += 30) {
                     const chunk = allAddresses.slice(i, i + 30).join(',');
                     try {
                         const dsRes = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${chunk}`);
                         const dsData = await dsRes.json();
-                        const pairs = (dsData.pairs || []).filter(p => p.chainId === 'ton' && p.dexId === 'dedust');
-                        const fallbackPairs = (dsData.pairs || []).filter(p => p.chainId === 'ton');
-                        const activePairs = pairs.length > 0 ? pairs : fallbackPairs;
+                        const pairs = (dsData.pairs || []).filter(p => p.chainId === 'ton');
 
-                        activePairs.forEach(p => {
+                        pairs.forEach(p => {
                             const baseAddr = p.baseToken?.address;
                             if (!baseAddr) return;
                             const match = memeTokenMap.get(baseAddr.toLowerCase());
                             if (match) {
                                 const pairMcap = p.marketCap || p.fdv || 0;
-                                // Update if first match or higher liquidity pool
                                 if (!match.hasDexScreenerData || (p.liquidity?.usd || 0) > match.liq) {
                                     match.name = match.name.startsWith('Jetton (') ? (p.baseToken?.name || match.name) : match.name;
                                     match.symbol = match.symbol.length === 5 && !assetMap.has(baseAddr.toLowerCase()) ? (p.baseToken?.symbol || match.symbol) : match.symbol;
                                     match.poolAddress = p.pairAddress || match.poolAddress;
-                                    // Keep DeDust hosted icon as primary source of truth, fallback to DexScreener icon
                                     match.logo = match.dedustLogo || p.info?.imageUrl || p.baseToken?.logoURI || '';
                                     match.mcap = pairMcap;
                                     match.liq = p.liquidity?.usd || 0;
@@ -1246,17 +1245,22 @@
                                 }
                             }
                         });
-
-                        // Sort highest to lowest market cap
-                        window.gramMemesTokens = Array.from(memeTokenMap.values()).sort((a, b) => b.mcap - a.mcap);
-                        renderGramMemesList();
                     } catch (e) {
                         console.error("DexScreener batch fetch error:", e);
                     }
                 }
+
+                window.gramMemesTokens = Array.from(memeTokenMap.values()).sort((a, b) => b.mcap - a.mcap);
+                
+                // Save to localStorage for instant future loads
+                localStorage.setItem('kote_gram_memes_cache', JSON.stringify(window.gramMemesTokens));
+                
+                renderGramMemesList();
             } catch (err) {
-                console.error("DeDust API error:", err);
-                container.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--accent-red); font-size: 12px;">Failed to load DeDust pools & assets.</div>`;
+                console.error("DeDust API sync error:", err);
+                if (!window.gramMemesTokens || window.gramMemesTokens.length === 0) {
+                    container.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--accent-red); font-size: 12px;">Failed to load DeDust pools & assets.</div>`;
+                }
             }
         }
 
