@@ -28,8 +28,8 @@
         #intro-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: linear-gradient(rgba(5, 5, 7, 0.78), rgba(5, 5, 7, 0.96)), url('./bg.jpg.JPG') no-repeat center center;
-            background-size: cover; z-index: 100; display: flex; flex-direction: column;
-            justify-content: space-between; padding: 30px 20px; text-align: center;
+            background-size: cover; z-index: 1000; display: flex; flex-direction: column;
+            justify-content: space-between; padding: 30px 20px calc(40px + env(safe-area-inset-bottom)) 20px; text-align: center;
             transition: opacity 0.4s ease, visibility 0.4s ease;
         }
         #intro-screen.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
@@ -88,9 +88,6 @@
         .token-avatar-fallback { font-size: 16px; font-weight: 900; color: var(--accent-green); z-index: 1; }
         .launch-card { background: #0b0b0f; border: 1px solid var(--border-color); padding: 12px 16px; border-radius: 16px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
         .launch-card:hover { border-color: var(--accent-green); background: #111118; }
-        .pagination-bar { display: flex; justify-content: space-between; align-items: center; margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--border-color); }
-        .page-btn { background: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-main); padding: 6px 14px; border-radius: 8px; font-size: 11px; font-weight: 800; cursor: pointer; }
-        .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
         .bottom-nav {
             position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(9, 9, 13, 0.95);
             border-top: 1px solid var(--border-color); display: flex; justify-content: space-around;
@@ -108,7 +105,7 @@
             <div class="intro-logo-moon">🐱</div>
             <div style="font-size: 24px; font-weight: 900; color: #fff; letter-spacing: 0.5px;">GRAM & TOPBLAST MEMES</div>
         </div>
-        <div style="padding-bottom: 20px;">
+        <div style="padding-bottom: 10px;">
             <button class="btn-action btn-red" id="enterTerminalBtn" onclick="enterTerminal()" style="max-width: 300px; margin: 0 auto;">⚡ Enter Terminal</button>
         </div>
     </div>
@@ -375,4 +372,165 @@
                         </div>
                     </div>
                     <div style="text-align:right;">
-                        <div style="font-weight:9
+                        <div style="font-weight:900; font-size:13px; color:var(--accent-green);">$${t.priceUSD.toFixed(4)}</div>
+                        <div style="font-size:10px; color:${t.change24h >= 0 ? 'var(--accent-green)' : 'var(--accent-red)'};">${t.change24h >= 0 ? '+' : ''}${t.change24h}%</div>
+                    </div>
+                </div>
+            `).join('');
+        };
+
+        window.renderGramStonfiList = function() {
+            const container = document.getElementById('gramStonfiContainer');
+            if (!container) return;
+            container.innerHTML = window.gramStonfiTokens.map(t => `
+                <div class="launch-card" onclick="handleTokenCardClick('${t.address}', '${t.symbol}', '${t.poolAddress}')">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <img src="${t.logo}" style="width:36px; height:36px; border-radius:10px; object-fit:cover;">
+                        <div>
+                            <div style="font-weight:900; font-size:13px;">${t.name} (${t.symbol})</div>
+                            <div style="font-size:10px; color:var(--text-muted);">STON.fi Pool</div>
+                        </div>
+                    </div>
+                    <div style="text-align:right;">
+                        <div style="font-weight:900; font-size:13px; color:var(--accent-green);">$${t.priceUSD.toFixed(4)}</div>
+                        <div style="font-size:10px; color:${t.change24h >= 0 ? 'var(--accent-green)' : 'var(--accent-red)'};">${t.change24h >= 0 ? '+' : ''}${t.change24h}%</div>
+                    </div>
+                </div>
+            `).join('');
+        };
+
+        window.renderTopblastList = function() {
+            const container = document.getElementById('topblastContainer');
+            if (!container) return;
+            container.innerHTML = window.topblastTokens.map(t => `
+                <div class="launch-card" onclick="handleTokenCardClick('${t.address}', '${t.symbol}', '${t.poolAddress}')">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <img src="${t.logo}" style="width:36px; height:36px; border-radius:10px; object-fit:cover;">
+                        <div>
+                            <div style="font-weight:900; font-size:13px;">${t.name} (${t.symbol})</div>
+                            <div style="font-size:10px; color:var(--text-muted);">Topblast Launchpad</div>
+                        </div>
+                    </div>
+                    <div style="text-align:right;">
+                        <div style="font-weight:900; font-size:13px; color:var(--accent-green);">$${t.priceUSD.toFixed(4)}</div>
+                        <div style="font-size:10px; color:${t.change24h >= 0 ? 'var(--accent-green)' : 'var(--accent-red)'};">${t.change24h >= 0 ? '+' : ''}${t.change24h}%</div>
+                    </div>
+                </div>
+            `).join('');
+        };
+
+        window.handleTokenCardClick = function(address, symbol, poolAddress) {
+            const allTokens = (window.topblastTokens || []).concat(window.gramDedustTokens || []).concat(window.gramStonfiTokens || []);
+            const found = allTokens.find(t => t.address.toLowerCase() === address.toLowerCase());
+            if (found) {
+                selectTokenForTrade(found);
+            }
+            switchPage('trade', document.querySelector('.nav-tab'));
+        };
+
+        window.selectTokenForTrade = function(t) {
+            window.currentActiveToken = t;
+            document.getElementById('heroTokenName').innerText = t.name;
+            document.getElementById('heroTokenCA').innerText = t.address.substring(0, 8) + '...' + t.address.substring(t.address.length - 6);
+            document.getElementById('heroTokenPrice').innerText = '$' + (t.priceUSD < 0.01 ? t.priceUSD.toFixed(6) : t.priceUSD.toFixed(4));
+            const changeEl = document.getElementById('heroTokenChange');
+            changeEl.innerText = (t.change24h >= 0 ? '+' : '') + t.change24h + '%';
+            changeEl.style.color = t.change24h >= 0 ? 'var(--accent-green)' : 'var(--accent-red)';
+            
+            document.getElementById('tokMcap').innerText = '$' + (t.mcap / 1000).toFixed(1) + 'K';
+            document.getElementById('tokLiq').innerText = '$' + (t.liq / 1000).toFixed(1) + 'K';
+            document.getElementById('tokVol').innerText = '$' + (t.vol / 1000).toFixed(1) + 'K';
+
+            const logoImg = document.getElementById('heroTokenLogo');
+            const fallback = document.getElementById('heroTokenFallback');
+            if (t.logo) {
+                logoImg.src = t.logo;
+                logoImg.style.display = 'block';
+                fallback.style.display = 'none';
+            } else {
+                logoImg.style.display = 'none';
+                fallback.style.display = 'block';
+                fallback.innerText = t.symbol.charAt(0);
+            }
+
+            document.getElementById('receiveTokenSymbol').innerText = t.symbol;
+            document.getElementById('dexscreenerEmbed').src = `https://dexscreener.com/ton/${t.poolAddress || t.address}?embed=1&theme=dark&trades=0&info=0`;
+            calculateSwapOutput();
+        };
+
+        window.setTradeMode = function(mode) {
+            window.currentTradeMode = mode;
+            const tabBuy = document.getElementById('tabBuy');
+            const tabSell = document.getElementById('tabSell');
+            const payLabel = document.getElementById('payLabel');
+            const payTokenSymbol = document.getElementById('payTokenSymbol');
+            const payBadgeToken = document.getElementById('payBadgeToken');
+            const receiveLabel = document.getElementById('receiveLabel');
+            const receiveTokenSymbol = document.getElementById('receiveTokenSymbol');
+            const executeBtn = document.getElementById('executeTradeBtn');
+            const sellBalBar = document.getElementById('sellBalanceBar');
+
+            if (mode === 'buy') {
+                tabBuy.classList.add('active');
+                tabSell.classList.remove('active');
+                payLabel.innerText = 'You Pay';
+                payTokenSymbol.innerText = 'GRAM';
+                payBadgeToken.innerText = '💎 GRAM';
+                receiveLabel.innerText = `You Receive (${window.currentActiveToken.symbol})`;
+                receiveTokenSymbol.innerText = window.currentActiveToken.symbol;
+                executeBtn.className = 'btn-action btn-red';
+                executeBtn.innerHTML = `⚡ Execute Buy ($${window.currentActiveToken.symbol})`;
+                sellBalBar.style.display = 'none';
+                document.getElementById('tradeInputAmount').value = 0.1;
+            } else {
+                tabSell.classList.add('active');
+                tabBuy.classList.remove('active');
+                payLabel.innerText = 'You Sell';
+                payTokenSymbol.innerText = window.currentActiveToken.symbol;
+                payBadgeToken.innerText = window.currentActiveToken.symbol;
+                receiveLabel.innerText = 'You Receive (GRAM)';
+                receiveTokenSymbol.innerText = 'GRAM';
+                executeBtn.className = 'btn-action btn-green-action';
+                executeBtn.innerHTML = `🔴 Execute Sell ($${window.currentActiveToken.symbol})`;
+                sellBalBar.style.display = 'flex';
+                document.getElementById('tradeInputAmount').value = 100;
+            }
+            calculateSwapOutput();
+        };
+
+        window.setTradeAmount = function(val) { document.getElementById('tradeInputAmount').value = val; calculateSwapOutput(); };
+
+        window.calculateSwapOutput = function() {
+            const inputVal = parseFloat(document.getElementById('tradeInputAmount').value) || 0;
+            const price = window.currentActiveToken.priceUSD || 0.01;
+            const outField = document.getElementById('tradeOutputAmount');
+            if (window.currentTradeMode === 'buy') {
+                const estOut = price > 0 ? (inputVal * 0.85) / price : 0;
+                outField.value = estOut.toFixed(2);
+            } else {
+                const estOut = price > 0 ? (inputVal * price) / 0.85 : 0;
+                outField.value = estOut.toFixed(4);
+            }
+        };
+
+        window.copyReferralLink = function() {
+            navigator.clipboard.writeText("https://t.me/KoteTrade_bot/app");
+            alert('Referral link copied to clipboard!');
+        };
+
+        window.renderAllInstantly = function() {
+            renderGramDedustList();
+            renderGramStonfiList();
+            renderTopblastList();
+            selectTokenForTrade(window.currentActiveToken);
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const enterBtn = document.getElementById('enterTerminalBtn');
+            if(enterBtn) enterBtn.addEventListener('click', window.enterTerminal);
+            renderAllInstantly();
+            fetchLivePoolsFromBackend();
+        });
+    </script>
+</body>
+</html>
