@@ -103,7 +103,7 @@
 <body>
 
     <div id="intro-screen">
-        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v12.26</div>
+        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v12.27</div>
         <div class="intro-content">
             <div class="intro-logo-moon">🐱</div>
             <div style="font-size: 24px; font-weight: 900; color: #fff; letter-spacing: 0.5px;">GRAM & TOPBLAST MEMES</div>
@@ -236,7 +236,7 @@
                     window.gramStonfiTokens = data.stonfi;
                 }
             } catch (err) {
-                console.log("Using fallback pool data...", err);
+                console.log("Using guaranteed offline backup tokens...", err);
             }
             renderAllInstantly();
         }
@@ -280,7 +280,7 @@
                         </div>
                     </div>
 
-                    <div class="audit-badge">🛡️ Direct DEX Pool API Active (< 20ms)</div>
+                    <div class="audit-badge">🛡️ Verified Master Pool Registry Active</div>
 
                     <div class="tokenomics-grid">
                         <div class="stat-card"><span>Market Cap</span><strong id="tokMcap">$0.0K</strong></div>
@@ -399,7 +399,7 @@
                     <div class="card-header">
                         <div>
                             <span class="card-title" style="color: var(--accent-green);">🪙 Gram Memes DEX Pools</span>
-                            <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Thousands of DeDust & STON.fi Pools</div>
+                            <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">DeDust & STON.fi Pooled Tokens</div>
                         </div>
                         <button onclick="fetchTokensFromBackend()" style="background: rgba(16,185,129,0.15); border: 1px solid var(--accent-green); color: var(--accent-green); padding: 6px 10px; border-radius: 8px; font-size: 11px; cursor: pointer; font-weight: 800;">↻ Refresh Pools</button>
                     </div>
@@ -505,7 +505,7 @@
         </nav>
     </div>
 
-    <!-- RENDER ENGINE WITH FULL PAGINATION -->
+    <!-- RENDER ENGINE -->
     <script>
         const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
         if (tg) { tg.ready(); tg.expand(); }
