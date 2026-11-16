@@ -4,16 +4,14 @@ from flask import Flask, jsonify
 from flask_cors import CORS
 
 app = Flask(__name__)
-CORS(app)  # Enables cross-origin requests so your GitHub Pages frontend can talk to Render
+CORS(app)
 
 @app.route('/api/pools', methods=['GET'])
 def get_pools():
     try:
-        # Python fetches server-side, completely bypassing browser CORS blocks
         dedust_pools = requests.get('https://api.dedust.io/v2/pools', timeout=10).json()
         dedust_assets = requests.get('https://api.dedust.io/v2/assets', timeout=10).json()
         stonfi_pools = requests.get('https://api.ston.fi/v1/pools', timeout=10).json()
-
         return jsonify({
             "success": True,
             "dedust_pools": dedust_pools,
