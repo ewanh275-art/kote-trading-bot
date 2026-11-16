@@ -456,7 +456,7 @@
 
     <!-- --- CINEMATIC INTRO SCREEN --- -->
     <div id="intro-screen">
-        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v12.10</div>
+        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v12.11</div>
         <div class="intro-content">
             <div class="intro-logo-moon">🐱</div>
             <div style="font-size: 24px; font-weight: 900; color: #fff; letter-spacing: 0.5px;">GRAM & TOPBLAST MEMES</div>
@@ -771,7 +771,7 @@
                 </div>
             </section>
 
-            <!-- 5. GRAM MEMES SECTION (INSTANT CACHE + DEDUST POOLS & ASSETS) -->
+            <!-- 5. GRAM MEMES SECTION (ROBUST INSTANT CACHE + FALLBACK) -->
             <section id="page-gram-memes" class="page">
                 <div class="card" style="max-width: 650px; margin: 0 auto; width: 100%;">
                     <div class="card-header">
@@ -1095,7 +1095,7 @@
             }
         }
 
-        // --- GRAM MEMES: INSTANT LOCALSTORAGE CACHING & BACKGROUND SYNC ---
+        // --- GRAM MEMES: ROBUST INSTANT CACHE & SAFE DEDUST PARSING ---
         function parseDeDustAsset(asset) {
             if (!asset) return null;
             if (typeof asset === 'string') {
@@ -1131,9 +1131,12 @@
             const cachedData = localStorage.getItem('kote_gram_memes_cache');
             if (cachedData) {
                 try {
-                    window.gramMemesTokens = JSON.parse(cachedData);
-                    currentGramPage = 1;
-                    renderGramMemesList();
+                    const parsed = JSON.parse(cachedData);
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                        window.gramMemesTokens = parsed;
+                        currentGramPage = 1;
+                        renderGramMemesList();
+                    }
                 } catch(e) {
                     console.error("Cache parse error", e);
                 }
@@ -1216,10 +1219,11 @@
                     }
                 });
 
-                // Batch DexScreener query
-                const allAddresses = Array.from(memeTokenMap.keys());
+                // Safe array conversion for batch DexScreener query
+                const allAddresses = Array.from(memeTokenMap.keys()).filter(Boolean);
                 for (let i = 0; i < allAddresses.length; i += 30) {
                     const chunk = allAddresses.slice(i, i + 30).join(',');
+                    if (!chunk) continue;
                     try {
                         const dsRes = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${chunk}`);
                         const dsData = await dsRes.json();
@@ -1253,7 +1257,9 @@
                 window.gramMemesTokens = Array.from(memeTokenMap.values()).sort((a, b) => b.mcap - a.mcap);
                 
                 // Save to localStorage for instant future loads
-                localStorage.setItem('kote_gram_memes_cache', JSON.stringify(window.gramMemesTokens));
+                if (window.gramMemesTokens.length > 0) {
+                    localStorage.setItem('kote_gram_memes_cache', JSON.stringify(window.gramMemesTokens));
+                }
                 
                 renderGramMemesList();
             } catch (err) {
