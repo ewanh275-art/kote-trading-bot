@@ -1,9 +1,29 @@
 const express = require('express');
 const cors = require('cors');
 const fetch = require('node-fetch');
+const path = require('path');
+const { spawn } = require('child_process');
 
 const app = express();
 app.use(cors());
+
+// Serve static frontend files from the 'public' folder
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Automatically launch your Python Telegram bot in the background
+const pythonBot = spawn('python3', ['bot.py']);
+
+pythonBot.stdout.on('data', (data) => {
+    console.log(`[Bot Output]: ${data}`);
+});
+
+pythonBot.stderr.on('data', (data) => {
+    console.error(`[Bot Error]: ${data}`);
+});
+
+pythonBot.on('close', (code) => {
+    console.log(`[Bot Process exited with code ${code}]`);
+});
 
 const GRAM_MASTER_ADDRESS = "EQC47093oX5Xhb0xuk2lCr2RhS8rj-vul61u4W2UH5ORmG_O";
 const NATIVE_TON_ADDRESS = "EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM9c";
@@ -21,7 +41,7 @@ const EXCLUDED_ADDRESSES = new Set([
     "eqaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaam9c".toLowerCase()
 ]);
 
-// In-Memory Cache Store (< 20ms response)
+// In-Memory Cache Store (< 10ms response)
 let serverCache = {
     topblast: [],
     dedust: [],
@@ -41,7 +61,6 @@ function isTonOrGram(addr) {
 async function runBackgroundWorker() {
     console.log("🔄 Running background worker to update DEX pools & DexScreener metrics...");
     try {
-        // 1. Fetch DeDust & STON.fi data concurrently
         const [dedustAssetsRes, dedustPoolsRes, stonfiAssetsRes, stonfiPoolsRes] = await Promise.all([
             fetch('https://assets.dedust.io/list.json').catch(() => fetch('https://api.dedust.io/v2/assets')),
             fetch('https://api.dedust.io/v2/pools'),
@@ -54,7 +73,7 @@ async function runBackgroundWorker() {
         const stonfiAssets = await stonfiAssetsRes.json();
         const stonfiPools = await stonfiPoolsRes.json();
 
-        // --- Process DeDust Pools ---
+        // Process DeDust Pools
         const dedustAssetMap = new Map();
         (Array.isArray(dedustAssets) ? dedustAssets : (dedustAssets.assets || [])).forEach(a => {
             if (a && a.address) dedustAssetMap.set(a.address.toLowerCase(), { name: a.name || a.symbol || 'Jetton', symbol: a.symbol || 'MEME', image: a.image || a.logo || '' });
@@ -82,7 +101,7 @@ async function runBackgroundWorker() {
             dedustMemeAddresses.add(base);
         });
 
-        // --- Process STON.fi Pools ---
+        // Process STON.fi Pools
         const stonfiAssetMap = new Map();
         (stonfiAssets.asset_list || stonfiAssets || []).forEach(a => {
             const addr = a.contract_address || a.address;
@@ -108,7 +127,6 @@ async function runBackgroundWorker() {
             stonfiMemeAddresses.add(base);
         });
 
-        // Helper to batch query DexScreener
         async function enrichWithDexScreener(addresses, migrationDex) {
             const tokens = addresses.map(ca => {
                 const map = migrationDex === 'dedust' ? dedustAssetMap : stonfiAssetMap;
@@ -161,7 +179,7 @@ async function runBackgroundWorker() {
         ]);
 
         serverCache = {
-            topblast: [], // populated similarly if needed
+            topblast: [],
             dedust: dedustEnriched,
             stonfi: stonfiEnriched,
             lastUpdated: new Date().toISOString()
@@ -177,12 +195,12 @@ async function runBackgroundWorker() {
 runBackgroundWorker();
 setInterval(runBackgroundWorker, 10000);
 
-// Lightning-fast API endpoint (< 20ms response)
+// API endpoint for your frontend
 app.get('/api/tokens', (req, res) => {
     res.json(serverCache);
 });
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`🚀 Kote Trade Server Worker running on port ${PORT}`);
+    console.log(`🚀 Kote Trade Server running on port ${PORT}`);
 });
