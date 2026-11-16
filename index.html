@@ -456,7 +456,7 @@
 
     <!-- --- CINEMATIC INTRO SCREEN --- -->
     <div id="intro-screen">
-        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v12.19</div>
+        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v12.20</div>
         <div class="intro-content">
             <div class="intro-logo-moon">🐱</div>
             <div style="font-size: 24px; font-weight: 900; color: #fff; letter-spacing: 0.5px;">GRAM & TOPBLAST MEMES</div>
@@ -489,24 +489,30 @@
         };
 
         window.currentTradeMode = 'buy';
-        window.currentActiveToken = { name: 'Select Token', symbol: 'TOKEN', address: '', poolAddress: '', logo: '', mcap: 0, liq: 0, vol: 0, priceUSD: 0, change24h: 0, decimals: 9 };
+        window.currentActiveToken = { name: 'Select Token', symbol: 'TOKEN', address: '', poolAddress: '', logo: '', mcap: 0, liq: 0, vol: 0, priceUSD: 0, change24h: 0 };
         
-        // Initial verified fallback token lists so tokens load instantly without waiting on CORS/network
-        window.topblastTokens = JSON.parse(localStorage.getItem('kote_topblast_cache') || '[]').length > 0 ? JSON.parse(localStorage.getItem('kote_topblast_cache')) : [
+        // 1. INDEPENDENT TOPBLAST TOKENS DATASET
+        window.topblastTokens = [
             { address: 'EQB-MPwuxusWknM7H9N_6U1y59_h_M0nK7wD70t4Z4H6z30U', name: 'Gram Memes Token', symbol: 'GRAM', logo: 'https://asset.ston.fi/img/TON.png', mcap: 1850000, liq: 620000, vol: 450000, priceUSD: 0.85, change24h: 12.4, poolAddress: 'EQB-MPwuxusWknM7H9N_6U1y59_h_M0nK7wD70t4Z4H6z30U' },
+            { address: 'EQC_Topblast_Meme_01', name: 'Topblast Pepe', symbol: 'TPEPE', logo: 'https://assets.dedust.io/images/EQD_v8Hv7X2d5_gK3Jp1q8s9t2u4v6w8x0y1z3A5B7C9D2E.png', mcap: 920000, liq: 310000, vol: 180000, priceUSD: 0.12, change24h: 24.5, poolAddress: 'EQC_Topblast_Meme_01' },
+            { address: 'EQC_Topblast_Meme_02', name: 'Kote Sniper Cat', symbol: 'KOTE', logo: 'https://asset.ston.fi/img/TON.png', mcap: 740000, liq: 250000, vol: 140000, priceUSD: 0.054, change24h: 15.2, poolAddress: 'EQC_Topblast_Meme_02' },
             { address: 'EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs', name: 'Tether USD', symbol: 'USDT', logo: 'https://asset.ston.fi/img/EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs.png', mcap: 50000000, liq: 15000000, vol: 8000000, priceUSD: 1.00, change24h: 0.1, poolAddress: 'EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs' }
         ];
 
-        window.gramDedustTokens = JSON.parse(localStorage.getItem('kote_dedust_cache') || '[]').length > 0 ? JSON.parse(localStorage.getItem('kote_dedust_cache')) : [
+        // 2. INDEPENDENT DEDUST TOKENS DATASET
+        window.gramDedustTokens = [
             { address: 'TON', name: 'Toncoin', symbol: 'TON', logo: 'https://asset.ston.fi/img/TON.png', mcap: 12500000, liq: 4500000, vol: 1200000, priceUSD: 5.65, change24h: 4.2, poolAddress: 'TON' },
             { address: 'EQD_v8Hv7X2d5_gK3Jp1q8s9t2u4v6w8x0y1z3A5B7C9D2E', name: 'Scale TON', symbol: 'SCALE', logo: 'https://assets.dedust.io/images/EQD_v8Hv7X2d5_gK3Jp1q8s9t2u4v6w8x0y1z3A5B7C9D2E.png', mcap: 840000, liq: 310000, vol: 195000, priceUSD: 0.14, change24h: 8.5, poolAddress: 'EQD_v8Hv7X2d5_gK3Jp1q8s9t2u4v6w8x0y1z3A5B7C9D2E' },
             { address: 'EQA4g22tW9bBvH5N_6U1y59_h_M0nK7wD70t4Z4H6z30F', name: 'Fish Crypto', symbol: 'FISH', logo: 'https://asset.ston.fi/img/EQA4g22tW9bBvH5N_6U1y59_h_M0nK7wD70t4Z4H6z30F.png', mcap: 1450000, liq: 520000, vol: 320000, priceUSD: 0.042, change24h: -2.3, poolAddress: 'EQA4g22tW9bBvH5N_6U1y59_h_M0nK7wD70t4Z4H6z30F' },
+            { address: 'EQDedust_Meme_04', name: 'Dedust Doge', symbol: 'DDOGE', logo: 'https://asset.ston.fi/img/TON.png', mcap: 450000, liq: 120000, vol: 85000, priceUSD: 0.009, change24h: 6.7, poolAddress: 'EQDedust_Meme_04' },
             { address: 'EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs', name: 'Tether USD', symbol: 'USDT', logo: 'https://asset.ston.fi/img/EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs.png', mcap: 50000000, liq: 15000000, vol: 8000000, priceUSD: 1.00, change24h: 0.1, poolAddress: 'EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs' }
         ];
 
-        window.gramStonfiTokens = JSON.parse(localStorage.getItem('kote_stonfi_cache') || '[]').length > 0 ? JSON.parse(localStorage.getItem('kote_stonfi_cache')) : [
+        // 3. INDEPENDENT STON.FI TOKENS DATASET
+        window.gramStonfiTokens = [
             { address: 'EQB-MPwuxusWknM7H9N_6U1y59_h_M0nK7wD70t4Z4H6z30U', name: 'STON.fi Token', symbol: 'STON', logo: 'https://asset.ston.fi/img/STON.png', mcap: 9200000, liq: 2800000, vol: 950000, priceUSD: 2.10, change24h: -1.5, poolAddress: 'EQB-MPwuxusWknM7H9N_6U1y59_h_M0nK7wD70t4Z4H6z30U' },
             { address: 'TON', name: 'Toncoin', symbol: 'TON', logo: 'https://asset.ston.fi/img/TON.png', mcap: 12500000, liq: 4500000, vol: 1200000, priceUSD: 5.65, change24h: 4.2, poolAddress: 'TON' },
+            { address: 'EQStonfi_Meme_03', name: 'Stonfi Cat', symbol: 'SCAT', logo: 'https://asset.ston.fi/img/TON.png', mcap: 620000, liq: 210000, vol: 110000, priceUSD: 0.035, change24h: 11.8, poolAddress: 'EQStonfi_Meme_03' },
             { address: 'EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs', name: 'Tether USD', symbol: 'USDT', logo: 'https://asset.ston.fi/img/EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs.png', mcap: 50000000, liq: 15000000, vol: 8000000, priceUSD: 1.00, change24h: 0.1, poolAddress: 'EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs' }
         ];
 
@@ -789,16 +795,14 @@
                             <span class="card-title" style="color: var(--accent-green);">🔥 Topblast Memes Catalog</span>
                             <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Sorted by Market Cap (Highest to Lowest)</div>
                         </div>
-                        <button onclick="fetchTokensFromBackend()" style="background: rgba(16,185,129,0.15); border: 1px solid var(--accent-green); color: var(--accent-green); padding: 6px 10px; border-radius: 8px; font-size: 11px; cursor: pointer; font-weight: 800;">↻ Refresh</button>
+                        <button onclick="renderTopblastList()" style="background: rgba(16,185,129,0.15); border: 1px solid var(--accent-green); color: var(--accent-green); padding: 6px 10px; border-radius: 8px; font-size: 11px; cursor: pointer; font-weight: 800;">↻ Refresh</button>
                     </div>
 
                     <div class="input-group" style="padding: 8px 12px; margin-bottom: 12px;">
                         <input type="text" id="topblastSearchInput" class="pro-input" style="width: 100%; font-size: 13px;" placeholder="🔍 Search Topblast Memes..." oninput="filterTopblastList()">
                     </div>
 
-                    <div id="topblastList">
-                        <div style="text-align:center; padding: 25px; color: var(--text-muted); font-size: 12px;">🔄 Syncing Topblast memes from server...</div>
-                    </div>
+                    <div id="topblastList"></div>
 
                     <div class="pagination-bar" id="topblastPaginationBar" style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--border-color);">
                         <button class="page-btn" id="topblastPrevBtn" onclick="changeTopblastPage(-1)">← Previous</button>
@@ -808,15 +812,15 @@
                 </div>
             </section>
 
-            <!-- 5. GRAM MEMES SECTION (DIRECT API SYNC & LOCALSTORAGE CACHE) -->
+            <!-- 5. GRAM MEMES SECTION (DEDUST & STON.FI SECTIONS) -->
             <section id="page-gram-memes" class="page">
                 <div class="card" style="max-width: 650px; margin: 0 auto; width: 100%;">
                     <div class="card-header">
                         <div>
                             <span class="card-title" style="color: var(--accent-green);">🪙 Gram Memes DEX Pools</span>
-                            <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Instant Load via DeDust & STON.fi APIs</div>
+                            <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Independent DeDust & STON.fi Pools</div>
                         </div>
-                        <button onclick="fetchTokensFromBackend()" style="background: rgba(16,185,129,0.15); border: 1px solid var(--accent-green); color: var(--accent-green); padding: 6px 10px; border-radius: 8px; font-size: 11px; cursor: pointer; font-weight: 800;">↻ Sync Now</button>
+                        <button onclick="renderAllInstantly()" style="background: rgba(16,185,129,0.15); border: 1px solid var(--accent-green); color: var(--accent-green); padding: 6px 10px; border-radius: 8px; font-size: 11px; cursor: pointer; font-weight: 800;">↻ Refresh Lists</button>
                     </div>
 
                     <!-- Sub-split tabs for DeDust vs STON.fi -->
@@ -831,9 +835,7 @@
 
                     <!-- DeDust List Container -->
                     <div id="gramDedustContainer">
-                        <div id="gramDedustList">
-                            <div style="text-align:center; padding: 25px; color: var(--text-muted); font-size: 12px;">🔄 Syncing live DeDust pools from API...</div>
-                        </div>
+                        <div id="gramDedustList"></div>
                         <div class="pagination-bar" id="gramDedustPaginationBar" style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--border-color);">
                             <button class="page-btn" id="dedustPrevBtn" onclick="changeDedustPage(-1)">← Previous</button>
                             <span id="dedustPageIndicator" style="font-size: 11px; font-weight: 800; color: var(--text-muted);">Page 1 of 1</span>
@@ -843,9 +845,7 @@
 
                     <!-- STON.fi List Container -->
                     <div id="gramStonfiContainer" style="display: none;">
-                        <div id="gramStonfiList">
-                            <div style="text-align:center; padding: 25px; color: var(--text-muted); font-size: 12px;">🔄 Syncing live STON.fi pools from API...</div>
-                        </div>
+                        <div id="gramStonfiList"></div>
                         <div class="pagination-bar" id="gramStonfiPaginationBar" style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--border-color);">
                             <button class="page-btn" id="stonfiPrevBtn" onclick="changeStonfiPage(-1)">← Previous</button>
                             <span id="stonfiPageIndicator" style="font-size: 11px; font-weight: 800; color: var(--text-muted);">Page 1 of 1</span>
@@ -935,108 +935,10 @@
         </nav>
     </div>
 
-    <!-- CLIENT-SIDE DE-DUST & STON.FI API SYNC SCRIPT -->
+    <!-- RENDER ENGINE & EVENT CONTROLLER -->
     <script>
         const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
         if (tg) { tg.ready(); tg.expand(); }
-
-        let currentDedustPage = 1;
-        let currentStonfiPage = 1;
-        let currentTopblastPage = 1;
-        const itemsPerPage = 10;
-
-        window.switchGramSubTab = function(tabName) {
-            const dedustBtn = document.getElementById('gramSubDedust');
-            const stonfiBtn = document.getElementById('gramSubStonfi');
-            const dedustContainer = document.getElementById('gramDedustContainer');
-            const stonfiContainer = document.getElementById('gramStonfiContainer');
-
-            if (!dedustBtn || !stonfiBtn || !dedustContainer || !stonfiContainer) return;
-
-            if (tabName === 'dedust') {
-                dedustBtn.classList.add('active');
-                stonfiBtn.classList.remove('active');
-                dedustContainer.style.display = 'block';
-                stonfiContainer.style.display = 'none';
-                renderGramDedustList();
-            } else {
-                stonfiBtn.classList.add('active');
-                dedustBtn.classList.remove('active');
-                dedustContainer.style.display = 'none';
-                stonfiContainer.style.display = 'block';
-                renderGramStonfiList();
-            }
-        };
-
-        // Render immediately on boot (0ms delay)
-        function renderAllInstantly() {
-            renderTopblastList();
-            renderGramDedustList();
-            renderGramStonfiList();
-        }
-
-        // Direct Client-Side Fetch from DeDust & STON.fi Public APIs
-        async function fetchTokensFromBackend() {
-            try {
-                const [dedustRes, stonfiRes] = await Promise.allSettled([
-                    fetch('https://api.dedust.io/v2/assets').then(r => r.json()),
-                    fetch('https://api.ston.fi/v1/assets').then(r => r.json())
-                ]);
-
-                let dedustParsed = [];
-                let stonfiParsed = [];
-
-                // Parse DeDust API Response
-                if (dedustRes.status === 'fulfilled') {
-                    const raw = dedustRes.value;
-                    const items = Array.isArray(raw) ? raw : (raw.assets || []);
-                    dedustParsed = items.map((t, idx) => ({
-                        address: t.address || (t.kind === 'native' ? 'TON' : `dedust_${idx}`),
-                        name: t.name || t.symbol || 'Unknown Token',
-                        symbol: t.symbol || 'TOKEN',
-                        logo: t.image ? (t.image.startsWith('http') ? t.image : `https://assets.dedust.io/images/${t.image}`) : (t.imageUrl || 'https://asset.ston.fi/img/TON.png'),
-                        mcap: t.marketCap || t.mcap || (Math.random() * 500000 + 10000),
-                        liq: t.liquidity || (Math.random() * 100000 + 5000),
-                        vol: t.volume24h || t.vol || (Math.random() * 50000 + 1000),
-                        priceUSD: t.priceUSD || 0.001,
-                        change24h: t.priceChange24h || (Math.random() * 30 - 10),
-                        poolAddress: t.poolAddress || t.address || ''
-                    }));
-                }
-
-                // Parse STON.fi API Response
-                if (stonfiRes.status === 'fulfilled') {
-                    const raw = stonfiRes.value;
-                    const items = raw.asset_list || raw.assets || (Array.isArray(raw) ? raw : []);
-                    stonfiParsed = items.map((t, idx) => ({
-                        address: t.contract_address || t.address || `stonfi_${idx}`,
-                        name: t.display_name || t.name || 'Unknown Token',
-                        symbol: t.symbol || 'TOKEN',
-                        logo: t.image_url || t.image || 'https://asset.ston.fi/img/TON.png',
-                        mcap: t.market_cap || t.mcap || (Math.random() * 500000 + 10000),
-                        liq: t.liquidity || (Math.random() * 100000 + 5000),
-                        vol: t.volume_24h || t.vol || (Math.random() * 50000 + 1000),
-                        priceUSD: t.dex_price_usd || t.priceUSD || 0.001,
-                        change24h: t.price_change_24h || (Math.random() * 30 - 10),
-                        poolAddress: t.contract_address || t.address || ''
-                    }));
-                }
-
-                if (dedustParsed.length > 0) {
-                    window.gramDedustTokens = dedustParsed;
-                    localStorage.setItem('kote_dedust_cache', JSON.stringify(dedustParsed));
-                }
-                if (stonfiParsed.length > 0) {
-                    window.gramStonfiTokens = stonfiParsed;
-                    localStorage.setItem('kote_stonfi_cache', JSON.stringify(stonfiParsed));
-                }
-
-                renderGramDedustList();
-                renderGramStonfiList();
-            } catch (err) {
-                console.log("Using cached offline state...", err);
-            }
-        }
 
         window.changeTopblastPage = function(dir) {
             const q = (document.getElementById('topblastSearchInput')?.value || '').toLowerCase();
@@ -1072,7 +974,7 @@
             return '$' + val.toFixed(2);
         }
 
-        function renderTopblastList() {
+        window.renderTopblastList = function() {
             const q = (document.getElementById('topblastSearchInput')?.value || '').toLowerCase();
             const filtered = window.topblastTokens.filter(t => t.name.toLowerCase().includes(q) || t.symbol.toLowerCase().includes(q) || t.address.toLowerCase().includes(q));
             const container = document.getElementById('topblastList');
@@ -1080,7 +982,7 @@
             if(!container) return;
 
             if (filtered.length === 0) {
-                container.innerHTML = `<div style="text-align:center; padding: 25px; color: var(--text-muted); font-size: 12px;">No Topblast memes available yet.</div>`;
+                container.innerHTML = `<div style="text-align:center; padding: 25px; color: var(--text-muted); font-size: 12px;">No Topblast memes available.</div>`;
                 if(paginationBar) paginationBar.style.display = 'none';
                 return;
             }
@@ -1126,9 +1028,9 @@
                 document.getElementById('topblastPrevBtn').disabled = currentTopblastPage === 1;
                 document.getElementById('topblastNextBtn').disabled = currentTopblastPage === totalPages;
             }
-        }
+        };
 
-        function renderGramDedustList() {
+        window.renderGramDedustList = function() {
             const q = (document.getElementById('gramMemesSearchInput')?.value || '').toLowerCase();
             const filtered = window.gramDedustTokens.filter(t => t.name.toLowerCase().includes(q) || t.symbol.toLowerCase().includes(q) || t.address.toLowerCase().includes(q));
             const container = document.getElementById('gramDedustList');
@@ -1187,7 +1089,7 @@
                 document.getElementById('dedustPrevBtn').disabled = currentDedustPage === 1;
                 document.getElementById('dedustNextBtn').disabled = currentDedustPage === totalPages;
             }
-        }
+        };
 
         window.renderGramStonfiList = function() {
             const q = (document.getElementById('gramMemesSearchInput')?.value || '').toLowerCase();
@@ -1248,7 +1150,13 @@
                 document.getElementById('stonfiPrevBtn').disabled = currentStonfiPage === 1;
                 document.getElementById('stonfiNextBtn').disabled = currentStonfiPage === totalPages;
             }
-        }
+        };
+
+        window.renderAllInstantly = function() {
+            renderTopblastList();
+            renderGramDedustList();
+            renderGramStonfiList();
+        };
 
         window.selectTokenForTrade = function(address, name, symbol, logo, mcap, liq, vol, priceUSD = 0.01, change24h = 0, graduated = true, migrationDex = 'dedust', poolAddress = '') {
             window.currentActiveToken = { name, symbol, address, poolAddress, logo, mcap, liq, vol, priceUSD, change24h };
@@ -1295,12 +1203,9 @@
             document.getElementById('tradeOutputAmount').value = '~ ' + resOutput.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 });
         };
 
-        // 1. Render instantly from fallback/cache on load (0ms delay)
-        renderAllInstantly();
+        // Render all lists immediately on boot
+        window.renderAllInstantly();
         calculateSwapOutput();
-
-        // 2. Fetch live data from backend APIs
-        fetchTokensFromBackend();
     </script>
 </body>
 </html>
