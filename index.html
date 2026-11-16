@@ -456,7 +456,7 @@
 
     <!-- --- CINEMATIC INTRO SCREEN --- -->
     <div id="intro-screen">
-        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v12.8</div>
+        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v12.9</div>
         <div class="intro-content">
             <div class="intro-logo-moon">🐱</div>
             <div style="font-size: 24px; font-weight: 900; color: #fff; letter-spacing: 0.5px;">GRAM & TOPBLAST MEMES</div>
@@ -489,7 +489,7 @@
         };
 
         window.currentTradeMode = 'buy';
-        window.currentActiveToken = { name: 'Select Token', symbol: 'TOKEN', address: '', poolAddress: '', logo: '', mcap: 0, liq: 0, vol: 0, priceUSD: 0, decimals: 9 };
+        window.currentActiveToken = { name: 'Select Token', symbol: 'TOKEN', address: '', poolAddress: '', logo: '', mcap: 0, liq: 0, vol: 0, priceUSD: 0, change24h: 0, decimals: 9 };
         window.topblastTokens = [];
         window.gramMemesTokens = [];
 
@@ -505,13 +505,14 @@
                     found.liq, 
                     found.vol, 
                     found.priceUSD, 
+                    found.change24h || 0,
                     found.graduated, 
                     found.migrationDex, 
                     found.poolAddress
                 );
             } else {
                 if (typeof window.selectTokenForTrade === 'function') {
-                    window.selectTokenForTrade(address, symbol, symbol, '', 50000, 20000, 10000, 0.01, true, 'dedust', poolAddress);
+                    window.selectTokenForTrade(address, symbol, symbol, '', 50000, 20000, 10000, 0.01, 0, true, 'dedust', poolAddress);
                 }
             }
         };
@@ -605,7 +606,7 @@
     </script>
 
     <div class="main-container">
-        <!-- Top Header (Badge Removed) -->
+        <!-- Top Header -->
         <header class="topbar">
             <div style="display: flex; align-items: center; gap: 10px;">
                 <div class="brand-logo-box">🐱</div>
@@ -743,7 +744,7 @@
                 </div>
             </section>
 
-            <!-- 4. TOPBLAST SECTION (SORTED BY MARKET CAP, TB TOKENS AT END) -->
+            <!-- 4. TOPBLAST SECTION -->
             <section id="page-topblast" class="page">
                 <div class="card" style="max-width: 650px; margin: 0 auto; width: 100%;">
                     <div class="card-header">
@@ -770,23 +771,23 @@
                 </div>
             </section>
 
-            <!-- 5. GRAM MEMES SECTION (PULLED FROM DEDUST API & TIED TO DEXSCREENER) -->
+            <!-- 5. GRAM MEMES SECTION (DEDUST POOLS + ASSETS + DEXSCREENER) -->
             <section id="page-gram-memes" class="page">
                 <div class="card" style="max-width: 650px; margin: 0 auto; width: 100%;">
                     <div class="card-header">
                         <div>
-                            <span class="card-title" style="color: var(--accent-green);">🪙 Gram Memes (DeDust API & DexScreener)</span>
-                            <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Pulled from https://api.dedust.io/v2/assets with unlimited pagination</div>
+                            <span class="card-title" style="color: var(--accent-green);">🪙 Gram Memes (DeDust TON/GRAM Pairs)</span>
+                            <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">DeDust Pools & Icons + DexScreener Live Market Cap & Volume</div>
                         </div>
                         <button onclick="loadGramMemesTokens()" style="background: rgba(16,185,129,0.15); border: 1px solid var(--accent-green); color: var(--accent-green); padding: 6px 10px; border-radius: 8px; font-size: 11px; cursor: pointer; font-weight: 800;">↻ Refresh</button>
                     </div>
 
                     <div class="input-group" style="padding: 8px 12px; margin-bottom: 12px;">
-                        <input type="text" id="gramMemesSearchInput" class="pro-input" style="width: 100%; font-size: 13px;" placeholder="🔍 Search Gram Memes..." oninput="filterGramMemesList()">
+                        <input type="text" id="gramMemesSearchInput" class="pro-input" style="width: 100%; font-size: 13px;" placeholder="🔍 Search Gram & TON Memes..." oninput="filterGramMemesList()">
                     </div>
 
                     <div id="gramMemesList">
-                        <div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 12px;">Loading DeDust assets & DexScreener data...</div>
+                        <div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 12px;">Filtering DeDust TON/GRAM pools & fetching DexScreener stats...</div>
                     </div>
 
                     <div class="pagination-bar" id="gramPaginationBar" style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--border-color);">
@@ -882,6 +883,26 @@
         const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
         if (tg) { tg.ready(); tg.expand(); }
 
+        const GRAM_MASTER_ADDRESS = "EQC47093oX5Xhb0xuk2lCr2RhS8rj-vul61u4W2UH5ORmG_O";
+        const NATIVE_TON_DEXSCREENER = "EQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAM9c";
+
+        // Stablecoins and infrastructure tokens to exclude from meme list
+        const EXCLUDED_SYMBOLS = new Set([
+            "TON", "GRAM", "JUSDT", "USDT", "JUSDC", "USDC", "STTON", "TSTON", 
+            "SCALE", "DUST", "WTON", "PTON", "JWBTC", "JWETH", "DAI", "USDE"
+        ]);
+        const EXCLUDED_ADDRESSES = new Set([
+            GRAM_MASTER_ADDRESS.toLowerCase(),
+            NATIVE_TON_DEXSCREENER.toLowerCase(),
+            "eqb3ncybutjzzg50htq255pmwxyf5gpo5lmw6oh2f3y7al24", // jUSDT
+            "eqcxe6mutqjkfngf5ot91shk5b_70521265083415730264",
+            "eqcxe6mutqjkfngf5ot91shk5b_70521265083415730264".toLowerCase(),
+            "eqb-mpwrd1g6wknk1lq1a0m3j057s5u3m1k34k1e9g5-w1a1", // jUSDC
+            "eqblqsm144dq6sjbpi4jjzva1hqtip3cvhovbifw_t-scale", // SCALE
+            "eqc98_qAmNEptUtPc7W6xdHh_ZHrBUFpw5Ft_IzNU20QAJav".toLowerCase(), // tsTON
+            "eqdn6bd56m1s10325m107867879187165656565656565656"
+        ]);
+
         let topblastAddresses = [
             "EQAOY0xbKV1g3e2V7jdo5erF5u-5h19qB4IpPkK0RPy0RKGV", "EQAOyf4n-7wTtTI45LGQwfacEfnkpOa9v6bjpwgeCHX5WW8y",
             "EQAmWanX8ohlsG6qBpfL2ritCQ7tr7MlJpEK64Khm-O4742K", "EQA6G0uVERDZTkLNa0drWBna1F5TSbogy7UXEWU5ERHz4uJL",
@@ -962,6 +983,7 @@
                 liq: 20000,
                 vol: 10000,
                 priceUSD: 0.01,
+                change24h: 0,
                 graduated: true,
                 migrationDex: 'dedust'
             }));
@@ -986,6 +1008,7 @@
                             match.liq = p.liquidity?.usd || match.liq;
                             match.vol = p.volume?.h24 || match.vol;
                             match.priceUSD = parseFloat(p.priceUsd) || match.priceUSD;
+                            match.change24h = p.priceChange?.h24 || 0;
                         }
                     });
                     sortAndRenderTopblast();
@@ -1075,70 +1098,165 @@
             }
         }
 
-        // --- GRAM MEMES LOGIC: PULLED FROM DEDUST API & TIED TO DEXSCREENER ---
+        // --- GRAM MEMES: DEDUST POOLS + ASSET METADATA + DEXSCREENER BATCH API ---
+        function parseDeDustAsset(asset) {
+            if (!asset) return null;
+            if (typeof asset === 'string') {
+                if (asset === 'native') return { type: 'native', address: 'native' };
+                if (asset.startsWith('jetton:')) return { type: 'jetton', address: asset.slice(7) };
+                return { type: 'jetton', address: asset };
+            }
+            if (typeof asset === 'object') {
+                if (asset.type === 'native') return { type: 'native', address: 'native' };
+                if (asset.address) return { type: 'jetton', address: asset.address };
+            }
+            return null;
+        }
+
+        function isTonOrGramQuote(parsedAsset) {
+            if (!parsedAsset) return false;
+            if (parsedAsset.type === 'native') return true;
+            return parsedAsset.address.toLowerCase() === GRAM_MASTER_ADDRESS.toLowerCase();
+        }
+
+        function isExcludedMeme(address, symbol) {
+            if (symbol && EXCLUDED_SYMBOLS.has(symbol.toUpperCase())) return true;
+            if (address && EXCLUDED_ADDRESSES.has(address.toLowerCase())) return true;
+            return false;
+        }
+
         async function loadGramMemesTokens() {
             const container = document.getElementById('gramMemesList');
             const paginationBar = document.getElementById('gramPaginationBar');
             if(!container) return;
-            container.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 12px;">Fetching assets from https://api.dedust.io/v2/assets...</div>`;
+            container.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 12px;">Pulling DeDust pools & asset metadata...</div>`;
             if(paginationBar) paginationBar.style.display = 'none';
 
             try {
-                const res = await fetch(`https://api.dedust.io/v2/assets`);
-                const assetsData = await res.json();
-                
-                // Extract valid jettons/tokens
-                const jettons = (Array.isArray(assetsData) ? assetsData : (assetsData.assets || []))
-                    .filter(a => a.address || a.symbol);
+                // 1. Fetch DeDust Asset Metadata (list.json with fallback to v2/assets) & DeDust Pools in parallel
+                const [assetsRes, poolsRes] = await Promise.all([
+                    fetch('https://assets.dedust.io/list.json').catch(() => fetch('https://api.dedust.io/v2/assets')),
+                    fetch('https://api.dedust.io/v2/pools')
+                ]);
 
-                window.gramMemesTokens = jettons.map(a => ({
-                    name: a.name || a.symbol || 'DeDust Token',
-                    symbol: a.symbol || 'DEDUST',
-                    address: a.address || a.symbol,
-                    poolAddress: a.address || '',
-                    logo: a.image || '',
-                    mcap: 50000,
-                    liq: 10000,
-                    vol: 5000,
-                    priceUSD: 0.01,
-                    graduated: true,
-                    migrationDex: 'dedust'
-                }));
+                const assetsRaw = await assetsRes.json();
+                const poolsRaw = await poolsRes.json();
 
+                const assetsList = Array.isArray(assetsRaw) ? assetsRaw : (assetsRaw.assets || []);
+                const poolsList = Array.isArray(poolsRaw) ? poolsRaw : (poolsRaw.pools || []);
+
+                // Map DeDust Asset Metadata & Logos by Jetton Address
+                const assetMap = new Map();
+                assetsList.forEach(a => {
+                    if (a && a.address) {
+                        assetMap.set(a.address.toLowerCase(), {
+                            name: a.name || a.symbol || 'DeDust Jetton',
+                            symbol: a.symbol || 'TOKEN',
+                            decimals: a.decimals ?? 9,
+                            image: a.image || a.logo || ''
+                        });
+                    }
+                });
+
+                // 2. Filter DeDust Pools for TON or GRAM Quote Assets & Isolate Meme Coins
+                const memeTokenMap = new Map();
+
+                poolsList.forEach(pool => {
+                    const rawAssets = pool.assets || [];
+                    if (rawAssets.length < 2) return;
+
+                    const a0 = parseDeDustAsset(rawAssets[0]);
+                    const a1 = parseDeDustAsset(rawAssets[1]);
+                    if (!a0 || !a1) return;
+
+                    const a0IsQuote = isTonOrGramQuote(a0);
+                    const a1IsQuote = isTonOrGramQuote(a1);
+
+                    // Require exactly one side to be TON or GRAM
+                    if (a0IsQuote === a1IsQuote) return;
+
+                    const baseAsset = a0IsQuote ? a1 : a0;
+                    const quoteAsset = a0IsQuote ? a0 : a1;
+
+                    if (baseAsset.type !== 'jetton' || !baseAsset.address) return;
+
+                    const meta = assetMap.get(baseAsset.address.toLowerCase());
+                    const symbol = meta?.symbol || '';
+                    if (isExcludedMeme(baseAsset.address, symbol)) return;
+
+                    const quoteLabel = quoteAsset.type === 'native' ? 'TON' : 'GRAM';
+                    const key = baseAsset.address.toLowerCase();
+
+                    // Prefer TON pair if both TON and GRAM pools exist, or store first valid pool
+                    if (!memeTokenMap.has(key) || quoteLabel === 'TON') {
+                        memeTokenMap.set(key, {
+                            name: meta?.name || `Jetton (${baseAsset.address.slice(0, 6)}...)`,
+                            symbol: meta?.symbol || baseAsset.address.slice(0, 5).toUpperCase(),
+                            address: baseAsset.address,
+                            poolAddress: pool.address || '',
+                            quotePair: quoteLabel,
+                            dedustLogo: meta?.image || '',
+                            logo: meta?.image || '',
+                            mcap: 0,
+                            liq: 0,
+                            vol: 0,
+                            priceUSD: 0,
+                            change24h: 0,
+                            graduated: true,
+                            migrationDex: 'dedust',
+                            hasDexScreenerData: false
+                        });
+                    }
+                });
+
+                window.gramMemesTokens = Array.from(memeTokenMap.values());
                 currentGramPage = 1;
                 renderGramMemesList();
 
-                // Batch resolve live metrics and logos via DexScreener for each DeDust token
-                const addresses = window.gramMemesTokens.map(t => t.address).filter(Boolean);
-                for (let i = 0; i < addresses.length; i += 30) {
-                    const chunk = addresses.slice(i, i + 30).join(',');
+                // 3. Batch Query DexScreener API for Real-Time Prices, Volume, 24h Change & Market Cap
+                const allAddresses = window.gramMemesTokens.map(t => t.address);
+                for (let i = 0; i < allAddresses.length; i += 30) {
+                    const chunk = allAddresses.slice(i, i + 30).join(',');
                     try {
                         const dsRes = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${chunk}`);
                         const dsData = await dsRes.json();
-                        const pairs = dsData.pairs || [];
+                        const pairs = (dsData.pairs || []).filter(p => p.chainId === 'ton' && p.dexId === 'dedust');
+                        const fallbackPairs = (dsData.pairs || []).filter(p => p.chainId === 'ton');
+                        const activePairs = pairs.length > 0 ? pairs : fallbackPairs;
 
-                        pairs.forEach(p => {
-                            const tokenAddr = p.baseToken?.address;
-                            const match = window.gramMemesTokens.find(t => t.address.toLowerCase() === (tokenAddr || '').toLowerCase());
+                        activePairs.forEach(p => {
+                            const baseAddr = p.baseToken?.address;
+                            if (!baseAddr) return;
+                            const match = memeTokenMap.get(baseAddr.toLowerCase());
                             if (match) {
-                                match.name = p.baseToken?.name || match.name;
-                                match.symbol = p.baseToken?.symbol || match.symbol;
-                                match.poolAddress = p.pairAddress || match.poolAddress;
-                                match.logo = p.info?.imageUrl || p.baseToken?.logoURI || match.logo;
-                                match.mcap = p.marketCap || p.fdv || match.mcap;
-                                match.liq = p.liquidity?.usd || match.liq;
-                                match.vol = p.volume?.h24 || match.vol;
-                                match.priceUSD = parseFloat(p.priceUsd) || match.priceUSD;
+                                const pairMcap = p.marketCap || p.fdv || 0;
+                                // Update if first match or higher liquidity pool
+                                if (!match.hasDexScreenerData || (p.liquidity?.usd || 0) > match.liq) {
+                                    match.name = match.name.startsWith('Jetton (') ? (p.baseToken?.name || match.name) : match.name;
+                                    match.symbol = match.symbol.length === 5 && !assetMap.has(baseAddr.toLowerCase()) ? (p.baseToken?.symbol || match.symbol) : match.symbol;
+                                    match.poolAddress = p.pairAddress || match.poolAddress;
+                                    // Keep DeDust hosted icon as primary source of truth, fallback to DexScreener icon
+                                    match.logo = match.dedustLogo || p.info?.imageUrl || p.baseToken?.logoURI || '';
+                                    match.mcap = pairMcap;
+                                    match.liq = p.liquidity?.usd || 0;
+                                    match.vol = p.volume?.h24 || 0;
+                                    match.priceUSD = parseFloat(p.priceUsd) || 0;
+                                    match.change24h = p.priceChange?.h24 || 0;
+                                    match.hasDexScreenerData = true;
+                                }
                             }
                         });
+
+                        // Sort highest to lowest market cap
+                        window.gramMemesTokens = Array.from(memeTokenMap.values()).sort((a, b) => b.mcap - a.mcap);
                         renderGramMemesList();
                     } catch (e) {
                         console.error("DexScreener batch fetch error:", e);
                     }
                 }
             } catch (err) {
-                console.error("DeDust assets fetch error:", err);
-                container.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--accent-red); font-size: 12px;">Failed to load DeDust assets API.</div>`;
+                console.error("DeDust API error:", err);
+                container.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--accent-red); font-size: 12px;">Failed to load DeDust pools & assets.</div>`;
             }
         }
 
@@ -1155,6 +1273,13 @@
             renderGramMemesList();
         };
 
+        function formatCompactUSD(val) {
+            if (!val || val <= 0) return '$0.0K';
+            if (val >= 1e6) return '$' + (val / 1e6).toFixed(2) + 'M';
+            if (val >= 1e3) return '$' + (val / 1e3).toFixed(1) + 'K';
+            return '$' + val.toFixed(2);
+        }
+
         function renderGramMemesList() {
             const q = (document.getElementById('gramMemesSearchInput')?.value || '').toLowerCase();
             const filtered = window.gramMemesTokens.filter(t => t.name.toLowerCase().includes(q) || t.symbol.toLowerCase().includes(q) || t.address.toLowerCase().includes(q));
@@ -1163,7 +1288,7 @@
             if(!container) return;
 
             if (filtered.length === 0) {
-                container.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 12px;">No Gram Memes found from DeDust.</div>`;
+                container.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 12px;">No DeDust TON/GRAM meme tokens found.</div>`;
                 if(paginationBar) paginationBar.style.display = 'none';
                 return;
             }
@@ -1176,7 +1301,12 @@
 
             container.innerHTML = '';
             paginatedItems.forEach(t => {
-                const formattedMcap = t.mcap >= 1e6 ? '$' + (t.mcap/1e6).toFixed(2) + 'M' : '$' + (t.mcap/1e3).toFixed(1) + 'K';
+                const formattedMcap = formatCompactUSD(t.mcap);
+                const formattedVol = formatCompactUSD(t.vol);
+                const changeVal = parseFloat(t.change24h || 0);
+                const changeColor = changeVal >= 0 ? 'var(--accent-green)' : 'var(--accent-red)';
+                const changeSign = changeVal >= 0 ? '+' : '';
+
                 container.innerHTML += `
                     <div class="launch-card" onclick="handleTokenCardClick('${t.address}', '${t.symbol}', '${t.poolAddress}')">
                         <div style="display:flex; align-items:center; gap:12px;">
@@ -1187,14 +1317,14 @@
                             <div>
                                 <div style="display:flex; align-items:center; gap:6px;">
                                     <h4 style="font-size:14px; font-weight:900; color:#fff;">$${t.symbol}</h4>
-                                    <span style="font-size:8px; background:rgba(125,0,255,0.25); color:#d8b4fe; border:1px solid rgba(125,0,255,0.45); padding:1px 5px; border-radius:4px; font-weight:800;">DEDUST API</span>
+                                    <span style="font-size:8px; background:rgba(125,0,255,0.25); color:#d8b4fe; border:1px solid rgba(125,0,255,0.45); padding:1px 5px; border-radius:4px; font-weight:800;">DEDUST / ${t.quotePair}</span>
                                 </div>
-                                <span style="font-size:11px; color:var(--text-muted); font-weight:700;">${t.name}</span>
+                                <span style="font-size:11px; color:var(--text-muted); font-weight:700;">${t.name} • Vol: ${formattedVol}</span>
                             </div>
                         </div>
                         <div style="display: flex; align-items: center; gap: 10px;">
                             <div style="text-align:right;">
-                                <div style="font-size:9px; color:var(--text-muted); text-transform:uppercase; font-weight:800;">Market Cap</div>
+                                <div style="font-size:9px; color:var(--text-muted); text-transform:uppercase; font-weight:800;">MCap <span style="color:${changeColor};">(${changeSign}${changeVal.toFixed(1)}%)</span></div>
                                 <div style="font-size:13px; font-weight:900; color:var(--accent-green);">${formattedMcap}</div>
                             </div>
                             <button onclick="event.stopPropagation(); selectTokenForSniper('${t.address}', '${t.symbol}')" style="background: rgba(239,68,68,0.15); border: 1px solid var(--accent-red); color: var(--accent-red); padding: 6px 10px; border-radius: 8px; font-size: 10px; font-weight: 800; cursor: pointer;">🎯 Snipe</button>
@@ -1211,8 +1341,8 @@
             }
         }
 
-        window.selectTokenForTrade = function(address, name, symbol, logo, mcap, liq, vol, priceUSD = 0.01, graduated = true, migrationDex = 'dedust', poolAddress = '') {
-            window.currentActiveToken = { name, symbol, address, poolAddress, logo, mcap, liq, vol, priceUSD };
+        window.selectTokenForTrade = function(address, name, symbol, logo, mcap, liq, vol, priceUSD = 0.01, change24h = 0, graduated = true, migrationDex = 'dedust', poolAddress = '') {
+            window.currentActiveToken = { name, symbol, address, poolAddress, logo, mcap, liq, vol, priceUSD, change24h };
             document.getElementById('heroTokenName').innerText = `${name} ($${symbol})`;
             document.getElementById('heroTokenCA').innerText = address;
             document.getElementById('heroTokenFallback').innerText = symbol.charAt(0);
@@ -1230,10 +1360,15 @@
             document.getElementById('dexChartFrame').src = `https://dexscreener.com/ton/${poolAddress || address}?embed=1&theme=dark&trades=0&info=0`;
             document.getElementById('externalChartBtn').href = `https://dexscreener.com/ton/${poolAddress || address}`;
             
-            document.getElementById('tokMcap').innerText = mcap >= 1e6 ? '$' + (mcap/1e6).toFixed(2) + 'M' : '$' + (mcap/1e3).toFixed(1) + 'K';
-            document.getElementById('tokLiq').innerText = liq >= 1e6 ? '$' + (liq/1e6).toFixed(2) + 'M' : '$' + (liq/1e3).toFixed(1) + 'K';
-            document.getElementById('tokVol').innerText = vol >= 1e6 ? '$' + (vol/1e6).toFixed(2) + 'M' : '$' + (vol/1e3).toFixed(1) + 'K';
-            document.getElementById('heroTokenPrice').innerText = '$' + priceUSD.toFixed(6);
+            document.getElementById('tokMcap').innerText = formatCompactUSD(mcap);
+            document.getElementById('tokLiq').innerText = formatCompactUSD(liq);
+            document.getElementById('tokVol').innerText = formatCompactUSD(vol);
+            document.getElementById('heroTokenPrice').innerText = '$' + (priceUSD || 0).toFixed(6);
+
+            const changeEl = document.getElementById('heroTokenChange');
+            const cVal = parseFloat(change24h || 0);
+            changeEl.innerText = `${cVal >= 0 ? '+' : ''}${cVal.toFixed(2)}% (24h)`;
+            changeEl.style.color = cVal >= 0 ? 'var(--accent-green)' : 'var(--accent-red)';
 
             switchPage('trade', document.querySelectorAll('.nav-tab')[0]);
             calculateSwapOutput();
