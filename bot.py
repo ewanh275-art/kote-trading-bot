@@ -7,19 +7,7 @@ app = Flask(__name__)
 CORS(app)
 
 @app.route('/')
-def home():
-    return '''
-    <html>
-        <head><title>Kote Backend</title></head>
-        <body style="background:#050507; color:#fff; font-family:sans-serif; text-align:center; padding-top:50px;">
-            <h2>Kote Bot Mini App Backend is Live 24/7! 🐱</h2>
-            <p style="color:#94a3b8; margin: 20px 0;">Click below to test the live DEX pool data endpoint:</p>
-            <a href="/api/pools" style="color:#10b981; font-size:18px; font-weight:bold; background:#15151e; padding:12px 24px; border-radius:8px; border:1px solid #27151a; text-decoration:none; display:inline-block;">👉 Open /api/pools JSON Data</a>
-        </body>
-    </html>
-    '''
-
-@app.route('/api/pools', methods=['GET'])
+@app.route('/api/pools')
 def get_pools():
     try:
         dedust_pools = requests.get('https://api.dedust.io/v2/pools', timeout=10).json()
