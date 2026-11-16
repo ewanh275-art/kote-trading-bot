@@ -340,8 +340,8 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            background: rgba(16, 185, 129, 0.12);
-            border: 1px solid rgba(16, 185, 129, 0.3);
+            background: rgba(16,185,129,0.12);
+            border: 1px solid rgba(16,185,129,0.3);
             color: var(--accent-green);
             padding: 4px 10px;
             border-radius: 8px;
@@ -355,7 +355,7 @@
             height: 48px;
             border-radius: 12px;
             background: #1a1014;
-            border: 1px solid rgba(16, 185, 129, 0.35);
+            border: 1px solid rgba(16,185,129,0.35);
             position: relative;
             overflow: hidden;
             display: flex;
@@ -456,13 +456,14 @@
 
     <!-- --- CINEMATIC INTRO SCREEN --- -->
     <div id="intro-screen">
-        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v12.22</div>
+        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v12.23</div>
         <div class="intro-content">
             <div class="intro-logo-moon">🐱</div>
             <div style="font-size: 24px; font-weight: 900; color: #fff; letter-spacing: 0.5px;">GRAM & TOPBLAST MEMES</div>
         </div>
         <div style="padding-bottom: 20px;">
-            <button class="btn-action btn-red" id="enterTerminalBtn" style="max-width: 300px; margin: 0 auto;">
+            <!-- EXPLICIT ONCLICK ADDED TO GUARANTEE INSTANT RESPONSE -->
+            <button class="btn-action btn-red" id="enterTerminalBtn" onclick="enterTerminal()" style="max-width: 300px; margin: 0 auto;">
                 ⚡ Enter Terminal
             </button>
         </div>
@@ -472,7 +473,9 @@
     <script>
         window.enterTerminal = function() {
             const intro = document.getElementById('intro-screen');
-            if(intro) intro.classList.add('hidden');
+            if(intro) {
+                intro.classList.add('hidden');
+            }
         };
 
         window.switchPage = function(pageId, navBtn) {
@@ -491,7 +494,6 @@
         window.currentTradeMode = 'buy';
         window.currentActiveToken = { name: 'Select Token', symbol: 'TOKEN', address: '', poolAddress: '', logo: '', mcap: 0, liq: 0, vol: 0, priceUSD: 0, change24h: 0, decimals: 9 };
         
-        // Guaranteed Rich Fallback Datasets (Ensures 0ms instant load and prevents MEME0 placeholders)
         window.topblastTokens = JSON.parse(localStorage.getItem('kote_topblast_cache') || '[]').length > 0 ? JSON.parse(localStorage.getItem('kote_topblast_cache')) : [
             { address: 'EQB-MPwuxusWknM7H9N_6U1y59_h_M0nK7wD70t4Z4H6z30U', name: 'Gram Memes Token', symbol: 'GRAM', logo: 'https://asset.ston.fi/img/TON.png', mcap: 1850000, liq: 620000, vol: 450000, priceUSD: 0.85, change24h: 12.4, poolAddress: 'EQB-MPwuxusWknM7H9N_6U1y59_h_M0nK7wD70t4Z4H6z30U' },
             { address: 'EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs', name: 'Tether USD', symbol: 'USDT', logo: 'https://asset.ston.fi/img/EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs.png', mcap: 50000000, liq: 15000000, vol: 8000000, priceUSD: 1.00, change24h: 0.1, poolAddress: 'EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs' }
@@ -813,7 +815,6 @@
             document.getElementById('tradeOutputAmount').value = '~ ' + resOutput.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 });
         };
 
-        // Render immediately with robust fallback data
         renderAllInstantly();
         calculateSwapOutput();
     </script>
