@@ -7,8 +7,8 @@ const { spawn } = require('child_process');
 const app = express();
 app.use(cors());
 
-// Serve static frontend files from the 'public' folder
-app.use(express.static(path.join(__dirname, 'public')));
+// Serve static files directly from root directory
+app.use(express.static(__dirname));
 
 // Automatically launch your Python Telegram bot in the background
 const pythonBot = spawn('python3', ['bot.py']);
@@ -19,10 +19,6 @@ pythonBot.stdout.on('data', (data) => {
 
 pythonBot.stderr.on('data', (data) => {
     console.error(`[Bot Error]: ${data}`);
-});
-
-pythonBot.on('close', (code) => {
-    console.log(`[Bot Process exited with code ${code}]`);
 });
 
 const GRAM_MASTER_ADDRESS = "EQC47093oX5Xhb0xuk2lCr2RhS8rj-vul61u4W2UH5ORmG_O";
@@ -41,7 +37,6 @@ const EXCLUDED_ADDRESSES = new Set([
     "eqaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaam9c".toLowerCase()
 ]);
 
-// In-Memory Cache Store (< 10ms response)
 let serverCache = {
     topblast: [],
     dedust: [],
@@ -73,7 +68,6 @@ async function runBackgroundWorker() {
         const stonfiAssets = await stonfiAssetsRes.json();
         const stonfiPools = await stonfiPoolsRes.json();
 
-        // Process DeDust Pools
         const dedustAssetMap = new Map();
         (Array.isArray(dedustAssets) ? dedustAssets : (dedustAssets.assets || [])).forEach(a => {
             if (a && a.address) dedustAssetMap.set(a.address.toLowerCase(), { name: a.name || a.symbol || 'Jetton', symbol: a.symbol || 'MEME', image: a.image || a.logo || '' });
@@ -101,7 +95,6 @@ async function runBackgroundWorker() {
             dedustMemeAddresses.add(base);
         });
 
-        // Process STON.fi Pools
         const stonfiAssetMap = new Map();
         (stonfiAssets.asset_list || stonfiAssets || []).forEach(a => {
             const addr = a.contract_address || a.address;
@@ -191,11 +184,9 @@ async function runBackgroundWorker() {
     }
 }
 
-// Run worker on startup, then every 10 seconds
 runBackgroundWorker();
 setInterval(runBackgroundWorker, 10000);
 
-// API endpoint for your frontend
 app.get('/api/tokens', (req, res) => {
     res.json(serverCache);
 });
