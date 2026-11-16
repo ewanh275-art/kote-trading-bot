@@ -8,23 +8,24 @@ app.use(express.json());
 
 const PORT = process.env.PORT || 3000;
 
-// Flexible matcher for TON and GRAM across DEX APIs
-function isTonOrGram(val) {
-    if (!val) return false;
-    const lower = String(val).toLowerCase();
-    return lower === 'native' || 
-           lower.includes('ton') || 
-           lower.includes('gram') || 
-           lower.includes('eqaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaam9c') ||
-           lower.includes('eqb-mpwuxuswknm7h9n_6u1y59_h_m0nk7wd70t4z4h6z30u');
+// Flexible check for TON and GRAM across identifiers
+function isTonOrGram(addressOrSymbol) {
+    if (!addressOrSymbol) return false;
+    const s = String(addressOrSymbol).toLowerCase();
+    return s === 'native' || 
+           s.includes('ton') || 
+           s.includes('gram') || 
+           s.includes('eqaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaam9c') || 
+           s.includes('eqb-mpwuxuswknm7h9n_6u1y59_h_m0nk7wd70t4z4h6z30u') ||
+           s.includes('eqcjtjxjwakaujighnsd7n5ztgiauc9od04i68g_3aemfbkni');
 }
 
 // Fetch all DeDust Pools paired with TON or GRAM
 async function fetchDedustMemePools() {
     try {
         const [poolsRes, assetsRes] = await Promise.all([
-            axios.get('https://api.dedust.io/v2/pools', { timeout: 12000 }),
-            axios.get('https://api.dedust.io/v2/assets', { timeout: 12000 })
+            axios.get('https://api.dedust.io/v2/pools', { timeout: 15000 }),
+            axios.get('https://api.dedust.io/v2/assets', { timeout: 15000 })
         ]);
 
         const pools = poolsRes.data || [];
@@ -42,8 +43,8 @@ async function fetchDedustMemePools() {
             const meta0 = assetsMap.get(asset0) || {};
             const meta1 = assetsMap.get(asset1) || {};
 
-            const is0TonGram = isTonOrGram(asset0) || isTonOrGram(meta0.symbol);
-            const is1TonGram = isTonOrGram(asset1) || isTonOrGram(meta1.symbol);
+            const is0TonGram = isTonOrGram(asset0) || isTonOrGram(meta0.symbol) || isTonOrGram(meta0.name);
+            const is1TonGram = isTonOrGram(asset1) || isTonOrGram(meta1.symbol) || isTonOrGram(meta1.name);
 
             let quote = is0TonGram ? asset0 : (is1TonGram ? asset1 : null);
             let base = quote === asset0 ? asset1 : (quote === asset1 ? asset0 : null);
@@ -54,11 +55,11 @@ async function fetchDedustMemePools() {
             const symbol = baseMeta.symbol || 'MEME';
             const name = baseMeta.name || symbol;
 
-            const liqUSD = parseFloat(pool.stats?.reserveUSD || '50000');
-            const vol24h = parseFloat(pool.stats?.volume24hUSD || '15000');
-            const priceUSD = parseFloat(pool.stats?.price || '0.01');
-            const change24h = parseFloat(pool.stats?.priceChange24h || '2.5');
-            const mcap = liqUSD > 0 ? liqUSD * 3.2 : 250000;
+            const liqUSD = parseFloat(pool.stats?.reserveUSD || '1000');
+            const vol24h = parseFloat(pool.stats?.volume24hUSD || '100');
+            const priceUSD = parseFloat(pool.stats?.price || '0.001');
+            const change24h = parseFloat(pool.stats?.priceChange24h || '0');
+            const mcap = liqUSD > 0 ? liqUSD * 3.2 : 50000;
 
             let logo = '';
             if (baseMeta.image) {
@@ -91,7 +92,7 @@ async function fetchDedustMemePools() {
 // Fetch all STON.fi Pools paired with TON or GRAM
 async function fetchStonfiMemePools() {
     try {
-        const poolsRes = await axios.get('https://api.ston.fi/v1/pools', { timeout: 12000 });
+        const poolsRes = await axios.get('https://api.ston.fi/v1/pools', { timeout: 15000 });
         const pools = poolsRes.data?.pool_list || [];
 
         const memePools = [];
@@ -101,30 +102,30 @@ async function fetchStonfiMemePools() {
             const symbol0 = pool.token0_symbol || '';
             const symbol1 = pool.token1_symbol || '';
 
-            const is0TonGram = isTonOrGram(symbol0) || isTonOrGram(token0);
-            const is1TonGram = isTonOrGram(symbol1) || isTonOrGram(token1);
+            const is0TonGram = isTonOrGram(token0) || isTonOrGram(symbol0);
+            const is1TonGram = isTonOrGram(token1) || isTonOrGram(symbol1);
 
-            let quote = is0TonGram ? symbol0 : (is1TonGram ? symbol1 : null);
-            let baseSymbol = quote === symbol0 ? symbol1 : symbol0;
-            let baseAddress = quote === symbol0 ? token1 : token0;
+            let quote = is0TonGram ? token0 : (is1TonGram ? token1 : null);
+            let baseAddress = quote === token0 ? token1 : token0;
+            let baseSymbol = quote === token0 ? symbol1 : symbol0;
 
-            if (!baseSymbol) continue;
+            if (!baseAddress) continue;
 
-            const liqUSD = parseFloat(pool.lp_total_supply_usd || '60000');
-            const vol24h = parseFloat(pool.volume_24h || '20000');
-            const priceUSD = parseFloat(pool.lp_price || '0.01');
-            const mcap = liqUSD > 0 ? liqUSD * 3.2 : 300000;
+            const liqUSD = parseFloat(pool.lp_total_supply_usd || '1000');
+            const vol24h = parseFloat(pool.volume_24h || '100');
+            const priceUSD = parseFloat(pool.lp_price || '0.001');
+            const mcap = liqUSD > 0 ? liqUSD * 3.2 : 50000;
 
             memePools.push({
-                address: baseAddress || 'EQ_STON_' + baseSymbol,
-                name: baseSymbol,
-                symbol: String(baseSymbol).toUpperCase(),
+                address: baseAddress,
+                name: baseSymbol || 'MEME',
+                symbol: String(baseSymbol || 'MEME').toUpperCase(),
                 logo: `https://asset.ston.fi/img/${baseAddress}.png`,
                 mcap: mcap,
                 liq: liqUSD,
                 vol: vol24h,
                 priceUSD: priceUSD,
-                change24h: 3.5,
+                change24h: 0,
                 dexSource: 'stonfi',
                 poolAddress: pool.address || baseAddress
             });
