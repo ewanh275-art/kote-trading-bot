@@ -110,16 +110,6 @@
             font-weight: 900;
             letter-spacing: 0.4px;
         }
-        .live-badge {
-            background: rgba(16, 185, 129, 0.15);
-            border: 1px solid var(--accent-green);
-            color: var(--accent-green);
-            padding: 4px 10px;
-            border-radius: 8px;
-            font-size: 10px;
-            font-weight: 800;
-            text-transform: uppercase;
-        }
 
         /* Content Area Viewport */
         .content-area {
@@ -615,7 +605,7 @@
     </script>
 
     <div class="main-container">
-        <!-- Top Header -->
+        <!-- Top Header (Badge Removed) -->
         <header class="topbar">
             <div style="display: flex; align-items: center; gap: 10px;">
                 <div class="brand-logo-box">🐱</div>
@@ -623,7 +613,6 @@
                     <h1>Kote Trade Terminal</h1>
                 </div>
             </div>
-            <div class="live-badge">Live On-Chain Engine</div>
         </header>
 
         <!-- Viewport Pages -->
@@ -781,13 +770,13 @@
                 </div>
             </section>
 
-            <!-- 5. GRAM MEMES SECTION (STRICTLY DEXSCREENER TON) -->
+            <!-- 5. GRAM MEMES SECTION (DEXSCREENER TON WITH UNLIMITED PAGINATION) -->
             <section id="page-gram-memes" class="page">
                 <div class="card" style="max-width: 650px; margin: 0 auto; width: 100%;">
                     <div class="card-header">
                         <div>
-                            <span class="card-title" style="color: var(--accent-green);">🪙 Gram Memes (Strictly DexScreener TON)</span>
-                            <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Live pools from https://dexscreener.com/ton</div>
+                            <span class="card-title" style="color: var(--accent-green);">🪙 Gram Memes (DexScreener TON)</span>
+                            <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Live pools from https://dexscreener.com/ton with pagination</div>
                         </div>
                         <button onclick="loadGramMemesTokens()" style="background: rgba(16,185,129,0.15); border: 1px solid var(--accent-green); color: var(--accent-green); padding: 6px 10px; border-radius: 8px; font-size: 11px; cursor: pointer; font-weight: 800;">↻ Refresh</button>
                     </div>
@@ -798,6 +787,12 @@
 
                     <div id="gramMemesList">
                         <div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 12px;">Loading DexScreener TON tokens...</div>
+                    </div>
+
+                    <div class="pagination-bar" id="gramPaginationBar" style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--border-color);">
+                        <button class="page-btn" id="gramPrevBtn" onclick="changeGramPage(-1)">← Previous</button>
+                        <span id="gramPageIndicator" style="font-size: 11px; font-weight: 800; color: var(--text-muted);">Page 1 of 1</span>
+                        <button class="page-btn" id="gramNextBtn" onclick="changeGramPage(1)">Next →</button>
                     </div>
                 </div>
             </section>
@@ -882,12 +877,12 @@
         </nav>
     </div>
 
-    <!-- LIVE PRODUCTION DATA & PAGINATION SCRIPT -->
+    <!-- LIVE PRODUCTION DATA & UNLIMITED PAGINATION SCRIPT -->
     <script>
         const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
         if (tg) { tg.ready(); tg.expand(); }
 
-        // Complete list of Topblast contract addresses with pagination support
+        // Complete Topblast Contract Addresses
         let topblastAddresses = [
             "EQAOY0xbKV1g3e2V7jdo5erF5u-5h19qB4IpPkK0RPy0RKGV",
             "EQAOyf4n-7wTtTI45LGQwfacEfnkpOa9v6bjpwgeCHX5WW8y",
@@ -903,9 +898,12 @@
 
         window.topblastTokens = [];
         window.gramMemesTokens = [];
+        
         let currentTopblastPage = 1;
-        const itemsPerPage = 5; // Display 5 per page with unlimited pagination
+        let currentGramPage = 1;
+        const itemsPerPage = 5;
 
+        // --- TOPBLAST LOGIC & PAGINATION ---
         async function loadTopblastTokens() {
             window.topblastTokens = topblastAddresses.map((ca, idx) => ({
                 name: `Topblast Token #${idx + 1}`,
@@ -1017,11 +1015,13 @@
             }
         }
 
-        // Strictly fetch tokens from DexScreener TON page endpoint (`https://api.dexscreener.com/latest/dex/search?q=ton`)
+        // --- GRAM MEMES LOGIC & UNLIMITED PAGINATION ---
         async function loadGramMemesTokens() {
             const container = document.getElementById('gramMemesList');
+            const paginationBar = document.getElementById('gramPaginationBar');
             if(!container) return;
             container.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 12px;">Fetching live tokens from DexScreener TON...</div>`;
+            if(paginationBar) paginationBar.style.display = 'none';
 
             try {
                 const res = await fetch(`https://api.dexscreener.com/latest/dex/search?q=ton`);
@@ -1042,25 +1042,47 @@
                     migrationDex: p.dexId || 'dedust'
                 }));
 
+                currentGramPage = 1;
                 renderGramMemesList();
             } catch (err) {
                 container.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--accent-red); font-size: 12px;">Failed to load DexScreener TON data.</div>`;
             }
         }
 
+        window.changeGramPage = function(direction) {
+            const q = (document.getElementById('gramMemesSearchInput')?.value || '').toLowerCase();
+            const filtered = window.gramMemesTokens.filter(t => t.name.toLowerCase().includes(q) || t.symbol.toLowerCase().includes(q) || t.address.toLowerCase().includes(q));
+            const totalPages = Math.ceil(filtered.length / itemsPerPage) || 1;
+            currentGramPage = Math.min(Math.max(1, currentGramPage + direction), totalPages);
+            renderGramMemesList();
+        };
+
+        window.filterGramMemesList = function() {
+            currentGramPage = 1;
+            renderGramMemesList();
+        };
+
         function renderGramMemesList() {
             const q = (document.getElementById('gramMemesSearchInput')?.value || '').toLowerCase();
             const filtered = window.gramMemesTokens.filter(t => t.name.toLowerCase().includes(q) || t.symbol.toLowerCase().includes(q) || t.address.toLowerCase().includes(q));
             const container = document.getElementById('gramMemesList');
+            const paginationBar = document.getElementById('gramPaginationBar');
             if(!container) return;
 
             if (filtered.length === 0) {
                 container.innerHTML = `<div style="text-align:center; padding: 20px; color: var(--text-muted); font-size: 12px;">No Gram Memes found.</div>`;
+                if(paginationBar) paginationBar.style.display = 'none';
                 return;
             }
 
+            const totalPages = Math.ceil(filtered.length / itemsPerPage);
+            if (currentGramPage > totalPages) currentGramPage = totalPages;
+
+            const startIndex = (currentGramPage - 1) * itemsPerPage;
+            const paginatedItems = filtered.slice(startIndex, startIndex + itemsPerPage);
+
             container.innerHTML = '';
-            filtered.forEach(t => {
+            paginatedItems.forEach(t => {
                 const formattedMcap = t.mcap >= 1e6 ? '$' + (t.mcap/1e6).toFixed(2) + 'M' : '$' + (t.mcap/1e3).toFixed(1) + 'K';
                 container.innerHTML += `
                     <div class="launch-card" onclick="handleTokenCardClick('${t.address}', '${t.symbol}', '${t.poolAddress}')">
@@ -1087,9 +1109,14 @@
                     </div>
                 `;
             });
-        }
 
-        window.filterGramMemesList = function() { renderGramMemesList(); };
+            if(paginationBar) {
+                paginationBar.style.display = 'flex';
+                document.getElementById('gramPageIndicator').innerText = `Page ${currentGramPage} of ${totalPages}`;
+                document.getElementById('gramPrevBtn').disabled = currentGramPage === 1;
+                document.getElementById('gramNextBtn').disabled = currentGramPage === totalPages;
+            }
+        }
 
         window.selectTokenForTrade = function(address, name, symbol, logo, mcap, liq, vol, priceUSD = 0.01, graduated = true, migrationDex = 'dedust', poolAddress = '') {
             window.currentActiveToken = { name, symbol, address, poolAddress, logo, mcap, liq, vol, priceUSD };
