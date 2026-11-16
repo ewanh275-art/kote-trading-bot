@@ -153,7 +153,10 @@ async function runBackgroundWorker() {
                 if (!chunk) continue;
                 try {
                     const dsRes = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${chunk}`);
-                    const dsData = await dsRes.json();
+                    if (!dsRes.ok) continue;
+                    const text = await dsRes.text();
+                    if (text.startsWith('<')) continue; // Skip HTML error/cloudflare pages
+                    const dsData = JSON.parse(text);
                     const pairs = (dsData.pairs || []).filter(p => p.chainId === 'ton');
 
                     pairs.forEach(p => {
