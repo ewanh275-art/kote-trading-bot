@@ -6,6 +6,10 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)
 
+@app.route('/')
+def home():
+    return "Kote Bot Mini App is live 24/7!"
+
 @app.route('/api/pools', methods=['GET'])
 def get_pools():
     try:
