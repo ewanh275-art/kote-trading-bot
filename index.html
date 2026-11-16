@@ -103,7 +103,7 @@
 <body>
 
     <div id="intro-screen">
-        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v13.7</div>
+        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v13.8</div>
         <div class="intro-content">
             <div class="intro-logo-moon">🐱</div>
             <div style="font-size: 24px; font-weight: 900; color: #fff; letter-spacing: 0.5px;">GRAM & TOPBLAST MEMES</div>
@@ -140,30 +140,72 @@
             { address: 'EQC_Topblast_01', name: 'Topblast Pepe', symbol: 'TPEPE', logo: 'https://asset.ston.fi/img/TON.png', mcap: 920000, liq: 310000, vol: 180000, priceUSD: 0.12, change24h: 24.5, poolAddress: 'EQC_Topblast_01' }
         ];
 
-        // --- FULLY POPULATED DEDUST POOLS REGISTRY ---
-        window.gramDedustTokens = [
-            { address: 'EQBlqsm144Dq6SjbPI4jjZvA1hqTIP3CvHovbIfW_t-SCALE', name: 'Scale TON', symbol: 'SCALE', logo: 'https://assets.dedust.io/images/EQBlqsm144Dq6SjbPI4jjZvA1hqTIP3CvHovbIfW_t-SCALE.png', mcap: 840000, liq: 310000, vol: 195000, priceUSD: 0.14, change24h: 8.5, poolAddress: 'EQBlqsm144Dq6SjbPI4jjZvA1hqTIP3CvHovbIfW_t-SCALE' },
-            { address: 'EQA4g22tW9bBvH5N_6U1y59_h_M0nK7wD70t4Z4H6z30F', name: 'Fish Crypto', symbol: 'FISH', logo: 'https://asset.ston.fi/img/EQA4g22tW9bBvH5N_6U1y59_h_M0nK7wD70t4Z4H6z30F.png', mcap: 1450000, liq: 520000, vol: 320000, priceUSD: 0.042, change24h: -2.3, poolAddress: 'EQA4g22tW9bBvH5N_6U1y59_h_M0nK7wD70t4Z4H6z30F' },
-            { address: 'EQCGX_REDO_MEME_TOKEN_ADDRESS', name: 'Resistance Dog', symbol: 'REDO', logo: 'https://asset.ston.fi/img/EQCGX_REDO_MEME_TOKEN_ADDRESS.png', mcap: 3400000, liq: 1100000, vol: 720000, priceUSD: 0.34, change24h: 18.2, poolAddress: 'EQCGX_REDO_MEME_TOKEN_ADDRESS' },
-            { address: 'EQC_DUST_PROTOCOL_TOKEN', name: 'DeDust Protocol', symbol: 'DUST', logo: 'https://asset.ston.fi/img/TON.png', mcap: 1087000, liq: 318000, vol: 195000, priceUSD: 0.31, change24h: 5.4, poolAddress: 'EQC_DUST_PROTOCOL_TOKEN' },
-            { address: 'EQC_UTYA_MEME_TOKEN', name: 'Utya Meme', symbol: 'UTYA', logo: 'https://asset.ston.fi/img/TON.png', mcap: 620000, liq: 180000, vol: 94000, priceUSD: 0.029, change24h: 11.1, poolAddress: 'EQC_UTYA_MEME_TOKEN' },
-            { address: 'EQ_DEDUST_MEME_1', name: 'Dedust Bull', symbol: 'DBULL', logo: 'https://assets.dedust.io/images/TON.png', mcap: 1250000, liq: 410000, vol: 230000, priceUSD: 0.15, change24h: 14.2, poolAddress: 'EQ_POOL_D_1' },
-            { address: 'EQ_DEDUST_MEME_2', name: 'Ton Inu', symbol: 'TINU', logo: 'https://assets.dedust.io/images/TON.png', mcap: 980000, liq: 310000, vol: 185000, priceUSD: 0.089, change24h: -3.5, poolAddress: 'EQ_POOL_D_2' },
-            { address: 'EQ_DEDUST_MEME_3', name: 'Gramster', symbol: 'GRAMS', logo: 'https://assets.dedust.io/images/TON.png', mcap: 2100000, liq: 750000, vol: 540000, priceUSD: 0.45, change24h: 28.6, poolAddress: 'EQ_POOL_D_3' }
-        ];
-
-        // --- STON.FI POOLS REGISTRY ---
+        window.gramDedustTokens = [];
         window.gramStonfiTokens = [
             { address: 'EQCJTjXjWKaUjiGHnsd7N5ztGIAUC9od04i68G_3AEmFbknI', name: 'STON.fi Governance', symbol: 'STON', logo: 'https://asset.ston.fi/img/STON.png', mcap: 9200000, liq: 2800000, vol: 950000, priceUSD: 2.10, change24h: -1.5, poolAddress: 'EQCJTjXjWKaUjiGHnsd7N5ztGIAUC9od04i68G_3AEmFbknI' },
-            { address: 'TON', name: 'Toncoin', symbol: 'TON', logo: 'https://asset.ston.fi/img/TON.png', mcap: 14200000000, liq: 45000000, vol: 12000000, priceUSD: 5.65, change24h: 4.2, poolAddress: 'TON' },
-            { address: 'EQC_RIFT_TON_Stonfi', name: 'Rifty Meme', symbol: 'RIFT', logo: 'https://asset.ston.fi/img/TON.png', mcap: 1120000, liq: 380000, vol: 210000, priceUSD: 0.18, change24h: 22.0, poolAddress: 'EQC_RIFT_TON_Stonfi' },
-            { address: 'EQC_YODA_TON_Stonfi', name: 'Baby Yoda', symbol: 'YODA', logo: 'https://asset.ston.fi/img/TON.png', mcap: 950000, liq: 290000, vol: 165000, priceUSD: 0.075, change24h: -4.1, poolAddress: 'EQC_YODA_TON_Stonfi' }
+            { address: 'TON', name: 'Toncoin', symbol: 'TON', logo: 'https://asset.ston.fi/img/TON.png', mcap: 14200000000, liq: 45000000, vol: 12000000, priceUSD: 5.65, change24h: 4.2, poolAddress: 'TON' }
         ];
 
         let currentDedustPage = 1;
         let currentStonfiPage = 1;
         let currentTopblastPage = 1;
         const itemsPerPage = 10;
+
+        // --- FETCH LIVE POOLS FROM RENDER PYTHON BACKEND ---
+        async function fetchLivePoolsFromBackend() {
+            try {
+                // Replace with your actual Render service web URL
+                const response = await fetch('https://your-render-app-name.onrender.com/api/pools');
+                const data = await response.json();
+                
+                if (!data.success) return;
+
+                const assetsMap = new Map();
+                (data.dedust_assets || []).forEach(a => {
+                    if (a && a.address) assetsMap.set(a.address, a);
+                });
+
+                const dedustList = [];
+                (data.dedust_pools || []).forEach(pool => {
+                    const poolAssets = pool.assets || [];
+                    if (poolAssets.length < 2) return;
+
+                    const [a0, a1] = poolAssets;
+                    const meta0 = assetsMap.get(a0) || {};
+                    const meta1 = assetsMap.get(a1) || {};
+
+                    const is0TonGram = a0 === 'native' || (meta0.symbol || '').toUpperCase() === 'TON' || (meta0.symbol || '').toUpperCase() === 'GRAM';
+                    const is1TonGram = a1 === 'native' || (meta1.symbol || '').toUpperCase() === 'TON' || (meta1.symbol || '').toUpperCase() === 'GRAM';
+
+                    if (!is0TonGram && !is1TonGram) return;
+
+                    const base = is0TonGram ? a1 : a0;
+                    const baseMeta = assetsMap.get(base) || {};
+                    
+                    const symbol = (baseMeta.symbol || 'MEME').toUpperCase();
+                    const name = baseMeta.name || symbol;
+                    const address = base;
+                    const poolAddress = pool.address || base;
+                    const priceUSD = parseFloat(pool.stats?.price || '0.001');
+                    const liqUSD = parseFloat(pool.stats?.reserveUSD || '10000');
+                    const vol24h = parseFloat(pool.stats?.volume24hUSD || '5000');
+                    const change24h = parseFloat(pool.stats?.priceChange24h || '0');
+                    const mcap = liqUSD > 0 ? liqUSD * 3.2 : 50000;
+                    
+                    let logo = baseMeta.image ? (baseMeta.image.startsWith('http') ? baseMeta.image : `https://assets.dedust.io/images/${baseMeta.image}`) : `https://assets.dedust.io/images/${address}.png`;
+
+                    dedustList.push({ address, name, symbol, logo, mcap, liq: liqUSD, vol: vol24h, priceUSD, change24h, poolAddress });
+                });
+
+                if (dedustList.length > 0) {
+                    window.gramDedustTokens = dedustList;
+                    renderGramDedustList();
+                    console.log("Loaded live DeDust pools from Python backend:", dedustList.length);
+                }
+            } catch (err) {
+                console.warn('Backend fetch error:', err);
+            }
+        }
 
         window.switchGramSubTab = function(tabName) {
             const dedustBtn = document.getElementById('gramSubDedust');
@@ -247,6 +289,7 @@
             const enterBtn = document.getElementById('enterTerminalBtn');
             if(enterBtn) enterBtn.addEventListener('click', window.enterTerminal);
             renderAllInstantly();
+            fetchLivePoolsFromBackend();
         });
     </script>
 
@@ -282,7 +325,7 @@
                         </div>
                     </div>
 
-                    <div class="audit-badge">🛡️ DeDust & STON.fi Verified Registry Active</div>
+                    <div class="audit-badge">🛡️ DeDust & STON.fi Python Backend Bridge Active</div>
 
                     <div class="tokenomics-grid">
                         <div class="stat-card"><span>Market Cap</span><strong id="tokMcap">$0.0K</strong></div>
@@ -403,7 +446,7 @@
                             <span class="card-title" style="color: var(--accent-green);">🪙 Gram Memes DEX Pools</span>
                             <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">DeDust & STON.fi Pooled Tokens</div>
                         </div>
-                        <button onclick="renderAllInstantly()" style="background: rgba(16,185,129,0.15); border: 1px solid var(--accent-green); color: var(--accent-green); padding: 6px 10px; border-radius: 8px; font-size: 11px; cursor: pointer; font-weight: 800;">↻ Refresh Pools</button>
+                        <button onclick="fetchLivePoolsFromBackend(); renderAllInstantly();" style="background: rgba(16,185,129,0.15); border: 1px solid var(--accent-green); color: var(--accent-green); padding: 6px 10px; border-radius: 8px; font-size: 11px; cursor: pointer; font-weight: 800;">↻ Refresh Pools</button>
                     </div>
 
                     <div class="trade-tabs" style="margin-bottom: 12px;">
