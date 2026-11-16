@@ -7,7 +7,14 @@ app = Flask(__name__)
 CORS(app)
 
 @app.route('/')
-@app.route('/api/pools')
+def home():
+    return jsonify({
+        "status": "online",
+        "message": "Kote Backend is live!",
+        "endpoint": "/api/pools"
+    })
+
+@app.route('/api/pools', methods=['GET'])
 def get_pools():
     try:
         dedust_pools = requests.get('https://api.dedust.io/v2/pools', timeout=10).json()
