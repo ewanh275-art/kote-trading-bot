@@ -1,6 +1,6 @@
 import os
 import requests
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from flask_cors import CORS
 
 app = Flask(__name__)
@@ -27,6 +27,11 @@ def get_pools():
         })
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
+
+@app.errorhandler(404)
+def not_found(e):
+    print(f"⚠️ 404 Hit for path: {request.path}")
+    return jsonify({"error": "Not Found", "requested_path": request.path}), 404
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 10000))
