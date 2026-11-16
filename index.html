@@ -21,12 +21,9 @@
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         body {
             background: linear-gradient(rgba(5, 5, 7, 0.75), rgba(5, 5, 7, 0.90)), url('./bg.jpg.JPG') no-repeat center center fixed;
-            background-size: cover;
-            color: var(--text-main);
+            background-size: cover; color: var(--text-main);
             font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
-            display: flex;
-            height: 100vh;
-            overflow: hidden;
+            display: flex; height: 100vh; overflow: hidden;
         }
         #intro-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -85,7 +82,6 @@
         .btn-action { width: 100%; padding: 14px; border-radius: 12px; border: none; font-size: 14px; font-weight: 900; cursor: pointer; text-align: center; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
         .btn-red { background: linear-gradient(135deg, var(--accent-red), #991b1b); color: #fff; box-shadow: 0 4px 20px rgba(239, 68, 68, 0.38); }
         .btn-green-action { background: linear-gradient(135deg, var(--accent-green), #059669); color: #fff; }
-        .btn-moonpay { background: linear-gradient(135deg, #7d00ff, #4c0099); color: #fff; }
         .audit-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.3); color: var(--accent-green); padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 800; margin-bottom: 10px; }
         .token-avatar-wrap { width: 48px; height: 48px; border-radius: 12px; background: #1a1014; border: 1px solid rgba(16,185,129,0.35); position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
         .token-avatar-wrap img { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; z-index: 2; }
@@ -107,7 +103,7 @@
 <body>
 
     <div id="intro-screen">
-        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v12.24</div>
+        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v12.25</div>
         <div class="intro-content">
             <div class="intro-logo-moon">🐱</div>
             <div style="font-size: 24px; font-weight: 900; color: #fff; letter-spacing: 0.5px;">GRAM & TOPBLAST MEMES</div>
@@ -138,7 +134,9 @@
         window.currentTradeMode = 'buy';
         window.currentActiveToken = { name: 'Select Token', symbol: 'TOKEN', address: '', poolAddress: '', logo: '', mcap: 0, liq: 0, vol: 0, priceUSD: 0, change24h: 0 };
         
-        window.topblastTokens = [];
+        window.topblastTokens = [
+            { address: 'EQB-MPwuxusWknM7H9N_6U1y59_h_M0nK7wD70t4Z4H6z30U', name: 'Gram Memes Token', symbol: 'GRAM', logo: 'https://asset.ston.fi/img/EQB-MPwuxusWknM7H9N_6U1y59_h_M0nK7wD70t4Z4H6z30U.png', mcap: 1850000, liq: 620000, vol: 450000, priceUSD: 0.85, change24h: 12.4, poolAddress: 'EQB-MPwuxusWknM7H9N_6U1y59_h_M0nK7wD70t4Z4H6z30U' }
+        ];
         window.gramDedustTokens = [];
         window.gramStonfiTokens = [];
 
@@ -225,7 +223,6 @@
         window.setSellPercent = function(pct) { document.getElementById('tradeInputAmount').value = pct; calculateSwapOutput(); };
         window.copyReferralLink = function() { navigator.clipboard.writeText("https://t.me/KoteTrade_bot/app"); alert('Referral link copied!'); };
 
-        // Fetch tokens from backend API
         async function fetchTokensFromBackend() {
             try {
                 const backendUrl = window.location.hostname === 'localhost' ? 'http://localhost:3000/api/memes' : './api/memes';
@@ -239,12 +236,7 @@
                     window.gramStonfiTokens = data.stonfi;
                 }
             } catch (err) {
-                console.log("Using default fallback data...", err);
-                window.gramDedustTokens = [
-                    { address: 'TON', name: 'Toncoin', symbol: 'TON', logo: 'https://asset.ston.fi/img/TON.png', mcap: 14200000000, liq: 45000000, vol: 12000000, priceUSD: 5.65, change24h: 4.2, poolAddress: 'TON' },
-                    { address: 'EQB-MPwuxusWknM7H9N_6U1y59_h_M0nK7wD70t4Z4H6z30U', name: 'Gram Memes Token', symbol: 'GRAM', logo: 'https://asset.ston.fi/img/EQB-MPwuxusWknM7H9N_6U1y59_h_M0nK7wD70t4Z4H6z30U.png', mcap: 1850000, liq: 620000, vol: 450000, priceUSD: 0.85, change24h: 12.4, poolAddress: 'EQB-MPwuxusWknM7H9N_6U1y59_h_M0nK7wD70t4Z4H6z30U' }
-                ];
-                window.gramStonfiTokens = window.gramDedustTokens;
+                console.log("Using fallback pool data...", err);
             }
             renderAllInstantly();
         }
@@ -401,7 +393,7 @@
                 </div>
             </section>
 
-            <!-- 5. GRAM MEMES SECTION (DEDUST & STON.FI SECTIONS) -->
+            <!-- 5. GRAM MEMES SECTION -->
             <section id="page-gram-memes" class="page">
                 <div class="card" style="max-width: 650px; margin: 0 auto; width: 100%;">
                     <div class="card-header">
@@ -497,7 +489,7 @@
                             <div class="token-badge" style="background: #1c1033; color: #e9d5ff; border-color: #581c87;">USD 💵</div>
                         </div>
                     </div>
-                    <button class="btn-action btn-moonpay" style="font-size: 15px; padding: 16px;" onclick="alert('Opening MoonPay Gateway')">Proceed with MoonPay</button>
+                    <button class="btn-action" style="background: linear-gradient(135deg, #7d00ff, #4c0099); color: #fff; font-size: 15px; padding: 16px;" onclick="alert('Opening MoonPay Gateway')">Proceed with MoonPay</button>
                 </div>
             </section>
         </main>
@@ -513,7 +505,7 @@
         </nav>
     </div>
 
-    <!-- RENDER ENGINE WITH PAGINATION ACROSS THOUSANDS OF POOLS -->
+    <!-- RENDER ENGINE WITH DYNAMIC PAGINATION -->
     <script>
         const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
         if (tg) { tg.ready(); tg.expand(); }
