@@ -6,14 +6,14 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)
 
-@app.route('/')
+@app.route('/', strict_slashes=False)
 def home():
     return jsonify({
         "status": "online",
         "message": "Kote Backend is live!"
     })
 
-@app.route('/api/pools', methods=['GET'])
+@app.route('/api/pools', methods=['GET'], strict_slashes=False)
 def get_pools():
     try:
         dedust_pools = requests.get('https://api.dedust.io/v2/pools', timeout=10).json()
@@ -27,9 +27,6 @@ def get_pools():
         })
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
-
-# Print registered routes to Render logs on startup
-print("Registered Flask Routes:", app.url_map)
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 10000))
