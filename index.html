@@ -1189,7 +1189,7 @@
             }
         }
 
-        function renderGramStonfiList() {
+        window.renderGramStonfiList = function() {
             const q = (document.getElementById('gramMemesSearchInput')?.value || '').toLowerCase();
             const filtered = window.gramStonfiTokens.filter(t => t.name.toLowerCase().includes(q) || t.symbol.toLowerCase().includes(q) || t.address.toLowerCase().includes(q));
             const container = document.getElementById('gramStonfiList');
@@ -1245,7 +1245,7 @@
             if(paginationBar) {
                 paginationBar.style.display = 'flex';
                 document.getElementById('stonfiPageIndicator').innerText = `Page ${currentStonfiPage} of ${totalPages}`;
-                document.getElementById('stonfiPrevBtn'].disabled = currentStonfiPage === 1;
+                document.getElementById('stonfiPrevBtn').disabled = currentStonfiPage === 1;
                 document.getElementById('stonfiNextBtn').disabled = currentStonfiPage === totalPages;
             }
         }
