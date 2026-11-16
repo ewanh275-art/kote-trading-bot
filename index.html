@@ -298,25 +298,17 @@
                     if (poolAssets.length < 2) return;
 
                     const [a0, a1] = poolAssets;
-                    const meta0 = assetsMap.get(a0) || {};
-                    const meta1 = assetsMap.get(a1) || {};
-
-                    const is0TonGram = a0 === 'native' || (meta0.symbol || '').toUpperCase() === 'TON' || (meta0.symbol || '').toUpperCase() === 'GRAM';
-                    const is1TonGram = a1 === 'native' || (meta1.symbol || '').toUpperCase() === 'TON' || (meta1.symbol || '').toUpperCase() === 'GRAM';
-
-                    if (!is0TonGram && !is1TonGram) return;
-
-                    const base = is0TonGram ? a1 : a0;
+                    const base = (a0 === 'native' || a0 === 'TON') ? a1 : a0;
                     const baseMeta = assetsMap.get(base) || {};
                     
                     const symbol = (baseMeta.symbol || 'MEME').toUpperCase();
                     const name = baseMeta.name || symbol;
                     const address = base;
                     const poolAddress = pool.address || base;
-                    const priceUSD = parseFloat(pool.stats?.price || '0.001');
-                    const liqUSD = parseFloat(pool.stats?.reserveUSD || '10000');
-                    const vol24h = parseFloat(pool.stats?.volume24hUSD || '5000');
-                    const change24h = parseFloat(pool.stats?.priceChange24h || '0');
+                    const priceUSD = parseFloat(pool.stats?.price || pool.price || '0.001');
+                    const liqUSD = parseFloat(pool.stats?.reserveUSD || pool.reserveUSD || '10000');
+                    const vol24h = parseFloat(pool.stats?.volume24hUSD || pool.volume24hUSD || '5000');
+                    const change24h = parseFloat(pool.stats?.priceChange24h || pool.priceChange24h || '0');
                     const mcap = liqUSD > 0 ? liqUSD * 3.2 : 50000;
                     
                     let logo = baseMeta.image ? (baseMeta.image.startsWith('http') ? baseMeta.image : `https://assets.dedust.io/images/${baseMeta.image}`) : `https://assets.dedust.io/images/${address}.png`;
@@ -328,9 +320,12 @@
                     window.gramDedustTokens = dedustList;
                     renderGramDedustList();
                     console.log("Loaded live DeDust pools from Python backend:", dedustList.length);
+                } else {
+                    document.getElementById('gramDedustContainer').innerHTML = `<div style="text-align:center; padding:20px; color:var(--text-muted); font-size:12px;">No DeDust pools found.</div>`;
                 }
             } catch (err) {
                 console.warn('Backend fetch error:', err);
+                document.getElementById('gramDedustContainer').innerHTML = `<div style="text-align:center; padding:20px; color:var(--accent-red); font-size:12px;">Failed to load pools.</div>`;
             }
         }
 
