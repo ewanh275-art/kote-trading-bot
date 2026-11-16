@@ -32,7 +32,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 Your ultimate companion for automated token sniping, wallet management, and decentralized trading on Telegram.
 Tap below to launch your trading dashboard mini-app!"""
     
-    # Updated to point directly to your unified Render cloud app
+    # Points directly to your unified Render cloud app
     webapp_url = "https://kote-trading-bot.onrender.com/"
     
     keyboard = InlineKeyboardMarkup([
@@ -69,7 +69,8 @@ def main():
     application.add_handler(CommandHandler("sniper", trade_command))
 
     logger.info("Starting Kote Trading & Sniper Bot polling...")
-    application.run_polling()
+    # drop_pending_updates=True clears any old webhooks so polling works immediately
+    application.run_polling(drop_pending_updates=True)
 
 if __name__ == "__main__":
     main()
