@@ -8,11 +8,7 @@ CORS(app)
 
 @app.route('/')
 def home():
-    return jsonify({
-        "status": "online",
-        "message": "Kote Backend is live!",
-        "endpoint": "/api/pools"
-    })
+    return "Kote Backend is online and working!", 200
 
 @app.route('/api/pools', methods=['GET'])
 def get_pools():
