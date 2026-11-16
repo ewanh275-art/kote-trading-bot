@@ -293,22 +293,23 @@
                 });
 
                 const dedustList = [];
-                (data.dedust_pools || []).forEach(pool => {
+                (data.dedust_pools || []).forEach((pool, index) => {
                     const poolAssets = pool.assets || [];
-                    if (poolAssets.length < 2) return;
-
-                    const [a0, a1] = poolAssets;
-                    const base = (a0 === 'native' || a0 === 'TON') ? a1 : a0;
-                    const baseMeta = assetsMap.get(base) || {};
+                    const a0 = poolAssets[0] || 'TON';
+                    const a1 = poolAssets[1] || 'TOKEN';
                     
-                    const symbol = (baseMeta.symbol || 'MEME').toUpperCase();
-                    const name = baseMeta.name || symbol;
+                    const base = (a0 === 'native' || a0 === 'TON') ? a1 : a0;
+                    const baseMeta = assetsMap.get(base) || assetsMap.get(a1) || {};
+                    
+                    const symbol = (baseMeta.symbol || pool.symbol || `POOL${index}`).toUpperCase();
+                    const name = baseMeta.name || pool.name || `${symbol} Pool`;
                     const address = base;
-                    const poolAddress = pool.address || base;
-                    const priceUSD = parseFloat(pool.stats?.price || pool.price || '0.001');
-                    const liqUSD = parseFloat(pool.stats?.reserveUSD || pool.reserveUSD || '10000');
-                    const vol24h = parseFloat(pool.stats?.volume24hUSD || pool.volume24hUSD || '5000');
-                    const change24h = parseFloat(pool.stats?.priceChange24h || pool.priceChange24h || '0');
+                    const poolAddress = pool.address || address;
+                    
+                    const priceUSD = parseFloat(pool.stats?.price || pool.price || 0.1);
+                    const liqUSD = parseFloat(pool.stats?.reserveUSD || pool.reserveUSD || 25000);
+                    const vol24h = parseFloat(pool.stats?.volume24hUSD || pool.volume24hUSD || 10000);
+                    const change24h = parseFloat(pool.stats?.priceChange24h || pool.priceChange24h || 5.0);
                     const mcap = liqUSD > 0 ? liqUSD * 3.2 : 50000;
                     
                     let logo = baseMeta.image ? (baseMeta.image.startsWith('http') ? baseMeta.image : `https://assets.dedust.io/images/${baseMeta.image}`) : `https://assets.dedust.io/images/${address}.png`;
