@@ -66,7 +66,7 @@
         
         .input-group { background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 12px; padding: 10px 12px; margin-bottom: 10px; }
         .input-group label { font-size: 10px; color: var(--text-muted); display: block; margin-bottom: 4px; font-weight: 700; }
-        .input-group input { width: 100%; background: none; border: none; color: #fff; font-size: 14px; font-weight: 800; outline: none; }
+        .input-group input { width: 100%; background: none; border: none; color: #fff; font-size: 13px; font-weight: 800; outline: none; }
 
         .preset-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin: 8px 0; }
         .preset-btn { background: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-main); padding: 8px 4px; border-radius: 8px; font-size: 12px; font-weight: 800; cursor: pointer; text-align: center; transition: all 0.2s; }
@@ -317,19 +317,58 @@
                 </div>
             </section>
 
-            <!-- 6. PROFILE / SETTINGS PAGE -->
+            <!-- 6. PROFILE PAGE (WITH REFERRAL & TREASURY SPLIT SYSTEM) -->
             <section id="page-profile" class="page">
                 <div class="card">
-                    <div class="card-header"><span class="card-title">👤 Profile & Wallet Settings</span></div>
+                    <div class="card-header"><span class="card-title">👤 Profile & Unique Referral Link</span></div>
                     <div class="input-group">
                         <label>CONNECTED TELEGRAM USER</label>
-                        <input type="text" value="@Ewan_Hughes" readonly style="color: var(--accent-cyan);">
+                        <input type="text" id="profileUser" value="@Ewan_Hughes" readonly style="color: var(--accent-cyan);">
                     </div>
-                    <div class="input-group" style="margin-top: 10px;">
-                        <label>TON WALLET ADDRESS</label>
-                        <input type="text" value="UQAk7093oX5Xhb0xuk2lCr2RhS8rj-vul61u4W2UH5ORmG_O" readonly>
+                    
+                    <div class="input-group" style="margin-top: 8px;">
+                        <label>YOUR UNIQUE REFERRAL LINK</label>
+                        <input type="text" id="uniqueRefLink" value="https://t.me/KoteCrashBot?start=ref_19842510" readonly>
                     </div>
-                    <button class="btn-action btn-red" style="margin-top: 12px;" onclick="Telegram.WebApp.close()">Disconnect & Close</button>
+                    <button class="btn-action btn-blue" style="margin-top: 6px; padding: 10px; font-size: 13px;" onclick="copyReferralLink()">📋 Copy Unique Referral Link</button>
+                </div>
+
+                <!-- Live Referral Real-Time Stats Card -->
+                <div class="card" style="background: linear-gradient(135deg, rgba(6, 182, 212, 0.15), rgba(16, 18, 28, 0.88));">
+                    <div class="card-header"><span class="card-title">👥 Live Referral Network Stats</span></div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
+                        <div style="background: var(--bg-input); padding: 12px; border-radius: 12px; text-align: center;">
+                            <div style="font-size: 10px; color: var(--text-muted);">TOTAL LINK CLICKS</div>
+                            <div style="font-size: 20px; font-weight: 900; color: var(--accent-cyan); margin-top: 4px;" id="refClicksCount">3</div>
+                        </div>
+                        <div style="background: var(--bg-input); padding: 12px; border-radius: 12px; text-align: center;">
+                            <div style="font-size: 10px; color: var(--text-muted);">EARNED FROM TRADES (3%)</div>
+                            <div style="font-size: 20px; font-weight: 900; color: var(--accent-green); margin-top: 4px;" id="refEarningsVal">1.45 GRAM</div>
+                        </div>
+                    </div>
+
+                    <div style="font-size: 11px; font-weight: 800; color: var(--text-muted); margin-bottom: 6px;">REFERRED USERS ACTIVITY LOG</div>
+                    <div style="background: var(--bg-input); border-radius: 12px; padding: 10px; display: flex; flex-direction: column; gap: 8px; max-height: 140px; overflow-y: auto;" id="referredUsersList">
+                        <div style="display: flex; justify-content: space-between; font-size: 11px; border-bottom: 1px solid var(--border-color); padding-bottom: 6px;">
+                            <span>👤 @Trader_Alex</span>
+                            <span style="color: var(--accent-green);">Active • 3 Trades</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 11px; border-bottom: 1px solid var(--border-color); padding-bottom: 6px;">
+                            <span>👤 @CryptoDave99</span>
+                            <span style="color: var(--accent-green);">Active • 1 Trade</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 11px;">
+                            <span>👤 @SMC_Trader_UK</span>
+                            <span style="color: var(--text-muted);">Clicked Link (Pending First Trade)</span>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 12px; font-size: 10px; color: var(--text-muted); line-height: 1.4; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 10px;">
+                        💡 <strong>Fee Distribution Structure:</strong><br>
+                        • <strong>3%</strong> of the 10% treasury fee goes directly to you for every trade & withdrawal made by your referrals.<br>
+                        • <strong>7%</strong> is automatically routed to the designated treasury address: <br>
+                        <code style="color: var(--accent-cyan); font-size: 9px; word-break: break-all;">UQAC-pXNqjUJ0u1wBkLPiDkLVMZkWYXWvNQuH5Mtx_tPdsGV</code>
+                    </div>
                 </div>
             </section>
         </main>
@@ -361,6 +400,29 @@
                 document.querySelector('.content-area').scrollTop = 0;
             }
             if(navBtn) navBtn.classList.add('active');
+        };
+
+        // Initialize Telegram User ID & Unique Referral Link
+        window.addEventListener('DOMContentLoaded', () => {
+            const tg = window.Telegram?.WebApp;
+            if(tg && tg.initDataUnsafe && tg.initDataUnsafe.user) {
+                const user = tg.initDataUnsafe.user;
+                const userId = user.id;
+                const username = user.username ? `@${user.username}` : `@user_${userId}`;
+                document.getElementById('profileUser').value = username;
+                document.getElementById('uniqueRefLink').value = `https://t.me/KoteCrashBot?start=ref_${userId}`;
+            }
+        });
+
+        window.copyReferralLink = function() {
+            const refInput = document.getElementById('uniqueRefLink');
+            refInput.select();
+            refInput.setSelectionRange(0, 99999);
+            navigator.clipboard.writeText(refInput.value).then(() => {
+                alert('📋 Unique referral link copied to clipboard!');
+            }).catch(() => {
+                alert('Link: ' + refInput.value);
+            });
         };
 
         let currentTradeMode = 'buy';
@@ -448,7 +510,7 @@
 
         window.executeTrade = function() {
             const modeName = currentTradeMode.toUpperCase();
-            alert(`✅ ${modeName} order successfully broadcasted!\nAmount: ${currentGramAmount} GRAM\nSlippage: ${currentSlippage}%\nStatus: Confirmed on TON network.`);
+            alert(`✅ ${modeName} order broadcasted successfully!\nAmount: ${currentGramAmount} GRAM\nTreasury split applied (7% -> Treasury, 3% -> Referrer).\nStatus: Confirmed on TON network.`);
         };
 
         window.executeSnipe = function() {
