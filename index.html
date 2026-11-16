@@ -8,10 +8,11 @@
     <style>
         :root {
             --bg-base: #050507;
-            --bg-sidebar: #09090d;
-            --bg-card: rgba(14, 14, 20, 0.85);
-            --bg-input: #15151e;
-            --border-color: #27151a;
+            --bg-card: rgba(16, 18, 28, 0.85);
+            --bg-input: #131520;
+            --border-color: rgba(59, 130, 246, 0.15);
+            --accent-blue: #3b82f6;
+            --accent-cyan: #06b6d4;
             --accent-red: #ef4444;
             --accent-green: #10b981;
             --text-main: #f8fafc;
@@ -26,7 +27,7 @@
         }
         #intro-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(rgba(5, 5, 7, 0.78), rgba(5, 5, 7, 0.96)), url('./bg.jpg.JPG') no-repeat center center;
+            background: linear-gradient(rgba(5, 5, 7, 0.82), rgba(5, 5, 7, 0.96)), url('./bg.jpg.JPG') no-repeat center center;
             background-size: cover; z-index: 1000; display: flex; flex-direction: column;
             justify-content: space-between; padding: 30px 20px calc(40px + env(safe-area-inset-bottom)) 20px; text-align: center;
             transition: opacity 0.4s ease, visibility 0.4s ease;
@@ -34,55 +35,80 @@
         #intro-screen.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
         .intro-content { margin: auto; display: flex; flex-direction: column; align-items: center; gap: 16px; }
         .intro-logo-moon {
-            width: 92px; height: 92px; background: #111116; border: 2px solid var(--accent-red);
+            width: 92px; height: 92px; background: rgba(18, 22, 38, 0.9); border: 2px solid var(--accent-blue);
             border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            font-size: 38px; box-shadow: 0 0 45px rgba(239, 68, 68, 0.45);
+            font-size: 38px; box-shadow: 0 0 45px rgba(59, 130, 246, 0.45);
         }
         .main-container { flex: 1; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
         .topbar {
             display: flex; justify-content: space-between; align-items: center; padding: 12px 20px;
-            background: rgba(9, 9, 13, 0.88); border-bottom: 1px solid var(--border-color); backdrop-filter: blur(16px); z-index: 10;
+            background: rgba(10, 12, 20, 0.88); border-bottom: 1px solid var(--border-color); backdrop-filter: blur(16px); z-index: 10;
         }
         .brand-logo-box {
-            width: 34px; height: 34px; background: linear-gradient(135deg, var(--accent-red), #7f1d1d);
-            border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 9px; display: flex;
+            width: 34px; height: 34px; background: linear-gradient(135deg, var(--accent-blue), #1d4ed8);
+            border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 10px; display: flex;
             align-items: center; justify-content: center; font-weight: 900; color: #fff;
-            box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.4);
         }
         .brand-text h1 { font-size: 15px; font-weight: 900; letter-spacing: 0.4px; }
         .content-area { flex: 1; overflow-y: auto; padding: 16px; padding-bottom: 90px; -webkit-overflow-scrolling: touch; }
-        .page { display: none; flex-direction: column; gap: 16px; animation: fadeIn 0.2s ease-in-out; }
+        .page { display: none; flex-direction: column; gap: 14px; animation: fadeIn 0.2s ease-in-out; }
         .page.active { display: flex; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Dashboard Cards Inspired by UI Reference */
         .card {
-            background: var(--bg-card); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
-            border: 1px solid var(--border-color); border-radius: 16px; padding: 16px;
-            box-shadow: 0 10px 35px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+            background: var(--bg-card); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--border-color); border-radius: 18px; padding: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.05);
         }
         .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
         .card-title { font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.9px; }
-        .btn-action { width: 100%; padding: 14px; border-radius: 12px; border: none; font-size: 14px; font-weight: 900; cursor: pointer; text-align: center; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
-        .btn-red { background: linear-gradient(135deg, var(--accent-red), #991b1b); color: #fff; box-shadow: 0 4px 20px rgba(239, 68, 68, 0.38); }
-        .bottom-nav {
-            position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(9, 9, 13, 0.95);
-            border-top: 1px solid var(--border-color); display: flex; justify-content: space-around;
-            padding: 10px 0 16px 0; z-index: 30; backdrop-filter: blur(20px);
+        
+        /* Grid Layouts for Dashboard Elements */
+        .dashboard-grid { display: grid; grid-template-columns: 1fr; gap: 14px; }
+        @media(min-width: 640px) { .dashboard-grid { grid-template-columns: 1fr 1fr; } }
+
+        /* Metric Highlights */
+        .metric-value { font-size: 26px; font-weight: 900; color: #fff; margin: 4px 0; }
+        .metric-sub { font-size: 12px; color: var(--text-muted); display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
+        
+        /* Pill Buttons & Badges */
+        .badge-pill {
+            background: rgba(59, 130, 246, 0.12); border: 1px solid rgba(59, 130, 246, 0.3);
+            color: var(--accent-blue); padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700;
+            display: inline-flex; align-items: center; gap: 6px;
         }
-        .nav-tab { background: none; border: none; color: var(--text-muted); display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 9px; font-weight: 800; cursor: pointer; flex: 1; min-width: 50px; }
-        .nav-tab.active { color: var(--accent-red); }
+        .timeframe-bar { display: flex; gap: 6px; background: var(--bg-input); padding: 4px; border-radius: 12px; border: 1px solid var(--border-color); }
+        .tf-btn { background: none; border: none; color: var(--text-muted); font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 8px; cursor: pointer; }
+        .tf-btn.active { background: var(--accent-blue); color: #fff; }
+
+        /* Action Buttons */
+        .btn-action { width: 100%; padding: 14px; border-radius: 14px; border: none; font-size: 14px; font-weight: 900; cursor: pointer; text-align: center; display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: transform 0.1s ease; }
+        .btn-action:active { transform: scale(0.98); }
+        .btn-blue { background: linear-gradient(135deg, var(--accent-blue), #1d4ed8); color: #fff; box-shadow: 0 4px 20px rgba(59, 130, 246, 0.35); }
+        
+        /* Bottom Navigation Bar */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(10, 12, 20, 0.95);
+            border-top: 1px solid var(--border-color); display: flex; justify-content: space-around;
+            padding: 10px 0 18px 0; z-index: 30; backdrop-filter: blur(20px);
+        }
+        .nav-tab { background: none; border: none; color: var(--text-muted); display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 9px; font-weight: 800; cursor: pointer; flex: 1; min-width: 50px; transition: color 0.2s; }
+        .nav-tab.active { color: var(--accent-blue); }
     </style>
 </head>
 <body>
 
     <!-- Intro Screen -->
     <div id="intro-screen">
-        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL</div>
+        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-blue); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL</div>
         <div class="intro-content">
             <div class="intro-logo-moon">🐱</div>
-            <div style="font-size: 24px; font-weight: 900; color: #fff; letter-spacing: 0.5px;">READY TO BUILD</div>
+            <div style="font-size: 24px; font-weight: 900; color: #fff; letter-spacing: 0.5px;">READY TO TRADE</div>
         </div>
         <div style="padding-bottom: 10px;">
-            <button class="btn-action btn-red" id="enterTerminalBtn" onclick="enterTerminal()" style="max-width: 300px; margin: 0 auto;">⚡ Enter Terminal</button>
+            <button class="btn-action btn-blue" id="enterTerminalBtn" onclick="enterTerminal()" style="max-width: 300px; margin: 0 auto;">⚡ Enter Terminal</button>
         </div>
     </div>
 
@@ -91,17 +117,75 @@
         <header class="topbar">
             <div style="display: flex; align-items: center; gap: 10px;">
                 <div class="brand-logo-box">🐱</div>
-                <div class="brand-text"><h1>Kote Trade Terminal</h1></div>
+                <div class="brand-text"><h1>Kote Terminal</h1></div>
             </div>
+            <div class="badge-pill">● Live</div>
         </header>
 
         <!-- Content Area with Tabs / Sections -->
         <main class="content-area">
-            <!-- 1. TRADE PAGE -->
+            <!-- 1. TRADE PAGE (Dashboard Ref Styled) -->
             <section id="page-trade" class="page active">
+                <div class="dashboard-grid">
+                    <!-- Portfolio Balance Card -->
+                    <div class="card" style="background: linear-gradient(135deg, rgba(30, 58, 138, 0.45), rgba(16, 18, 28, 0.85));">
+                        <div class="card-header"><span class="card-title">Portfolio Balance</span></div>
+                        <div class="metric-value">$110,5k</div>
+                        <div style="margin-top: 14px; background: rgba(0,0,0,0.3); padding: 12px; border-radius: 12px;">
+                            <div style="font-size: 11px; color: var(--text-muted);">Stacked Balance</div>
+                            <div style="font-size: 18px; font-weight: 800; color: #fff; margin-top: 2px;">$66,3k</div>
+                        </div>
+                        <div style="margin-top: 8px; background: rgba(0,0,0,0.3); padding: 12px; border-radius: 12px;">
+                            <div style="font-size: 11px; color: var(--text-muted);">Wallet Liquid</div>
+                            <div style="font-size: 18px; font-weight: 800; color: #fff; margin-top: 2px;">$44,2k</div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Action / Swap Card -->
+                    <div class="card">
+                        <div class="card-header"><span class="card-title">⚡ Quick Sniper / Swap</span></div>
+                        <div style="display: flex; flex-direction: column; gap: 10px;">
+                            <div style="background: var(--bg-input); padding: 12px; border-radius: 12px; border: 1px solid var(--border-color);">
+                                <span style="font-size: 10px; color: var(--text-muted);">You Pay</span>
+                                <div style="font-size: 16px; font-weight: 800; margin-top: 2px;">1.5 TON</div>
+                            </div>
+                            <div style="background: var(--bg-input); padding: 12px; border-radius: 12px; border: 1px solid var(--border-color);">
+                                <span style="font-size: 10px; color: var(--text-muted);">You Receive (Est.)</span>
+                                <div style="font-size: 16px; font-weight: 800; color: var(--accent-blue); margin-top: 2px;">24,500 KOTE</div>
+                            </div>
+                            <button class="btn-action btn-blue" style="margin-top: 4px;">Execute Snipe 🚀</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Market Overview Card -->
                 <div class="card">
-                    <div class="card-header"><span class="card-title">📊 Trade Dashboard</span></div>
-                    <p style="font-size: 13px; color: var(--text-muted);">Fresh trade section ready for your new implementation.</p>
+                    <div class="card-header">
+                        <span class="card-title">📊 Chart & Price Action</span>
+                        <div class="timeframe-bar">
+                            <button class="tf-btn active">1d</button>
+                            <button class="tf-btn">1w</button>
+                            <button class="tf-btn">1m</button>
+                            <button class="tf-btn">1y</button>
+                        </div>
+                    </div>
+                    <div style="height: 180px; display: flex; align-items: flex-end; gap: 6px; padding: 10px 0; border-bottom: 1px solid var(--border-color);">
+                        <!-- Simulated candlestick visual bars -->
+                        <div style="flex:1; background:var(--accent-green); height:60%; border-radius:2px;"></div>
+                        <div style="flex:1; background:var(--accent-red); height:40%; border-radius:2px;"></div>
+                        <div style="flex:1; background:var(--accent-green); height:85%; border-radius:2px;"></div>
+                        <div style="flex:1; background:var(--accent-green); height:70%; border-radius:2px;"></div>
+                        <div style="flex:1; background:var(--accent-red); height:50%; border-radius:2px;"></div>
+                        <div style="flex:1; background:var(--accent-red); height:30%; border-radius:2px;"></div>
+                        <div style="flex:1; background:var(--accent-green); height:90%; border-radius:2px;"></div>
+                        <div style="flex:1; background:var(--accent-green); height:75%; border-radius:2px;"></div>
+                        <div style="flex:1; background:var(--accent-red); height:45%; border-radius:2px;"></div>
+                        <div style="flex:1; background:var(--accent-green); height:95%; border-radius:2px;"></div>
+                    </div>
+                    <div class="metric-sub">
+                        <span>OPEN: 0.4174</span>
+                        <span style="color: var(--accent-green);">CLOSE: 0.3902</span>
+                    </div>
                 </div>
             </section>
 
@@ -109,31 +193,72 @@
             <section id="page-explore" class="page">
                 <div class="card">
                     <div class="card-header"><span class="card-title">🔍 Explore Pools & Tokens</span></div>
-                    <p style="font-size: 13px; color: var(--text-muted);">Fresh explore section ready for your new implementation.</p>
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <div style="background: var(--bg-input); padding: 12px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <div style="font-weight: 800; font-size: 14px;">KOTE / TON</div>
+                                <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Liquidity: $723,156</div>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="color: var(--accent-green); font-weight: 800; font-size: 13px;">APR 17.27%</div>
+                                <span class="badge-pill" style="margin-top: 4px; font-size: 9px;">Active Pool</span>
+                            </div>
+                        </div>
+                        <div style="background: var(--bg-input); padding: 12px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <div style="font-weight: 800; font-size: 14px;">WETH / TON</div>
+                                <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Liquidity: $167,282</div>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="color: var(--accent-green); font-weight: 800; font-size: 13px;">APR 26.45%</div>
+                                <span class="badge-pill" style="margin-top: 4px; font-size: 9px;">Active Pool</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </section>
 
             <!-- 3. LAUNCH PAGE -->
             <section id="page-launch" class="page">
                 <div class="card">
-                    <div class="card-header"><span class="card-title">🚀 Launchpad</span></div>
-                    <p style="font-size: 13px; color: var(--text-muted);">Fresh launch section ready for your new implementation.</p>
+                    <div class="card-header"><span class="card-title">🚀 Launchpad & Token Release</span></div>
+                    <div style="margin: 10px 0;">
+                        <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 6px;">
+                            <span style="color: var(--text-muted);">Coverage Progress</span>
+                            <span style="font-weight: 800; color: var(--accent-blue);">78.3%</span>
+                        </div>
+                        <div style="width: 100%; height: 8px; background: var(--bg-input); border-radius: 4px; overflow: hidden;">
+                            <div style="width: 78.3%; height: 100%; background: linear-gradient(90deg, var(--accent-blue), var(--accent-cyan));"></div>
+                        </div>
+                    </div>
+                    <p style="font-size: 12px; color: var(--text-muted); margin-top: 10px;">Token release schedule and public emission trackers are fully synchronized with the blockchain.</p>
                 </div>
             </section>
 
             <!-- 4. WALLET PAGE -->
             <section id="page-wallet" class="page">
                 <div class="card">
-                    <div class="card-header"><span class="card-title">💎 Wallet</span></div>
-                    <p style="font-size: 13px; color: var(--text-muted);">Fresh wallet section ready for your new implementation.</p>
+                    <div class="card-header"><span class="card-title">💎 Connected Wallet</span></div>
+                    <div style="background: var(--bg-input); padding: 14px; border-radius: 12px; margin-bottom: 12px;">
+                        <div style="font-size: 11px; color: var(--text-muted);">Address</div>
+                        <div style="font-size: 13px; font-weight: 800; color: #fff; margin-top: 2px;">UQAk...9F2b</div>
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn-action btn-blue">Deposit</button>
+                        <button class="btn-action" style="background: var(--bg-input); color: #fff; border: 1px solid var(--border-color);">Withdraw</button>
+                    </div>
                 </div>
             </section>
 
             <!-- 5. PROFILE PAGE -->
             <section id="page-profile" class="page">
                 <div class="card">
-                    <div class="card-header"><span class="card-title">👤 Profile & Settings</span></div>
-                    <p style="font-size: 13px; color: var(--text-muted);">Fresh profile section ready for your new implementation.</p>
+                    <div class="card-header"><span class="card-title">👤 My Positions & Rewards</span></div>
+                    <div style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); padding: 14px; border-radius: 14px; margin-bottom: 12px;">
+                        <div style="font-size: 11px; color: var(--text-muted);">Unclaimed Rewards</div>
+                        <div style="font-size: 22px; font-weight: 900; color: var(--accent-cyan); margin-top: 4px;">704.0127 KUJI</div>
+                    </div>
+                    <button class="btn-action btn-blue">Claim Rewards 🎁</button>
                 </div>
             </section>
         </main>
