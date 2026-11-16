@@ -10,10 +10,10 @@ app.use(cors());
 // Serve static files directly from root directory
 app.use(express.static(__dirname));
 
-// Automatically install Python dependencies on startup
+// Automatically install Python dependencies on startup (using --break-system-packages for Render)
 try {
     console.log("📦 Installing Python dependencies for bot.py...");
-    execSync('pip3 install python-telegram-bot', { stdio: 'inherit' });
+    execSync('pip3 install --break-system-packages python-telegram-bot', { stdio: 'inherit' });
 } catch (err) {
     console.error("⚠️ Pip install warning:", err);
 }
