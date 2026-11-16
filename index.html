@@ -201,6 +201,12 @@
                     <div class="card-header">
                         <span class="card-title">🔍 DEX Pools & Tokens</span>
                     </div>
+                    
+                    <!-- Search Bar -->
+                    <div style="margin-bottom: 12px;">
+                        <input type="text" id="poolSearchInput" placeholder="🔍 Search pools by name or symbol..." oninput="filterPools()" style="width: 100%; background: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-main); padding: 10px 14px; border-radius: 12px; font-size: 13px; outline: none;">
+                    </div>
+
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 12px;">
                         <button class="trade-tab-btn active" id="gramSubDedust" onclick="switchGramSubTab('dedust')">DeDust Pools</button>
                         <button class="trade-tab-btn" id="gramSubStonfi" onclick="switchGramSubTab('stonfi')">STON.fi Pools</button>
@@ -279,6 +285,8 @@
             { address: 'TON', name: 'Toncoin', symbol: 'TON', logo: 'https://asset.ston.fi/img/TON.png', mcap: 14200000000, liq: 45000000, vol: 12000000, priceUSD: 5.65, change24h: 4.2, poolAddress: 'TON' }
         ];
 
+        let activeSubTab = 'dedust';
+
         // --- FETCH LIVE POOLS FROM RENDER PYTHON BACKEND ---
         async function fetchLivePoolsFromBackend() {
             try {
@@ -320,17 +328,35 @@
                 if (dedustList.length > 0) {
                     window.gramDedustTokens = dedustList;
                     renderGramDedustList();
-                    console.log("Loaded live DeDust pools from Python backend:", dedustList.length);
-                } else {
-                    document.getElementById('gramDedustContainer').innerHTML = `<div style="text-align:center; padding:20px; color:var(--text-muted); font-size:12px;">No DeDust pools found.</div>`;
                 }
+
+                // Parse STON.fi pools if available
+                if (data.stonfi_pools && Array.isArray(data.stonfi_pools.pool_list)) {
+                    const stonfiList = [];
+                    data.stonfi_pools.pool_list.forEach((pool, index) => {
+                        const symbol = pool.symbol_0 || `STON${index}`;
+                        const name = pool.lp_display_name || `${symbol} Pool`;
+                        const address = pool.address || `ston_${index}`;
+                        const priceUSD = parseFloat(pool.lp_price_usd || 1.0);
+                        const liqUSD = parseFloat(pool.reserve_usd || 50000);
+                        const change24h = 2.5;
+                        const logo = pool.image_url || 'https://asset.ston.fi/img/TON.png';
+
+                        stonfiList.push({ address, name, symbol, logo, mcap: liqUSD * 3, liq: liqUSD, vol: 15000, priceUSD, change24h, poolAddress: address });
+                    });
+                    if (stonfiList.length > 0) {
+                        window.gramStonfiTokens = stonfiList;
+                        renderGramStonfiList();
+                    }
+                }
+
             } catch (err) {
                 console.warn('Backend fetch error:', err);
-                document.getElementById('gramDedustContainer').innerHTML = `<div style="text-align:center; padding:20px; color:var(--accent-red); font-size:12px;">Failed to load pools.</div>`;
             }
         }
 
         window.switchGramSubTab = function(tabName) {
+            activeSubTab = tabName;
             const dedustBtn = document.getElementById('gramSubDedust');
             const stonfiBtn = document.getElementById('gramSubStonfi');
             const dedustContainer = document.getElementById('gramDedustContainer');
@@ -351,14 +377,29 @@
             }
         };
 
-        window.renderGramDedustList = function() {
+        window.filterPools = function() {
+            const query = (document.getElementById('poolSearchInput').value || '').toLowerCase();
+            if (activeSubTab === 'dedust') {
+                renderGramDedustList(query);
+            } else {
+                renderGramStonfiList(query);
+            }
+        };
+
+        window.renderGramDedustList = function(searchQuery = '') {
             const container = document.getElementById('gramDedustContainer');
             if (!container) return;
-            if (window.gramDedustTokens.length === 0) {
-                container.innerHTML = `<div style="text-align:center; padding:20px; color:var(--text-muted); font-size:12px;">Loading live DeDust pools...</div>`;
+            
+            const filtered = window.gramDedustTokens.filter(t => 
+                t.name.toLowerCase().includes(searchQuery) || t.symbol.toLowerCase().includes(searchQuery) || t.address.toLowerCase().includes(searchQuery)
+            );
+
+            if (filtered.length === 0) {
+                container.innerHTML = `<div style="text-align:center; padding:20px; color:var(--text-muted); font-size:12px;">No matching DeDust pools found.</div>`;
                 return;
             }
-            container.innerHTML = window.gramDedustTokens.map(t => `
+
+            container.innerHTML = filtered.map(t => `
                 <div class="launch-card" onclick="handleTokenCardClick('${t.address}', '${t.symbol}', '${t.poolAddress}')">
                     <div style="display:flex; align-items:center; gap:10px;">
                         <img src="${t.logo}" style="width:36px; height:36px; border-radius:10px; object-fit:cover;" onerror="this.src='https://assets.dedust.io/images/TON.png'">
@@ -368,27 +409,37 @@
                         </div>
                     </div>
                     <div style="text-align:right;">
-                        <div style="font-weight:900; font-size:13px; color:var(--accent-green);">$${t.priceUSD.toFixed(4)}</div>
+                        <div style="font-weight:900; font-size:13px; color:var(--accent-green);">$${t.priceUSD < 0.01 ? t.priceUSD.toFixed(6) : t.priceUSD.toFixed(4)}</div>
                         <div style="font-size:10px; color:${t.change24h >= 0 ? 'var(--accent-green)' : 'var(--accent-red)'};">${t.change24h >= 0 ? '+' : ''}${t.change24h}%</div>
                     </div>
                 </div>
             `).join('');
         };
 
-        window.renderGramStonfiList = function() {
+        window.renderGramStonfiList = function(searchQuery = '') {
             const container = document.getElementById('gramStonfiContainer');
             if (!container) return;
-            container.innerHTML = window.gramStonfiTokens.map(t => `
+
+            const filtered = window.gramStonfiTokens.filter(t => 
+                t.name.toLowerCase().includes(searchQuery) || t.symbol.toLowerCase().includes(searchQuery) || t.address.toLowerCase().includes(searchQuery)
+            );
+
+            if (filtered.length === 0) {
+                container.innerHTML = `<div style="text-align:center; padding:20px; color:var(--text-muted); font-size:12px;">No matching STON.fi pools found.</div>`;
+                return;
+            }
+
+            container.innerHTML = filtered.map(t => `
                 <div class="launch-card" onclick="handleTokenCardClick('${t.address}', '${t.symbol}', '${t.poolAddress}')">
                     <div style="display:flex; align-items:center; gap:10px;">
-                        <img src="${t.logo}" style="width:36px; height:36px; border-radius:10px; object-fit:cover;">
+                        <img src="${t.logo}" style="width:36px; height:36px; border-radius:10px; object-fit:cover;" onerror="this.src='https://asset.ston.fi/img/TON.png'">
                         <div>
                             <div style="font-weight:900; font-size:13px;">${t.name} (${t.symbol})</div>
                             <div style="font-size:10px; color:var(--text-muted);">STON.fi Pool</div>
                         </div>
                     </div>
                     <div style="text-align:right;">
-                        <div style="font-weight:900; font-size:13px; color:var(--accent-green);">$${t.priceUSD.toFixed(4)}</div>
+                        <div style="font-weight:900; font-size:13px; color:var(--accent-green);">$${t.priceUSD < 0.01 ? t.priceUSD.toFixed(6) : t.priceUSD.toFixed(4)}</div>
                         <div style="font-size:10px; color:${t.change24h >= 0 ? 'var(--accent-green)' : 'var(--accent-red)'};">${t.change24h >= 0 ? '+' : ''}${t.change24h}%</div>
                     </div>
                 </div>
@@ -417,7 +468,7 @@
 
         window.handleTokenCardClick = function(address, symbol, poolAddress) {
             const allTokens = (window.topblastTokens || []).concat(window.gramDedustTokens || []).concat(window.gramStonfiTokens || []);
-            const found = allTokens.find(t => t.address.toLowerCase() === address.toLowerCase());
+            const found = allTokens.find(t => t.address.toLowerCase() === address.toLowerCase() || t.symbol.toLowerCase() === symbol.toLowerCase());
             if (found) {
                 selectTokenForTrade(found);
             }
