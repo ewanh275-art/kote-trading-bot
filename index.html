@@ -18,12 +18,7 @@
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
         }
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            -webkit-tap-highlight-color: transparent;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         body {
             background: linear-gradient(rgba(5, 5, 7, 0.75), rgba(5, 5, 7, 0.90)), url('./bg.jpg.JPG') no-repeat center center fixed;
             background-size: cover;
@@ -33,442 +28,95 @@
             height: 100vh;
             overflow: hidden;
         }
-
-        /* --- CINEMATIC INTRO SCREEN --- */
         #intro-screen {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: linear-gradient(rgba(5, 5, 7, 0.78), rgba(5, 5, 7, 0.96)), url('./bg.jpg.JPG') no-repeat center center;
-            background-size: cover;
-            z-index: 100;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            padding: 30px 20px;
-            text-align: center;
+            background-size: cover; z-index: 100; display: flex; flex-direction: column;
+            justify-content: space-between; padding: 30px 20px; text-align: center;
             transition: opacity 0.4s ease, visibility 0.4s ease;
         }
-        #intro-screen.hidden {
-            opacity: 0;
-            visibility: hidden;
-            pointer-events: none;
-        }
-        .intro-content {
-            margin: auto;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 16px;
-        }
+        #intro-screen.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+        .intro-content { margin: auto; display: flex; flex-direction: column; align-items: center; gap: 16px; }
         .intro-logo-moon {
-            width: 92px;
-            height: 92px;
-            background: #111116;
-            border: 2px solid var(--accent-red);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 38px;
-            box-shadow: 0 0 45px rgba(239, 68, 68, 0.45);
+            width: 92px; height: 92px; background: #111116; border: 2px solid var(--accent-red);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 38px; box-shadow: 0 0 45px rgba(239, 68, 68, 0.45);
         }
-
-        .main-container {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            overflow: hidden;
-        }
-
-        /* Top Header */
+        .main-container { flex: 1; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
         .topbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 20px;
-            background: rgba(9, 9, 13, 0.88);
-            border-bottom: 1px solid var(--border-color);
-            backdrop-filter: blur(16px);
-            z-index: 10;
+            display: flex; justify-content: space-between; align-items: center; padding: 12px 20px;
+            background: rgba(9, 9, 13, 0.88); border-bottom: 1px solid var(--border-color); backdrop-filter: blur(16px); z-index: 10;
         }
         .brand-logo-box {
-            width: 34px;
-            height: 34px;
-            background: linear-gradient(135deg, var(--accent-red), #7f1d1d);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            border-radius: 9px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 900;
-            color: #fff;
+            width: 34px; height: 34px; background: linear-gradient(135deg, var(--accent-red), #7f1d1d);
+            border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 9px; display: flex;
+            align-items: center; justify-content: center; font-weight: 900; color: #fff;
             box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
         }
-        .brand-text h1 {
-            font-size: 15px;
-            font-weight: 900;
-            letter-spacing: 0.4px;
-        }
-
-        /* Content Area Viewport */
-        .content-area {
-            flex: 1;
-            overflow-y: auto;
-            padding: 16px;
-            padding-bottom: 90px;
-            -webkit-overflow-scrolling: touch;
-        }
-        .page {
-            display: none;
-            flex-direction: column;
-            gap: 16px;
-            animation: fadeIn 0.2s ease-in-out;
-        }
-        .page.active {
-            display: flex;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(4px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Glassmorphism Cards */
+        .brand-text h1 { font-size: 15px; font-weight: 900; letter-spacing: 0.4px; }
+        .content-area { flex: 1; overflow-y: auto; padding: 16px; padding-bottom: 90px; -webkit-overflow-scrolling: touch; }
+        .page { display: none; flex-direction: column; gap: 16px; animation: fadeIn 0.2s ease-in-out; }
+        .page.active { display: flex; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
         .card {
-            background: var(--bg-card);
-            backdrop-filter: blur(14px);
-            -webkit-backdrop-filter: blur(14px);
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            padding: 16px;
+            background: var(--bg-card); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+            border: 1px solid var(--border-color); border-radius: 16px; padding: 16px;
             box-shadow: 0 10px 35px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.04);
         }
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-        }
-        .card-title {
-            font-size: 11px;
-            font-weight: 800;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.9px;
-        }
-
-        /* Chart Frame */
-        .chart-box {
-            width: 100%;
-            height: 380px;
-            background: #030304;
-            border: 1px solid var(--border-color);
-            border-radius: 14px;
-            overflow: hidden;
-        }
-        .chart-box iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
-
-        /* Tokenomics Bar */
-        .tokenomics-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 8px;
-            margin-bottom: 16px;
-        }
-        .stat-card {
-            background: var(--bg-input);
-            border: 1px solid var(--border-color);
-            padding: 10px 6px;
-            border-radius: 12px;
-            text-align: center;
-        }
-        .stat-card span {
-            font-size: 9px;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            font-weight: 800;
-            display: block;
-            margin-bottom: 3px;
-        }
-        .stat-card strong {
-            font-size: 13px;
-            font-weight: 900;
-            color: var(--accent-red);
-        }
-
-        /* Buy / Sell Mode Tabs */
-        .trade-tabs {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 6px;
-            background: var(--bg-input);
-            padding: 4px;
-            border-radius: 12px;
-            border: 1px solid var(--border-color);
-            margin-bottom: 12px;
-        }
-        .trade-tab-btn {
-            background: transparent;
-            border: none;
-            color: var(--text-muted);
-            padding: 10px;
-            border-radius: 8px;
-            font-size: 12px;
-            font-weight: 900;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .trade-tab-btn.active.buy-mode, .trade-tab-btn.active {
-            background: var(--accent-green);
-            color: #042f2e;
-        }
-        .trade-tab-btn.active.sell-mode {
-            background: var(--accent-red);
-            color: #ffffff;
-        }
-
-        /* Inputs */
-        .input-group {
-            background: var(--bg-input);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 12px 14px;
-            margin-bottom: 10px;
-            transition: border-color 0.2s;
-        }
-        .input-group:focus-within {
-            border-color: var(--accent-red);
-        }
-        .input-top {
-            display: flex;
-            justify-content: space-between;
-            font-size: 11px;
-            color: var(--text-muted);
-            margin-bottom: 6px;
-            font-weight: 700;
-        }
-        .input-main {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .pro-input {
-            background: transparent;
-            border: none;
-            color: var(--text-main);
-            font-size: 18px;
-            font-weight: 800;
-            width: 60%;
-            outline: none;
-        }
-        .token-badge {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            background: #08080c;
-            border: 1px solid var(--border-color);
-            padding: 6px 12px;
-            border-radius: 10px;
-            font-size: 12px;
-            font-weight: 800;
-            color: #fff;
-        }
-
-        .quick-amounts {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 6px;
-            margin-bottom: 12px;
-        }
-        .quick-btn {
-            background: var(--bg-input);
-            border: 1px solid var(--border-color);
-            color: var(--text-muted);
-            padding: 8px;
-            border-radius: 8px;
-            font-size: 11px;
-            font-weight: 800;
-            cursor: pointer;
-            transition: all 0.15s;
-        }
-        .quick-btn:hover, .quick-btn.active {
-            background: rgba(239, 68, 68, 0.18);
-            border-color: var(--accent-red);
-            color: var(--accent-red);
-        }
-
-        .btn-action {
-            width: 100%;
-            padding: 14px;
-            border-radius: 12px;
-            border: none;
-            font-size: 14px;
-            font-weight: 900;
-            cursor: pointer;
-            text-align: center;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            letter-spacing: 0.3px;
-            transition: transform 0.15s, box-shadow 0.2s;
-        }
-        .btn-action:active {
-            transform: scale(0.98);
-        }
-        .btn-red {
-            background: linear-gradient(135deg, var(--accent-red), #991b1b);
-            color: #ffffff;
-            box-shadow: 0 4px 20px rgba(239, 68, 68, 0.38);
-        }
-        .btn-green-action {
-            background: linear-gradient(135deg, var(--accent-green), #059669);
-            color: #ffffff;
-            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.35);
-        }
-        .btn-moonpay {
-            background: linear-gradient(135deg, #7d00ff, #4c0099);
-            color: #ffffff;
-            box-shadow: 0 4px 22px rgba(125, 0, 255, 0.4);
-        }
-
-        .audit-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            background: rgba(16, 185, 129, 0.12);
-            border: 1px solid rgba(16, 185, 129, 0.3);
-            color: var(--accent-green);
-            padding: 4px 10px;
-            border-radius: 8px;
-            font-size: 11px;
-            font-weight: 800;
-            margin-bottom: 10px;
-        }
-
-        .token-avatar-wrap {
-            width: 48px;
-            height: 48px;
-            border-radius: 12px;
-            background: #1a1014;
-            border: 1px solid rgba(16, 185, 129, 0.35);
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-        .token-avatar-wrap img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            position: absolute;
-            top: 0; left: 0;
-            z-index: 2;
-        }
-        .token-avatar-fallback {
-            font-size: 16px;
-            font-weight: 900;
-            color: var(--accent-green);
-            z-index: 1;
-        }
-
-        .launch-card {
-            background: #0b0b0f;
-            border: 1px solid var(--border-color);
-            padding: 12px 16px;
-            border-radius: 16px;
-            margin-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: border-color 0.2s, background 0.2s;
-            cursor: pointer;
-        }
-        .launch-card:hover {
-            border-color: var(--accent-green);
-            background: #111118;
-        }
-
-        .pagination-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 14px;
-            padding-top: 10px;
-            border-top: 1px solid var(--border-color);
-        }
-        .page-btn {
-            background: var(--bg-input);
-            border: 1px solid var(--border-color);
-            color: var(--text-main);
-            padding: 6px 14px;
-            border-radius: 8px;
-            font-size: 11px;
-            font-weight: 800;
-            cursor: pointer;
-        }
-        .page-btn:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-        }
-
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .card-title { font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.9px; }
+        .chart-box { width: 100%; height: 380px; background: #030304; border: 1px solid var(--border-color); border-radius: 14px; overflow: hidden; }
+        .chart-box iframe { width: 100%; height: 100%; border: none; }
+        .tokenomics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 16px; }
+        .stat-card { background: var(--bg-input); border: 1px solid var(--border-color); padding: 10px 6px; border-radius: 12px; text-align: center; }
+        .stat-card span { font-size: 9px; color: var(--text-muted); text-transform: uppercase; font-weight: 800; display: block; margin-bottom: 3px; }
+        .stat-card strong { font-size: 13px; font-weight: 900; color: var(--accent-red); }
+        .trade-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; background: var(--bg-input); padding: 4px; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 12px; }
+        .trade-tab-btn { background: transparent; border: none; color: var(--text-muted); padding: 10px; border-radius: 8px; font-size: 12px; font-weight: 900; cursor: pointer; transition: all 0.2s; }
+        .trade-tab-btn.active.buy-mode, .trade-tab-btn.active { background: var(--accent-green); color: #042f2e; }
+        .trade-tab-btn.active.sell-mode { background: var(--accent-red); color: #ffffff; }
+        .input-group { background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px 14px; margin-bottom: 10px; }
+        .input-top { display: flex; justify-content: space-between; font-size: 11px; color: var(--text-muted); margin-bottom: 6px; font-weight: 700; }
+        .input-main { display: flex; justify-content: space-between; align-items: center; }
+        .pro-input { background: transparent; border: none; color: var(--text-main); font-size: 18px; font-weight: 800; width: 60%; outline: none; }
+        .token-badge { display: flex; align-items: center; gap: 6px; background: #08080c; border: 1px solid var(--border-color); padding: 6px 12px; border-radius: 10px; font-size: 12px; font-weight: 800; color: #fff; }
+        .quick-amounts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 12px; }
+        .quick-btn { background: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-muted); padding: 8px; border-radius: 8px; font-size: 11px; font-weight: 800; cursor: pointer; }
+        .btn-action { width: 100%; padding: 14px; border-radius: 12px; border: none; font-size: 14px; font-weight: 900; cursor: pointer; text-align: center; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn-red { background: linear-gradient(135deg, var(--accent-red), #991b1b); color: #fff; box-shadow: 0 4px 20px rgba(239, 68, 68, 0.38); }
+        .btn-green-action { background: linear-gradient(135deg, var(--accent-green), #059669); color: #fff; }
+        .btn-moonpay { background: linear-gradient(135deg, #7d00ff, #4c0099); color: #fff; }
+        .audit-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.3); color: var(--accent-green); padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 800; margin-bottom: 10px; }
+        .token-avatar-wrap { width: 48px; height: 48px; border-radius: 12px; background: #1a1014; border: 1px solid rgba(16,185,129,0.35); position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .token-avatar-wrap img { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; z-index: 2; }
+        .token-avatar-fallback { font-size: 16px; font-weight: 900; color: var(--accent-green); z-index: 1; }
+        .launch-card { background: #0b0b0f; border: 1px solid var(--border-color); padding: 12px 16px; border-radius: 16px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+        .launch-card:hover { border-color: var(--accent-green); background: #111118; }
+        .pagination-bar { display: flex; justify-content: space-between; align-items: center; margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--border-color); }
+        .page-btn { background: var(--bg-input); border: 1px solid var(--border-color); color: var(--text-main); padding: 6px 14px; border-radius: 8px; font-size: 11px; font-weight: 800; cursor: pointer; }
+        .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
         .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            background: rgba(9, 9, 13, 0.95);
-            border-top: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-around;
-            padding: 10px 0 16px 0;
-            z-index: 30;
-            backdrop-filter: blur(20px);
-            overflow-x: auto;
+            position: fixed; bottom: 0; left: 0; width: 100%; background: rgba(9, 9, 13, 0.95);
+            border-top: 1px solid var(--border-color); display: flex; justify-content: space-around;
+            padding: 10px 0 16px 0; z-index: 30; backdrop-filter: blur(20px); overflow-x: auto;
         }
-        .nav-tab {
-            background: none;
-            border: none;
-            color: var(--text-muted);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 3px;
-            font-size: 9px;
-            font-weight: 800;
-            cursor: pointer;
-            transition: color 0.15s;
-            flex: 1;
-            min-width: 50px;
-        }
-        .nav-tab.active {
-            color: var(--accent-red);
-        }
+        .nav-tab { background: none; border: none; color: var(--text-muted); display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 9px; font-weight: 800; cursor: pointer; flex: 1; min-width: 50px; }
+        .nav-tab.active { color: var(--accent-red); }
     </style>
 </head>
 <body>
 
-    <!-- --- CINEMATIC INTRO SCREEN --- -->
     <div id="intro-screen">
-        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v12.23</div>
+        <div style="padding-top: 20px; font-weight: 900; color: var(--accent-red); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE TERMINAL v12.24</div>
         <div class="intro-content">
             <div class="intro-logo-moon">🐱</div>
             <div style="font-size: 24px; font-weight: 900; color: #fff; letter-spacing: 0.5px;">GRAM & TOPBLAST MEMES</div>
         </div>
         <div style="padding-bottom: 20px;">
-            <button class="btn-action btn-red" id="enterTerminalBtn" onclick="enterTerminal()" style="max-width: 300px; margin: 0 auto;">
-                ⚡ Enter Terminal
-            </button>
+            <button class="btn-action btn-red" id="enterTerminalBtn" onclick="enterTerminal()" style="max-width: 300px; margin: 0 auto;">⚡ Enter Terminal</button>
         </div>
     </div>
 
-    <!-- GLOBAL ROBUST UI CONTROLLER -->
     <script>
         window.enterTerminal = function() {
             const intro = document.getElementById('intro-screen');
@@ -482,8 +130,7 @@
             const targetEl = document.getElementById(targetId);
             if(targetEl) {
                 targetEl.classList.add('active');
-                const contentArea = document.querySelector('.content-area');
-                if(contentArea) contentArea.scrollTop = 0;
+                document.querySelector('.content-area').scrollTop = 0;
             }
             if(navBtn) navBtn.classList.add('active');
         };
@@ -491,37 +138,9 @@
         window.currentTradeMode = 'buy';
         window.currentActiveToken = { name: 'Select Token', symbol: 'TOKEN', address: '', poolAddress: '', logo: '', mcap: 0, liq: 0, vol: 0, priceUSD: 0, change24h: 0 };
         
-        // 1. TOPBLAST MEMES CATALOG
-        window.topblastTokens = [
-            { address: 'EQB-MPwuxusWknM7H9N_6U1y59_h_M0nK7wD70t4Z4H6z30U', name: 'Gram Memes Token', symbol: 'GRAM', logo: 'https://asset.ston.fi/img/EQB-MPwuxusWknM7H9N_6U1y59_h_M0nK7wD70t4Z4H6z30U.png', mcap: 1850000, liq: 620000, vol: 450000, priceUSD: 0.85, change24h: 12.4, poolAddress: 'EQB-MPwuxusWknM7H9N_6U1y59_h_M0nK7wD70t4Z4H6z30U' },
-            { address: 'EQC_Topblast_Meme_01', name: 'Topblast Pepe', symbol: 'TPEPE', logo: 'https://assets.dedust.io/images/EQD_v8Hv7X2d5_gK3Jp1q8s9t2u4v6w8x0y1z3A5B7C9D2E.png', mcap: 920000, liq: 310000, vol: 180000, priceUSD: 0.12, change24h: 24.5, poolAddress: 'EQC_Topblast_Meme_01' },
-            { address: 'EQC_Topblast_Meme_02', name: 'Kote Sniper Cat', symbol: 'KOTE', logo: 'https://asset.ston.fi/img/TON.png', mcap: 740000, liq: 250000, vol: 140000, priceUSD: 0.054, change24h: 15.2, poolAddress: 'EQC_Topblast_Meme_02' },
-            { address: 'EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs', name: 'Tether USD', symbol: 'USDT', logo: 'https://asset.ston.fi/img/EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs.png', mcap: 50000000, liq: 15000000, vol: 8000000, priceUSD: 1.00, change24h: 0.1, poolAddress: 'EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs' }
-        ];
-
-        // 2. OFFICIAL DEDUST POOL TOKENS (TON & GRAM MEMES) - Fallback
-        window.gramDedustTokens = [
-            { address: 'TON', name: 'Toncoin', symbol: 'TON', logo: 'https://asset.ston.fi/img/TON.png', mcap: 14200000000, liq: 45000000, vol: 12000000, priceUSD: 5.65, change24h: 4.2, poolAddress: 'TON' },
-            { address: 'EQB-MPwuxusWknM7H9N_6U1y59_h_M0nK7wD70t4Z4H6z30U', name: 'Gram Memes Token', symbol: 'GRAM', logo: 'https://asset.ston.fi/img/EQB-MPwuxusWknM7H9N_6U1y59_h_M0nK7wD70t4Z4H6z30U.png', mcap: 1850000, liq: 620000, vol: 450000, priceUSD: 0.85, change24h: 12.4, poolAddress: 'EQB-MPwuxusWknM7H9N_6U1y59_h_M0nK7wD70t4Z4H6z30U' },
-            { address: 'EQBlqsm144Dq6SjbPI4jjZvA1hqTIP3CvHovbIfW_t-SCALE', name: 'Scale TON', symbol: 'SCALE', logo: 'https://assets.dedust.io/images/EQBlqsm144Dq6SjbPI4jjZvA1hqTIP3CvHovbIfW_t-SCALE.png', mcap: 840000, liq: 310000, vol: 195000, priceUSD: 0.14, change24h: 8.5, poolAddress: 'EQBlqsm144Dq6SjbPI4jjZvA1hqTIP3CvHovbIfW_t-SCALE' },
-            { address: 'EQA4g22tW9bBvH5N_6U1y59_h_M0nK7wD70t4Z4H6z30F', name: 'Fish Crypto', symbol: 'FISH', logo: 'https://asset.ston.fi/img/EQA4g22tW9bBvH5N_6U1y59_h_M0nK7wD70t4Z4H6z30F.png', mcap: 1450000, liq: 520000, vol: 320000, priceUSD: 0.042, change24h: -2.3, poolAddress: 'EQA4g22tW9bBvH5N_6U1y59_h_M0nK7wD70t4Z4H6z30F' },
-            { address: 'EQCGX_REDO_MEME_TOKEN_ADDRESS', name: 'Resistance Dog', symbol: 'REDO', logo: 'https://asset.ston.fi/img/EQCGX_REDO_MEME_TOKEN_ADDRESS.png', mcap: 3400000, liq: 1100000, vol: 720000, priceUSD: 0.34, change24h: 18.2, poolAddress: 'EQCGX_REDO_MEME_TOKEN_ADDRESS' },
-            { address: 'EQC_DUST_PROTOCOL_TOKEN', name: 'DeDust Protocol', symbol: 'DUST', logo: 'https://assets.dedust.io/images/EQD_v8Hv7X2d5_gK3Jp1q8s9t2u4v6w8x0y1z3A5B7C9D2E.png', mcap: 1087000, liq: 318000, vol: 195000, priceUSD: 0.31, change24h: 5.4, poolAddress: 'EQC_DUST_PROTOCOL_TOKEN' },
-            { address: 'EQC_UTYA_MEME_TOKEN', name: 'Utya Meme', symbol: 'UTYA', logo: 'https://asset.ston.fi/img/TON.png', mcap: 620000, liq: 180000, vol: 94000, priceUSD: 0.029, change24h: 11.1, poolAddress: 'EQC_UTYA_MEME_TOKEN' },
-            { address: 'EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs', name: 'Tether USD', symbol: 'USDT', logo: 'https://asset.ston.fi/img/EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs.png', mcap: 50000000, liq: 15000000, vol: 8000000, priceUSD: 1.00, change24h: 0.1, poolAddress: 'EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs' }
-        ];
-
-        // 3. OFFICIAL STON.FI POOL TOKENS (TON & GRAM MEMES) - Fallback
-        window.gramStonfiTokens = [
-            { address: 'EQB-MPwuxusWknM7H9N_6U1y59_h_M0nK7wD70t4Z4H6z30U', name: 'STON.fi Governance', symbol: 'STON', logo: 'https://asset.ston.fi/img/STON.png', mcap: 9200000, liq: 2800000, vol: 950000, priceUSD: 2.10, change24h: -1.5, poolAddress: 'EQB-MPwuxusWknM7H9N_6U1y59_h_M0nK7wD70t4Z4H6z30U' },
-            { address: 'TON', name: 'Toncoin', symbol: 'TON', logo: 'https://asset.ston.fi/img/TON.png', mcap: 14200000000, liq: 45000000, vol: 12000000, priceUSD: 5.65, change24h: 4.2, poolAddress: 'TON' },
-            { address: 'EQCJTjXjWKaUjiGHnsd7N5ztGIAUC9od04i68G_3AEmFbknI', name: 'Gram Memes Token', symbol: 'GRAM', logo: 'https://asset.ston.fi/img/EQCJTjXjWKaUjiGHnsd7N5ztGIAUC9od04i68G_3AEmFbknI.png', mcap: 1850000, liq: 620000, vol: 450000, priceUSD: 0.85, change24h: 12.4, poolAddress: 'EQCJTjXjWKaUjiGHnsd7N5ztGIAUC9od04i68G_3AEmFbknI' },
-            { address: 'EQC_RIFT_TON_Stonfi', name: 'Rifty Meme', symbol: 'RIFT', logo: 'https://asset.ston.fi/img/TON.png', mcap: 1120000, liq: 380000, vol: 210000, priceUSD: 0.18, change24h: 22.0, poolAddress: 'EQC_RIFT_TON_Stonfi' },
-            { address: 'EQC_YODA_TON_Stonfi', name: 'Baby Yoda', symbol: 'YODA', logo: 'https://asset.ston.fi/img/TON.png', mcap: 950000, liq: 290000, vol: 165000, priceUSD: 0.075, change24h: -4.1, poolAddress: 'EQC_YODA_TON_Stonfi' },
-            { address: 'EQC_ANDY_TON_Stonfi', name: 'Andy Token', symbol: 'ANDY', logo: 'https://asset.ston.fi/img/TON.png', mcap: 2400000, liq: 850000, vol: 510000, priceUSD: 0.22, change24h: 9.3, poolAddress: 'EQC_ANDY_TON_Stonfi' },
-            { address: 'EQC_GROYP_TON_Stonfi', name: 'Groyper', symbol: 'GROYP', logo: 'https://asset.ston.fi/img/TON.png', mcap: 580000, liq: 190000, vol: 92000, priceUSD: 0.019, change24h: 14.7, poolAddress: 'EQC_GROYP_TON_Stonfi' },
-            { address: 'EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs', name: 'Tether USD', symbol: 'USDT', logo: 'https://asset.ston.fi/img/EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs.png', mcap: 50000000, liq: 15000000, vol: 8000000, priceUSD: 1.00, change24h: 0.1, poolAddress: 'EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs' }
-        ];
+        window.topblastTokens = [];
+        window.gramDedustTokens = [];
+        window.gramStonfiTokens = [];
 
         let currentDedustPage = 1;
         let currentStonfiPage = 1;
@@ -533,8 +152,6 @@
             const stonfiBtn = document.getElementById('gramSubStonfi');
             const dedustContainer = document.getElementById('gramDedustContainer');
             const stonfiContainer = document.getElementById('gramStonfiContainer');
-
-            if (!dedustBtn || !stonfiBtn || !dedustContainer || !stonfiContainer) return;
 
             if (tabName === 'dedust') {
                 dedustBtn.classList.add('active');
@@ -554,16 +171,10 @@
         window.handleTokenCardClick = function(address, symbol, poolAddress) {
             const allTokens = (window.topblastTokens || []).concat(window.gramDedustTokens || []).concat(window.gramStonfiTokens || []);
             const found = allTokens.find(t => t.address.toLowerCase() === address.toLowerCase());
-            if (found && typeof window.selectTokenForTrade === 'function') {
-                window.selectTokenForTrade(
-                    found.address, found.name, found.symbol, found.logo, 
-                    found.mcap, found.liq, found.vol, found.priceUSD, 
-                    found.change24h || 0, true, 'dedust', found.poolAddress
-                );
+            if (found) {
+                selectTokenForTrade(found.address, found.name, found.symbol, found.logo, found.mcap, found.liq, found.vol, found.priceUSD, found.change24h || 0, true, 'dedust', found.poolAddress);
             } else {
-                if (typeof window.selectTokenForTrade === 'function') {
-                    window.selectTokenForTrade(address, symbol, symbol, '', 50000, 20000, 10000, 0.01, 0, true, 'dedust', poolAddress);
-                }
+                selectTokenForTrade(address, symbol, symbol, '', 50000, 20000, 10000, 0.01, 0, true, 'dedust', poolAddress);
             }
         };
 
@@ -580,76 +191,41 @@
             const quickContainer = document.getElementById('quickAmountsContainer');
             const sellBalBar = document.getElementById('sellBalanceBar');
 
-            if (!tabBuy || !tabSell) return;
-
             if (mode === 'buy') {
                 tabBuy.classList.add('active');
                 tabSell.classList.remove('active');
-                if(payLabel) payLabel.innerText = 'You Pay';
-                if(payTokenSymbol) payTokenSymbol.innerText = 'GRAM';
-                if(payBadgeToken) payBadgeToken.innerText = '💎 GRAM';
-                if(receiveLabel) receiveLabel.innerText = `You Receive (${window.currentActiveToken.symbol})`;
-                if(receiveTokenSymbol) receiveTokenSymbol.innerText = window.currentActiveToken.symbol;
-                if(executeBtn) {
-                    executeBtn.className = 'btn-action btn-red';
-                    executeBtn.innerHTML = `⚡ Execute Buy ($${window.currentActiveToken.symbol})`;
-                }
-                if(sellBalBar) sellBalBar.style.display = 'none';
-                if(document.getElementById('tradeInputAmount')) document.getElementById('tradeInputAmount').value = 0.1;
-
-                if(quickContainer) {
-                    quickContainer.innerHTML = `
-                        <button class="quick-btn" onclick="setTradeAmount(0.1)">0.1</button>
-                        <button class="quick-btn" onclick="setTradeAmount(1)">1</button>
-                        <button class="quick-btn" onclick="setTradeAmount(5)">5</button>
-                        <button class="quick-btn" onclick="setTradeAmount(10)">10</button>
-                    `;
-                }
+                payLabel.innerText = 'You Pay';
+                payTokenSymbol.innerText = 'GRAM';
+                payBadgeToken.innerText = '💎 GRAM';
+                receiveLabel.innerText = `You Receive (${window.currentActiveToken.symbol})`;
+                receiveTokenSymbol.innerText = window.currentActiveToken.symbol;
+                executeBtn.className = 'btn-action btn-red';
+                executeBtn.innerHTML = `⚡ Execute Buy ($${window.currentActiveToken.symbol})`;
+                sellBalBar.style.display = 'none';
+                document.getElementById('tradeInputAmount').value = 0.1;
+                quickContainer.innerHTML = `<button class="quick-btn" onclick="setTradeAmount(0.1)">0.1</button><button class="quick-btn" onclick="setTradeAmount(1)">1</button><button class="quick-btn" onclick="setTradeAmount(5)">5</button><button class="quick-btn" onclick="setTradeAmount(10)">10</button>`;
             } else {
                 tabSell.classList.add('active');
                 tabBuy.classList.remove('active');
-                if(payLabel) payLabel.innerText = 'You Sell';
-                if(payTokenSymbol) payTokenSymbol.innerText = window.currentActiveToken.symbol;
-                if(payBadgeToken) payBadgeToken.innerText = window.currentActiveToken.symbol;
-                if(receiveLabel) receiveLabel.innerText = 'You Receive (GRAM)';
-                if(receiveTokenSymbol) receiveTokenSymbol.innerText = 'GRAM';
-                if(executeBtn) {
-                    executeBtn.className = 'btn-action btn-green-action';
-                    executeBtn.innerHTML = `🔴 Execute Sell ($${window.currentActiveToken.symbol})`;
-                }
-                if(sellBalBar) sellBalBar.style.display = 'flex';
-                if(document.getElementById('tradeInputAmount')) document.getElementById('tradeInputAmount').value = 0;
-
-                if(quickContainer) {
-                    quickContainer.innerHTML = `
-                        <button class="quick-btn" onclick="setSellPercent(25)">25%</button>
-                        <button class="quick-btn" onclick="setSellPercent(50)">50%</button>
-                        <button class="quick-btn" onclick="setSellPercent(75)">75%</button>
-                        <button class="quick-btn" onclick="setSellPercent(100)">100%</button>
-                    `;
-                }
+                payLabel.innerText = 'You Sell';
+                payTokenSymbol.innerText = window.currentActiveToken.symbol;
+                payBadgeToken.innerText = window.currentActiveToken.symbol;
+                receiveLabel.innerText = 'You Receive (GRAM)';
+                receiveTokenSymbol.innerText = 'GRAM';
+                executeBtn.className = 'btn-action btn-green-action';
+                executeBtn.innerHTML = `🔴 Execute Sell ($${window.currentActiveToken.symbol})`;
+                sellBalBar.style.display = 'flex';
+                document.getElementById('tradeInputAmount').value = 0;
+                quickContainer.innerHTML = `<button class="quick-btn" onclick="setSellPercent(25)">25%</button><button class="quick-btn" onclick="setSellPercent(50)">50%</button><button class="quick-btn" onclick="setSellPercent(75)">75%</button><button class="quick-btn" onclick="setSellPercent(100)">100%</button>`;
             }
-            if(typeof window.calculateSwapOutput === 'function') window.calculateSwapOutput();
+            calculateSwapOutput();
         };
 
-        window.setTradeAmount = function(val) {
-            const input = document.getElementById('tradeInputAmount');
-            if(input) input.value = val;
-            if(typeof window.calculateSwapOutput === 'function') window.calculateSwapOutput();
-        };
+        window.setTradeAmount = function(val) { document.getElementById('tradeInputAmount').value = val; calculateSwapOutput(); };
+        window.setSellPercent = function(pct) { document.getElementById('tradeInputAmount').value = pct; calculateSwapOutput(); };
+        window.copyReferralLink = function() { navigator.clipboard.writeText("https://t.me/KoteTrade_bot/app"); alert('Referral link copied!'); };
 
-        window.setSellPercent = function(pct) {
-            const input = document.getElementById('tradeInputAmount');
-            if(input) input.value = pct;
-            if(typeof window.calculateSwapOutput === 'function') window.calculateSwapOutput();
-        };
-
-        window.copyReferralLink = function() {
-            navigator.clipboard.writeText("https://t.me/KoteTrade_bot/app");
-            alert('Referral link copied!');
-        };
-
-        // Fetch tokens from backend server API
+        // Fetch tokens from backend API
         async function fetchTokensFromBackend() {
             try {
                 const backendUrl = window.location.hostname === 'localhost' ? 'http://localhost:3000/api/memes' : './api/memes';
@@ -663,7 +239,12 @@
                     window.gramStonfiTokens = data.stonfi;
                 }
             } catch (err) {
-                console.log("Using cached offline token state...", err);
+                console.log("Using default fallback data...", err);
+                window.gramDedustTokens = [
+                    { address: 'TON', name: 'Toncoin', symbol: 'TON', logo: 'https://asset.ston.fi/img/TON.png', mcap: 14200000000, liq: 45000000, vol: 12000000, priceUSD: 5.65, change24h: 4.2, poolAddress: 'TON' },
+                    { address: 'EQB-MPwuxusWknM7H9N_6U1y59_h_M0nK7wD70t4Z4H6z30U', name: 'Gram Memes Token', symbol: 'GRAM', logo: 'https://asset.ston.fi/img/EQB-MPwuxusWknM7H9N_6U1y59_h_M0nK7wD70t4Z4H6z30U.png', mcap: 1850000, liq: 620000, vol: 450000, priceUSD: 0.85, change24h: 12.4, poolAddress: 'EQB-MPwuxusWknM7H9N_6U1y59_h_M0nK7wD70t4Z4H6z30U' }
+                ];
+                window.gramStonfiTokens = window.gramDedustTokens;
             }
             renderAllInstantly();
         }
@@ -676,19 +257,14 @@
     </script>
 
     <div class="main-container">
-        <!-- Top Header -->
         <header class="topbar">
             <div style="display: flex; align-items: center; gap: 10px;">
                 <div class="brand-logo-box">🐱</div>
-                <div class="brand-text">
-                    <h1>Kote Trade Terminal</h1>
-                </div>
+                <div class="brand-text"><h1>Kote Trade Terminal</h1></div>
             </div>
         </header>
 
-        <!-- Viewport Pages -->
         <main class="content-area">
-
             <!-- 1. TRADE PAGE -->
             <section id="page-trade" class="page active">
                 <div class="card">
@@ -703,7 +279,7 @@
                                     <h2 style="font-size: 17px; font-weight: 900;" id="heroTokenName">Select a Token</h2>
                                     <span style="font-size: 9px; background: rgba(16,185,129,0.15); color: var(--accent-green); border: 1px solid rgba(16,185,129,0.35); padding: 2px 6px; border-radius: 6px; font-weight: 800; text-transform: uppercase;">Live</span>
                                 </div>
-                                <span style="font-size: 10px; color: var(--text-muted); font-family: monospace;" id="heroTokenCA">Choose from Topblast Memes or Gram Memes</span>
+                                <span style="font-size: 10px; color: var(--text-muted); font-family: monospace;" id="heroTokenCA">Choose from DeDust or STON.fi Pools</span>
                             </div>
                         </div>
                         <div style="text-align: right;">
@@ -712,9 +288,7 @@
                         </div>
                     </div>
 
-                    <div id="tradeAuditBadge" class="audit-badge">
-                        🛡️ Direct DEX Pool API Active (< 20ms)
-                    </div>
+                    <div class="audit-badge">🛡️ Direct DEX Pool API Active (< 20ms)</div>
 
                     <div class="tokenomics-grid">
                         <div class="stat-card"><span>Market Cap</span><strong id="tokMcap">$0.0K</strong></div>
@@ -729,8 +303,7 @@
                     </div>
 
                     <div id="sellBalanceBar" style="display: none; justify-content: space-between; font-size: 11px; color: var(--text-muted); margin-bottom: 8px; padding: 0 4px;">
-                        <span>Available Balance:</span>
-                        <strong id="availableTokenBalance" style="color: var(--accent-green);">0.00</strong>
+                        <span>Available Balance:</span><strong id="availableTokenBalance" style="color: var(--accent-green);">0.00</strong>
                     </div>
 
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
@@ -756,9 +329,7 @@
                         <button class="quick-btn" onclick="setTradeAmount(10)">10</button>
                     </div>
 
-                    <button class="btn-action" id="executeTradeBtn" style="margin-bottom: 14px;" onclick="alert('Executing On-Chain Swap via DEX Router')">
-                        ⚡ Execute In-App Swap
-                    </button>
+                    <button class="btn-action" id="executeTradeBtn" style="margin-bottom: 14px;" onclick="alert('Executing On-Chain Swap via DEX Router')">⚡ Execute In-App Swap</button>
 
                     <div class="card-header" style="margin-top: 8px; margin-bottom: 6px;">
                         <span class="card-title" id="chartTitle">📊 Live Chart</span>
@@ -777,12 +348,10 @@
                         <span class="card-title">🎯 Kote Sniper & SDK Pool Resolver</span>
                         <span style="font-size: 11px; color: var(--accent-red); font-weight: 800;">● 0.20 Gas</span>
                     </div>
-
                     <div class="input-group">
                         <div class="input-top"><span>Token Contract or Pool Address</span></div>
                         <input type="text" id="sniperCA" class="pro-input" style="width: 100%; font-size: 13px;" placeholder="Paste Token CA or Pool EQ...">
                     </div>
-
                     <div class="input-group">
                         <div class="input-top"><span>Snipe Amount (GRAM)</span></div>
                         <div class="input-main">
@@ -790,10 +359,7 @@
                             <div class="token-badge">GRAM</div>
                         </div>
                     </div>
-
-                    <button class="btn-action btn-red" style="margin-top: 8px;" onclick="alert('Executing Snipe Order')">
-                        🚀 Execute In-App Router Snipe
-                    </button>
+                    <button class="btn-action btn-red" style="margin-top: 8px;" onclick="alert('Executing Snipe Order')">🚀 Execute In-App Router Snipe</button>
                 </div>
             </section>
 
@@ -805,9 +371,8 @@
                             <span class="card-title" style="color: var(--accent-green);">⚡ Active Trades & Open Snipes</span>
                             <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Live Portfolio & On-Chain PnL</div>
                         </div>
-                        <button onclick="alert('Synchronized with Blockchain!')" style="background: rgba(16,185,129,0.15); border: 1px solid var(--accent-green); color: var(--accent-green); padding: 6px 10px; border-radius: 8px; font-size: 11px; cursor: pointer; font-weight: 800;">↻ Sync Wallet</button>
+                        <button onclick="alert('Synchronized!')" style="background: rgba(16,185,129,0.15); border: 1px solid var(--accent-green); color: var(--accent-green); padding: 6px 10px; border-radius: 8px; font-size: 11px; cursor: pointer; font-weight: 800;">↻ Sync Wallet</button>
                     </div>
-
                     <div id="mainActiveTradesList" style="display: flex; flex-direction: column; gap: 10px; margin-top: 8px;">
                         <div style="text-align: center; padding: 25px; color: var(--text-muted); font-size: 12px;">Connect wallet to view active trades and live PnL.</div>
                     </div>
@@ -820,17 +385,14 @@
                     <div class="card-header">
                         <div>
                             <span class="card-title" style="color: var(--accent-green);">🔥 Topblast Memes Catalog</span>
-                            <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Sorted by Market Cap (Highest to Lowest)</div>
+                            <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Sorted by Market Cap</div>
                         </div>
                         <button onclick="renderTopblastList()" style="background: rgba(16,185,129,0.15); border: 1px solid var(--accent-green); color: var(--accent-green); padding: 6px 10px; border-radius: 8px; font-size: 11px; cursor: pointer; font-weight: 800;">↻ Refresh</button>
                     </div>
-
                     <div class="input-group" style="padding: 8px 12px; margin-bottom: 12px;">
                         <input type="text" id="topblastSearchInput" class="pro-input" style="width: 100%; font-size: 13px;" placeholder="🔍 Search Topblast Memes..." oninput="filterTopblastList()">
                     </div>
-
                     <div id="topblastList"></div>
-
                     <div class="pagination-bar" id="topblastPaginationBar" style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--border-color);">
                         <button class="page-btn" id="topblastPrevBtn" onclick="changeTopblastPage(-1)">← Previous</button>
                         <span id="topblastPageIndicator" style="font-size: 11px; font-weight: 800; color: var(--text-muted);">Page 1 of 1</span>
@@ -845,12 +407,11 @@
                     <div class="card-header">
                         <div>
                             <span class="card-title" style="color: var(--accent-green);">🪙 Gram Memes DEX Pools</span>
-                            <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">TON & GRAM Meme Pools on DeDust & STON.fi</div>
+                            <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Thousands of DeDust & STON.fi Pools</div>
                         </div>
-                        <button onclick="renderAllInstantly()" style="background: rgba(16,185,129,0.15); border: 1px solid var(--accent-green); color: var(--accent-green); padding: 6px 10px; border-radius: 8px; font-size: 11px; cursor: pointer; font-weight: 800;">↻ Refresh Lists</button>
+                        <button onclick="fetchTokensFromBackend()" style="background: rgba(16,185,129,0.15); border: 1px solid var(--accent-green); color: var(--accent-green); padding: 6px 10px; border-radius: 8px; font-size: 11px; cursor: pointer; font-weight: 800;">↻ Refresh Pools</button>
                     </div>
 
-                    <!-- Sub-split tabs for DeDust vs STON.fi -->
                     <div class="trade-tabs" style="margin-bottom: 12px;">
                         <button class="trade-tab-btn active" id="gramSubDedust" onclick="switchGramSubTab('dedust')">🟢 DeDust Pools</button>
                         <button class="trade-tab-btn" id="gramSubStonfi" onclick="switchGramSubTab('stonfi')">🔵 STON.fi Pools</button>
@@ -887,11 +448,8 @@
                 <div class="card" style="max-width: 550px; margin: 0 auto; width: 100%;">
                     <div class="card-header">
                         <span class="card-title">👤 Verified On-Chain Portfolio & Earnings</span>
-                        <button onclick="alert('Wallet modal')" style="background: rgba(16,185,129,0.18); border: 1px solid var(--accent-green); color: var(--accent-green); padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 800; cursor: pointer;">
-                            🟢 Connected Wallet
-                        </button>
+                        <button onclick="alert('Wallet modal')" style="background: rgba(16,185,129,0.18); border: 1px solid var(--accent-green); color: var(--accent-green); padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 800; cursor: pointer;">🟢 Connected Wallet</button>
                     </div>
-
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px;">
                         <div style="background: var(--bg-input); border: 1px solid var(--border-color); padding: 12px; border-radius: 12px; text-align: center;">
                             <span style="font-size: 10px; color: var(--text-muted); font-weight: 800;">Referral Earnings (3%)</span>
@@ -902,7 +460,6 @@
                             <strong id="referredCount" style="font-size: 15px; color: var(--accent-green);">0 Users</strong>
                         </div>
                     </div>
-
                     <div style="background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 14px; padding: 14px; margin-bottom: 14px;">
                         <div style="font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px;">🔗 Referral Link</div>
                         <div style="display: flex; gap: 8px;">
@@ -913,7 +470,7 @@
                 </div>
             </section>
 
-            <!-- 7. MOONPAY GATEWAY PAGE -->
+            <!-- 7. MOONPAY GATEWAY -->
             <section id="page-buy" class="page">
                 <div class="card" style="max-width: 580px; margin: 0 auto; width: 100%; background: linear-gradient(145deg, #110b1d, #09090d); border: 1px solid rgba(125, 0, 255, 0.45); box-shadow: 0 12px 40px rgba(125, 0, 255, 0.18);">
                     <div class="card-header" style="border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 14px; margin-bottom: 16px;">
@@ -933,7 +490,6 @@
                             </div>
                         </div>
                     </div>
-
                     <div class="input-group" style="border-color: rgba(125, 0, 255, 0.35);">
                         <div class="input-top"><span>Purchase Amount (USD)</span><span>Min: $20</span></div>
                         <div class="input-main">
@@ -941,16 +497,11 @@
                             <div class="token-badge" style="background: #1c1033; color: #e9d5ff; border-color: #581c87;">USD 💵</div>
                         </div>
                     </div>
-
-                    <button class="btn-action btn-moonpay" style="font-size: 15px; padding: 16px;" onclick="alert('Opening MoonPay Gateway')">
-                        Proceed with MoonPay
-                    </button>
+                    <button class="btn-action btn-moonpay" style="font-size: 15px; padding: 16px;" onclick="alert('Opening MoonPay Gateway')">Proceed with MoonPay</button>
                 </div>
             </section>
-
         </main>
 
-        <!-- Bottom Mobile Navigation Bar -->
         <nav class="bottom-nav">
             <button class="nav-tab active" onclick="switchPage('trade', this);"><span>📈</span><span>Trade</span></button>
             <button class="nav-tab" onclick="switchPage('sniper', this)"><span>🎯</span><span>Sniper</span></button>
@@ -962,7 +513,7 @@
         </nav>
     </div>
 
-    <!-- RENDER ENGINE & EVENT CONTROLLER -->
+    <!-- RENDER ENGINE WITH PAGINATION ACROSS THOUSANDS OF POOLS -->
     <script>
         const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
         if (tg) { tg.ready(); tg.expand(); }
@@ -1230,10 +781,6 @@
             const resOutput = window.currentTradeMode === 'buy' ? inputVal * 850.5 : inputVal / 850.5;
             document.getElementById('tradeOutputAmount').value = '~ ' + resOutput.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 });
         };
-
-        // Initial render on boot
-        renderAllInstantly();
-        calculateSwapOutput();
     </script>
 </body>
 </html>
