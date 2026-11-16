@@ -10,10 +10,10 @@ app.use(cors());
 // Serve static files directly from root directory
 app.use(express.static(__dirname));
 
-// Automatically install Python dependencies on startup (using --break-system-packages for Render)
+// Automatically install Python dependencies on startup (cleanly with no path warnings)
 try {
     console.log("📦 Installing Python dependencies for bot.py...");
-    execSync('pip3 install --break-system-packages python-telegram-bot', { stdio: 'inherit' });
+    execSync('pip3 install --break-system-packages --no-warn-script-location python-telegram-bot', { stdio: 'inherit' });
 } catch (err) {
     console.error("⚠️ Pip install warning:", err);
 }
@@ -25,8 +25,9 @@ pythonBot.stdout.on('data', (data) => {
     console.log(`[Bot Output]: ${data}`);
 });
 
+// Stream stderr as info logs so normal Python INFO messages aren't falsely flagged as red errors
 pythonBot.stderr.on('data', (data) => {
-    console.error(`[Bot Error]: ${data}`);
+    console.log(`[Bot Info]: ${data}`);
 });
 
 pythonBot.on('close', (code) => {
