@@ -6,12 +6,11 @@
     <title>Kote Trade & Predict Terminal</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
-    <!-- TON Cryptographic Libraries for In-App Wallets via ESM -->
     <script type="module">
         import { mnemonicNew, mnemonicToPrivateKey } from 'https://esm.sh/@ton/crypto';
-        import { WalletContractV4, TonClient, internal } from 'https://esm.sh/@ton/ton';
+        import { WalletContractV4, TonClient, internal, Address, beginCell, toNano } from 'https://esm.sh/@ton/ton';
         window.TonCrypto = { mnemonicNew, mnemonicToPrivateKey };
-        window.TonCore = { WalletContractV4, TonClient, internal };
+        window.TonCore = { WalletContractV4, TonClient, internal, Address, beginCell, toNano };
     </script>
     <style>
         :root {
@@ -29,7 +28,7 @@
         }
         * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
         body {
-            background: linear-gradient(rgba(5, 5, 7, 0.75), rgba(5, 5, 7, 0.90)), url('./bg.jpg.JPG') no-repeat center center fixed;
+            background: linear-gradient(rgba(5, 5, 7, 0.78), rgba(5, 5, 7, 0.92)), url('./bg.jpg.JPG') no-repeat center center fixed;
             background-size: cover; color: var(--text-main);
             font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
             display: flex; height: 100vh; overflow: hidden;
@@ -113,12 +112,6 @@
             max-height: 85vh; overflow-y: auto;
         }
 
-        .social-links-row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
-        .social-pill {
-            background: var(--bg-input); border: 1px solid var(--border-color); color: var(--accent-cyan);
-            padding: 5px 10px; border-radius: 8px; font-size: 10px; font-weight: 800; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;
-        }
-
         .predict-card { background: linear-gradient(135deg, rgba(16, 18, 28, 0.95), rgba(24, 18, 38, 0.96)); border: 1px solid rgba(168, 85, 247, 0.25); border-radius: 16px; padding: 14px; margin-bottom: 12px; }
         .market-outcomes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
         .outcome-btn { background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 10px; padding: 10px; text-align: center; cursor: pointer; transition: all 0.15s; }
@@ -127,20 +120,28 @@
 </head>
 <body>
 
-    <!-- Send Modal -->
+    <!-- Send / Withdraw Modal -->
     <div class="modal-overlay" id="sendModal">
         <div class="modal-card">
-            <div style="font-size: 14px; font-weight: 900; margin-bottom: 12px; color: #fff;">📤 Send TON from In-App Wallet</div>
+            <div style="font-size: 14px; font-weight: 900; margin-bottom: 12px; color: #fff;">📤 Transfer Assets On-Chain</div>
             <div class="input-group">
-                <label>RECIPIENT ADDRESS (UQ...)</label>
+                <label>ASSET TO SEND</label>
+                <select id="sendAssetType" style="width: 100%; background: none; border: none; color: var(--accent-cyan); font-size: 13px; font-weight: 800; outline: none;">
+                    <option value="GRAM" style="background: #131520;">$GRAM (Jetton)</option>
+                    <option value="TON" style="background: #131520;">TON (Native Gas)</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>RECIPIENT TON ADDRESS (UQ... / EQ...)</label>
                 <input type="text" id="sendRecipient" placeholder="UQ...">
             </div>
             <div class="input-group">
-                <label>AMOUNT (TON)</label>
+                <label>AMOUNT</label>
                 <input type="number" id="sendAmount" placeholder="0.0">
             </div>
+            <div style="font-size: 10px; color: var(--text-muted); margin-bottom: 10px;">Requires ~0.05 TON in native balance to cover network forward gas fees.</div>
             <div style="display: flex; gap: 8px; margin-top: 12px;">
-                <button class="btn-action btn-blue" onclick="executeInAppSend()">Confirm Send</button>
+                <button class="btn-action btn-blue" onclick="executeInAppSend()">Confirm Broadcast</button>
                 <button class="btn-action" style="background: var(--bg-input); color: #fff;" onclick="closeModal('sendModal')">Cancel</button>
             </div>
         </div>
@@ -150,59 +151,29 @@
     <div class="modal-overlay" id="seedModal">
         <div class="modal-card">
             <div style="font-size: 14px; font-weight: 900; margin-bottom: 8px; color: var(--accent-red);">⚠️ Backup Your Seed Phrase</div>
-            <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 12px;">Save these 12 words securely. If you clear your cache or switch devices, you will lose funds permanently if you haven't saved this backup.</p>
+            <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 12px;">Save these 12 words securely. Anyone with this phrase controls your funds.</p>
             <div style="background: var(--bg-input); padding: 12px; border-radius: 10px; font-size: 12px; color: #fff; font-weight: 800; word-break: break-all; line-height: 1.6; margin-bottom: 14px;" id="modalSeedText">--</div>
             <button class="btn-action btn-blue" onclick="copySeedPhrase()">📋 Copy Seed Phrase</button>
             <button class="btn-action" style="background: var(--bg-input); color: #fff; margin-top: 8px;" onclick="closeModal('seedModal')">Close</button>
         </div>
     </div>
 
-    <!-- Token Details Modal -->
-    <div class="modal-overlay" id="tokenDetailModal">
+    <!-- Predict Wager Modal -->
+    <div class="modal-overlay" id="predictModal">
         <div class="modal-card">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                <div style="display: flex; align-items: center; gap: 10px;">
-                    <img id="modalTokenLogo" src="" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover;" alt="Logo">
-                    <div>
-                        <div id="modalTokenName" style="font-size: 14px; font-weight: 900; color: #fff;">Token Name</div>
-                        <div id="modalTokenSymbol" style="font-size: 10px; color: var(--accent-cyan);">SYMBOL / TON</div>
-                    </div>
-                </div>
-                <button onclick="closeModal('tokenDetailModal')" style="background: none; border: none; color: var(--text-muted); font-size: 18px; cursor: pointer;">✕</button>
+            <div style="font-size: 14px; font-weight: 900; margin-bottom: 8px; color: #fff;" id="modalMarketTitle">Predict Market</div>
+            <div style="font-size: 11px; color: var(--accent-purple); font-weight: 800; margin-bottom: 12px;" id="modalSelectedOutcome">Outcome: YES</div>
+            <div class="input-group">
+                <label>ON-CHAIN WAGER AMOUNT ($GRAM)</label>
+                <input type="number" id="predictWagerInput" value="10" placeholder="10">
             </div>
-
-            <div style="background: var(--bg-input); padding: 12px; border-radius: 12px; margin-bottom: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                <div>
-                    <div style="font-size: 9px; color: var(--text-muted);">MARKET CAP</div>
-                    <div id="modalTokenMcap" style="font-size: 13px; font-weight: 900; color: var(--accent-cyan);">Loading...</div>
-                </div>
-                <div>
-                    <div style="font-size: 9px; color: var(--text-muted);">TOKEN AGE</div>
-                    <div id="modalTokenAge" style="font-size: 13px; font-weight: 900; color: var(--accent-green);">Loading...</div>
-                </div>
-                <div>
-                    <div style="font-size: 9px; color: var(--text-muted);">HOLDERS</div>
-                    <div id="modalTokenHolders" style="font-size: 13px; font-weight: 900; color: #fff;">Loading...</div>
-                </div>
-                <div>
-                    <div style="font-size: 9px; color: var(--text-muted);">DEX PAID</div>
-                    <div id="modalTokenDexPaid" style="font-size: 13px; font-weight: 900; color: var(--text-muted);">Checking...</div>
-                </div>
+            <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 12px; display: flex; justify-content: space-between;">
+                <span>Available $GRAM:</span>
+                <strong style="color: var(--accent-cyan);" id="predictModalBalance">0.00 GRAM</strong>
             </div>
-
-            <div class="input-group" style="margin-bottom: 10px;">
-                <label>CONTRACT ADDRESS (CA)</label>
-                <input type="text" id="modalTokenCA" readonly style="font-size: 10px; color: var(--accent-cyan);">
-            </div>
-
-            <div id="modalSocialsContainer" style="margin-bottom: 12px; display: none;">
-                <div style="font-size: 9px; color: var(--text-muted); font-weight: 800; margin-bottom: 4px;">PROJECT SOCIALS & LINKS</div>
-                <div class="social-links-row" id="modalSocialLinksList"></div>
-            </div>
-
             <div style="display: flex; gap: 8px;">
-                <button class="btn-action btn-blue" style="flex: 1; padding: 10px; font-size: 12px;" onclick="copyModalCA()">📋 Copy CA</button>
-                <button class="btn-action btn-green" style="flex: 1; padding: 10px; font-size: 12px;" onclick="snipeFromModal()">⚡ Snipe Token</button>
+                <button class="btn-action btn-purple" style="flex: 1;" onclick="confirmOnChainPredictionWager()">🔮 Broadcast Wager</button>
+                <button class="btn-action" style="background: var(--bg-input); color: #fff; flex: 1;" onclick="closeModal('predictModal')">Cancel</button>
             </div>
         </div>
     </div>
@@ -212,7 +183,7 @@
         <header class="topbar">
             <div style="display: flex; align-items: center; gap: 8px;">
                 <div class="brand-logo-box">🐱</div>
-                <div class="brand-text"><h1>Kote Terminal</h1></div>
+                <div class="brand-text"><h1>Kote Live Terminal</h1></div>
             </div>
             <div style="display: flex; align-items: center; gap: 6px;">
                 <span class="badge-pill" id="topbarWalletPill" onclick="switchPage('profile', document.querySelectorAll('.nav-tab')[3])" style="cursor: pointer;">💼 No Wallet</span>
@@ -224,47 +195,45 @@
             <!-- 1. SNIPE / TRADE PAGE -->
             <section id="page-sniper" class="page active">
                 <div class="card">
-                    <div class="card-header"><span class="card-title">🔍 Token Contract Lookup & Instant Snipe</span></div>
+                    <div class="card-header"><span class="card-title">🔍 Live TON Jetton Lookup & Snipe</span></div>
                     <div style="display: flex; gap: 8px;">
                         <div class="input-group" style="flex: 1; margin-bottom: 0;">
-                            <label>PASTE CONTRACT ADDRESS (CA)</label>
-                            <input type="text" id="caInput" value="EQAmvp1Vrr0zY2--STdH-0X_mP5iCD61p2vNVJYwHlgBni2C" placeholder="EQAmvp1Vrr0zY2--STdH-0X_mP5iCD61p2vNVJYwHlgBni2C">
+                            <label>TOKEN CONTRACT ADDRESS (CA)</label>
+                            <input type="text" id="caInput" value="EQAmvp1Vrr0zY2--STdH-0X_mP5iCD61p2vNVJYwHlgBni2C" placeholder="EQ...">
                         </div>
-                        <button class="btn-action btn-blue" style="width: 82px; padding: 0 10px; font-size: 12px;" onclick="loadTokenData()">Load</button>
+                        <button class="btn-action btn-blue" style="width: 82px; padding: 0 10px; font-size: 12px;" onclick="loadLiveTokenData()">Load</button>
                     </div>
                 </div>
 
                 <div class="card">
                     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
                         <div style="display: flex; align-items: center; gap: 10px;">
-                            <img id="tokenLogoImg" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='38' height='38'%3E%3Ccircle cx='19' cy='19' r='19' fill='%231e293b'/%3E%3Ctext x='50%25' y='50%25' font-size='18' fill='%23fff' text-anchor='middle' dominant-baseline='central'%3E🐱%3C/text%3E%3C/svg%3E" style="width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--accent-blue); object-fit: cover;" alt="Logo">
+                            <div style="width: 38px; height: 38px; border-radius: 50%; background: var(--bg-input); border: 1px solid var(--accent-blue); display: flex; align-items: center; justify-content: center; font-size: 18px;">🐱</div>
                             <div>
-                                <div style="font-size: 15px; font-weight: 900; color: #fff;" id="tokenHeaderName">KOTE</div>
-                                <div style="font-size: 10px; color: var(--text-muted);" id="tokenSymbolBadge">KOTE / TON</div>
+                                <div style="font-size: 15px; font-weight: 900; color: #fff;" id="tokenHeaderName">Loading Live Pool...</div>
+                                <div style="font-size: 10px; color: var(--text-muted);" id="tokenSymbolBadge">GECKOTERMINAL TON FEED</div>
                             </div>
                         </div>
                         <div style="text-align: right;">
-                            <div style="font-size: 9px; color: var(--text-muted); font-weight: 700;">MARKET CAP</div>
-                            <div style="font-size: 14px; font-weight: 900; color: var(--accent-cyan);" id="tokenMcapDisplay">$4,250,000</div>
+                            <div style="font-size: 9px; color: var(--text-muted); font-weight: 700;">FDV / MARKET CAP</div>
+                            <div style="font-size: 14px; font-weight: 900; color: var(--accent-cyan);" id="tokenMcapDisplay">--</div>
                         </div>
                     </div>
 
                     <div style="display: flex; justify-content: space-between; align-items: baseline; border-top: 1px solid var(--border-color); padding-top: 8px; margin-bottom: 8px;">
                         <div>
-                            <div style="font-size: 9px; color: var(--text-muted);">LIVE PRICE (USD)</div>
-                            <div style="font-size: 20px; font-weight: 900; color: #fff;" id="tokenPriceDisplay">$0.002450</div>
+                            <div style="font-size: 9px; color: var(--text-muted);">LIVE POOL PRICE (USD)</div>
+                            <div style="font-size: 20px; font-weight: 900; color: #fff;" id="tokenPriceDisplay">--</div>
                         </div>
                         <div style="text-align: right;">
                             <div style="font-size: 9px; color: var(--text-muted);">24H VOLUME / CHANGE</div>
-                            <div style="font-size: 12px; font-weight: 800; color: var(--accent-green);" id="tokenVolDisplay">$184.5K (+14.2%)</div>
+                            <div style="font-size: 12px; font-weight: 800; color: var(--accent-cyan);" id="tokenVolDisplay">--</div>
                         </div>
                     </div>
 
                     <div class="tf-row">
                         <button class="tf-btn" onclick="setTimeframe('5m', this)">5m</button>
-                        <button class="tf-btn" onclick="setTimeframe('10m', this)">10m</button>
                         <button class="tf-btn" onclick="setTimeframe('15m', this)">15m</button>
-                        <button class="tf-btn" onclick="setTimeframe('30m', this)">30m</button>
                         <button class="tf-btn active" onclick="setTimeframe('1h', this)">1h</button>
                         <button class="tf-btn" onclick="setTimeframe('4h', this)">4h</button>
                         <button class="tf-btn" onclick="setTimeframe('1d', this)">1d</button>
@@ -272,36 +241,37 @@
 
                     <div style="border-radius: 12px; overflow: hidden; border: 1px solid var(--border-color); background: #0c0e14; position: relative;">
                         <div id="realCandlestickChart" style="width: 100%; height: 230px;"></div>
+                        <div id="chartStatusOverlay" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 11px; color: var(--text-muted); pointer-events: none;">Fetching live OHLCV candles...</div>
                     </div>
                 </div>
 
                 <div class="card">
                     <div class="trade-tabs">
-                        <button class="trade-tab buy active" onclick="setTradeMode('buy', this)">BUY (SNIPE)</button>
-                        <button class="trade-tab sell" onclick="setTradeMode('sell', this)">SELL (INSTANT)</button>
+                        <button class="trade-tab buy active" onclick="setTradeMode('buy', this)">BUY WITH $GRAM</button>
+                        <button class="trade-tab sell" onclick="setTradeMode('sell', this)">SELL FOR $GRAM</button>
                     </div>
 
                     <div style="display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--text-muted); margin-bottom: 6px;">
-                        <span>In-App Sniper Wallet Balance:</span>
-                        <strong style="color: var(--accent-cyan);" id="tradePageGramBalance">0.00 TON</strong>
+                        <span>Live $GRAM Balance:</span>
+                        <strong style="color: var(--accent-cyan);" id="tradePageGramBalance">0.00 GRAM</strong>
                     </div>
 
                     <div class="input-group">
-                        <label id="amountLabel">AMOUNT (TON)</label>
-                        <input type="number" id="gramAmountInput" value="1" oninput="updateGramAmount(this.value)">
+                        <label id="amountLabel">AMOUNT ($GRAM)</label>
+                        <input type="number" id="gramAmountInput" value="10" oninput="updateGramAmount(this.value)">
                     </div>
 
                     <div style="background: rgba(6, 182, 212, 0.1); border: 1px solid rgba(6, 182, 212, 0.25); padding: 8px 12px; border-radius: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
-                        <span style="font-size: 11px; color: var(--text-muted);">Estimated Tokens Received:</span>
-                        <strong style="font-size: 13px; color: var(--accent-cyan);" id="estTokensReceived">0 TOKEN</strong>
+                        <span style="font-size: 11px; color: var(--text-muted);">Live Estimated Output:</span>
+                        <strong style="font-size: 13px; color: var(--accent-cyan);" id="estTokensReceived">--</strong>
                     </div>
 
-                    <div style="font-size: 10px; color: var(--text-muted); font-weight: 700; margin-bottom: 4px;">PRESET AMOUNTS</div>
+                    <div style="font-size: 10px; color: var(--text-muted); font-weight: 700; margin-bottom: 4px;">PRESET AMOUNTS ($GRAM)</div>
                     <div class="preset-grid">
-                        <button class="preset-btn" onclick="selectPreset(0.5, this)">0.5 TON</button>
-                        <button class="preset-btn active" onclick="selectPreset(1, this)">1 TON</button>
-                        <button class="preset-btn" onclick="selectPreset(2.5, this)">2.5 TON</button>
-                        <button class="preset-btn" onclick="selectPreset(5, this)">5 TON</button>
+                        <button class="preset-btn" onclick="selectPreset(5, this)">5 GRAM</button>
+                        <button class="preset-btn active" onclick="selectPreset(10, this)">10 GRAM</button>
+                        <button class="preset-btn" onclick="selectPreset(25, this)">25 GRAM</button>
+                        <button class="preset-btn" onclick="selectPreset(50, this)">50 GRAM</button>
                     </div>
 
                     <div style="margin-top: 8px;">
@@ -311,28 +281,27 @@
                             <button class="slip-btn active" onclick="setSlippage(1.0, this)">1.0%</button>
                             <button class="slip-btn" onclick="setSlippage(2.5, this)">2.5%</button>
                             <button class="slip-btn" onclick="setSlippage(5.0, this)">5.0%</button>
-                            <input type="number" id="customSlippageInput" placeholder="Custom %" oninput="setCustomSlippage(this.value)" style="background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 8px; color: #fff; font-size: 11px; padding: 6px; width: 75px; text-align: center; font-weight: 800; outline: none;">
                         </div>
                     </div>
 
-                    <button class="btn-action btn-green" id="executeTradeBtn" style="margin-top: 10px;" onclick="executeInAppSnipeSwap()">⚡ Instant In-App Snipe Buy (1 TON)</button>
+                    <button class="btn-action btn-green" id="executeTradeBtn" style="margin-top: 10px;" onclick="executeLiveOnChainSnipe()">⚡ Broadcast Live Snipe Swap (10 GRAM)</button>
                 </div>
             </section>
 
             <!-- 2. KOTE PREDICT PAGE -->
             <section id="page-predict" class="page">
                 <div class="card" style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.2), rgba(16, 18, 28, 0.95)); border-color: rgba(168, 85, 247, 0.4);">
-                    <div class="card-header"><span class="card-title" style="color: #c084fc;">🔮 KOTE PREDICT MARKETS</span></div>
-                    <div style="font-size: 13px; font-weight: 800; color: #fff;">Peer prediction wagers using in-app sniper wallet</div>
-                    <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Predict crypto prices, sports scores, and events. Winning pots are split pro-rata among winning shares (minus a 10% treasury allocation sent to <code style="font-size:9px; color:var(--accent-cyan)">UQAC-pXNqjUJ0u1wBkLPiDkLVMZkWYXWvNQuH5Mtx_tPdsGV</code>).</div>
+                    <div class="card-header"><span class="card-title" style="color: #c084fc;">🔮 KOTE PREDICT MARKETS (ON-CHAIN $GRAM)</span></div>
+                    <div style="font-size: 13px; font-weight: 800; color: #fff;">Live peer prediction wagers settled in $GRAM</div>
+                    <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Wagers broadcast real $GRAM Jetton transfers on-chain (90% to prize pool, 10% protocol fee to <code style="font-size:9px; color:var(--accent-cyan)">UQAC-pXNqjUJ0u1wBkLPiDkLVMZkWYXWvNQuH5Mtx_tPdsGV</code>).</div>
                 </div>
 
                 <div id="predictMarketsContainer"></div>
 
                 <div class="card">
-                    <div class="card-header"><span class="card-title">📜 Your Active Prediction Bets</span></div>
+                    <div class="card-header"><span class="card-title">📜 Broadcasted On-Chain Wagers</span></div>
                     <div id="userPredictBetsList" style="font-size: 12px; color: var(--text-muted);">
-                        No active prediction bets placed yet. Choose a market above to wager TON!
+                        No on-chain wagers broadcasted yet.
                     </div>
                 </div>
             </section>
@@ -341,16 +310,16 @@
             <section id="page-portfolio" class="page">
                 <div class="card" style="background: linear-gradient(135deg, rgba(30, 58, 138, 0.45), rgba(16, 18, 28, 0.90));">
                     <div class="card-header">
-                        <span class="card-title">💼 Active Sniper & Trade Portfolio</span>
-                        <span class="badge-pill" id="activePositionsCountBadge">0 Open</span>
+                        <span class="card-title">💼 Live On-Chain Jetton Holdings</span>
+                        <button class="btn-action btn-blue" style="width: auto; padding: 5px 10px; font-size: 10px;" onclick="refreshLivePortfolio()">🔄 Sync Chain</button>
                     </div>
-                    <div style="font-size: 26px; font-weight: 900; color: #fff; margin: 4px 0;" id="portfolioTotalGram">0.00 TON</div>
-                    <div style="font-size: 11px; color: var(--text-muted);">Real-time PnL tracking and active holdings.</div>
+                    <div style="font-size: 24px; font-weight: 900; color: #fff; margin: 4px 0;" id="portfolioTotalValueUsd">$0.00 USD</div>
+                    <div style="font-size: 11px; color: var(--text-muted);">Live Jetton balances & real-time GeckoTerminal valuations.</div>
                 </div>
 
                 <div id="activePositionsContainer" style="display: flex; flex-direction: column; gap: 10px;">
                     <div class="card" style="text-align: center; padding: 24px 14px; color: var(--text-muted); font-size: 12px;">
-                        No active trades or snipes yet. Execute a trade on the Snipe tab to track live PnL here!
+                        Generate or fund your sniper wallet and click "Sync Chain" to load live Jetton holdings.
                     </div>
                 </div>
             </section>
@@ -362,15 +331,20 @@
                     
                     <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); padding: 12px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
                         <div>
-                            <div style="font-size: 10px; color: var(--text-muted);">WALLET BALANCE</div>
-                            <div style="font-size: 20px; font-weight: 900; color: var(--accent-green); margin-top: 2px;" id="profileTonBalance">0.00 TON</div>
+                            <div style="font-size: 10px; color: var(--text-muted);">$GRAM JETTON BALANCE</div>
+                            <div style="font-size: 20px; font-weight: 900; color: var(--accent-green); margin-top: 2px;" id="profileGramBalance">0.00 GRAM</div>
+                            <div style="font-size: 11px; color: var(--accent-cyan); font-weight: 800; margin-top: 2px;" id="profileTonGasBalance">Gas: 0.00 TON</div>
                         </div>
                         <button class="btn-action btn-blue" style="width: auto; padding: 8px 12px; font-size: 11px;" onclick="refreshInAppBalance()">🔄 Refresh</button>
                     </div>
 
                     <div class="input-group">
-                        <label>IN-APP SNIPER WALLET ADDRESS</label>
-                        <input type="text" id="profileWalletAddress" readonly style="color: var(--accent-cyan);" value="Not Generated Yet">
+                        <label>YOUR MAINNET WALLET ADDRESS (TAP TO COPY)</label>
+                        <input type="text" id="profileWalletAddress" readonly style="color: var(--accent-cyan); cursor: pointer;" value="Not Generated Yet" onclick="copyWalletAddress()">
+                    </div>
+
+                    <div style="font-size: 10px; color: var(--text-muted); margin-bottom: 10px; line-height: 1.4;">
+                        💡 <b>Important:</b> Send both <b>$GRAM</b> (for sniping) and at least <b>0.15 TON</b> (for blockchain network gas fees) to this address.
                     </div>
 
                     <div id="walletActionsContainer" style="display: flex; flex-direction: column; gap: 8px;">
@@ -394,88 +368,73 @@
     </div>
 
     <script>
-        const KoteShield = {
-            activeGuards: true,
-            verifyTransaction(payload) {
-                if (!this.activeGuards) return false;
-                if (payload && payload.amount < 0) return false;
-                return true;
-            }
-        };
-
+        // Official TON Mainnet $GRAM Jetton Master Address
+        const GRAM_MASTER_CA = "EQC47093oX5Xhb0xuk2lCr2RhS8rj-vul61u4W2UH5ORmG_O";
         const TREASURY_WALLET = "UQAC-pXNqjUJ0u1wBkLPiDkLVMZkWYXWvNQuH5Mtx_tPdsGV";
-
-        const PREDICTION_BANK = [
-            { title: "Will TON price exceed $10 in 30 days?", category: "Crypto", deadline: "30 Days" },
-            { title: "Will Bitcoin hit a new All-Time High this month?", category: "Crypto", deadline: "End of Month" },
-            { title: "Will Manchester United win their next Premier League match?", category: "Football", deadline: "Next Matchday" },
-            { title: "Will GTA VI release date be officially delayed past Q4?", category: "Gaming", deadline: "Q4 Deadline" }
-        ];
+        const STONFI_ROUTER_V1 = "EQB3ncyBUTjZUA5EnFKR5_EnOMI9V1tTEAAPaiU71gc4TiUt";
 
         let predictMarkets = [
-            { id: 1, title: "Will TON price exceed $10 in 30 days?", category: "Crypto", deadline: "30 Days", pool: 0.00, treasuryPool: 0.00, yesShare: 52, noShare: 48, betsCount: 0, expiresAt: Date.now() + 86400000 },
-            { id: 2, title: "Will Bitcoin hit a new All-Time High this month?", category: "Crypto", deadline: "End of Month", pool: 0.00, treasuryPool: 0.00, yesShare: 78, noShare: 22, betsCount: 0, expiresAt: Date.now() + 172800000 },
-            { id: 3, title: "Will Manchester United win their next Premier League match?", category: "Football", deadline: "Next Matchday", pool: 0.00, treasuryPool: 0.00, yesShare: 45, noShare: 55, betsCount: 0, expiresAt: Date.now() + 259200000 }
+            { id: 1, title: "Will TON exceed $10 within 30 days?", category: "Crypto", deadline: "30 Days", pool: 0, yesShare: 50, noShare: 50 },
+            { id: 2, title: "Will Bitcoin reach a new ATH this month?", category: "Crypto", deadline: "End of Month", pool: 0, yesShare: 50, noShare: 50 }
         ];
 
         let userPredictionBets = [];
-        let openPositions = [];
+        let activePredictMarket = null;
+        let activePredictOutcome = null;
+
         let inAppWallet = null;
         let walletTonBalance = 0.00;
+        let walletGramBalance = 0.00;
+        let userGramJettonWalletAddr = null;
+        let gramPriceUsd = 0.00;
+        let liveHoldings = [];
 
         let currentTradeToken = {
             ca: "EQAmvp1Vrr0zY2--STdH-0X_mP5iCD61p2vNVJYwHlgBni2C",
-            name: "KOTE",
-            symbol: "KOTE",
-            price: 0.00245,
-            mcap: "$4,250,000",
-            logo: ""
+            name: "",
+            symbol: "",
+            price: 0,
+            mcap: "",
+            poolAddress: ""
         };
 
         let currentActiveTimeframe = '1h';
         let currentSlippageVal = 1.0;
-        let activeModalToken = null;
-        let currentCirculatingSupply = 1000000000;
+        let currentCirculatingSupply = 0;
 
         function formatCompactNumber(num) {
+            if (!num || isNaN(num)) return "0.00";
             if (num >= 1e12) return (num / 1e12).toFixed(2) + 'T';
             if (num >= 1e9) return (num / 1e9).toFixed(2) + 'B';
             if (num >= 1e6) return (num / 1e6).toFixed(2) + 'M';
             if (num >= 1e3) return (num / 1e3).toFixed(2) + 'K';
-            return num.toFixed(2);
+            return num.toFixed(4);
         }
 
         function saveAppState() {
-            const stateObj = { 
-                positions: openPositions, 
-                balance: walletTonBalance,
+            localStorage.setItem("kote_live_state_v1", JSON.stringify({
                 markets: predictMarkets,
                 userBets: userPredictionBets
-            };
-            localStorage.setItem("kote_terminal_state_v22", JSON.stringify(stateObj));
+            }));
         }
 
         function loadAppState() {
             try {
-                const raw = localStorage.getItem("kote_terminal_state_v22");
+                const raw = localStorage.getItem("kote_live_state_v1");
                 if (raw) {
                     const parsed = JSON.parse(raw);
-                    if (Array.isArray(parsed.positions)) openPositions = parsed.positions;
-                    if (typeof parsed.balance === 'number') walletTonBalance = parsed.balance;
                     if (Array.isArray(parsed.markets)) predictMarkets = parsed.markets;
                     if (Array.isArray(parsed.userBets)) userPredictionBets = parsed.userBets;
                 }
                 const storedWallet = localStorage.getItem("kote_inapp_sniper_wallet");
-                if (storedWallet) {
-                    inAppWallet = JSON.parse(storedWallet);
-                }
+                if (storedWallet) inAppWallet = JSON.parse(storedWallet);
             } catch(e) {}
         }
 
         // --- IN-APP CRYPTOGRAPHIC WALLET FUNCTIONS ---
         window.createInAppWallet = async function() {
             if (!window.TonCrypto || !window.TonCore) {
-                return alert("TON crypto libraries still loading. Please wait a second and try again.");
+                return alert("TON cryptographic libraries are still loading. Wait 2 seconds and try again.");
             }
             try {
                 const mnemonic = await window.TonCrypto.mnemonicNew(12);
@@ -491,45 +450,90 @@
 
                 localStorage.setItem("kote_inapp_sniper_wallet", JSON.stringify(inAppWallet));
                 updateWalletUI();
-                alert(`✨ In-App Sniper Wallet Created!\nAddress: ${addressStr}\n\nMake sure to backup your seed phrase in Profile!`);
+                await refreshInAppBalance();
+                alert(`✨ Real Mainnet Sniper Wallet Created!\n\nAddress:\n${addressStr}\n\nBack up your 12-word seed phrase immediately.`);
             } catch (err) {
-                console.error("Wallet creation error:", err);
-                alert("Failed to generate in-app wallet.");
+                console.error("Wallet generation error:", err);
+                alert("Failed to generate wallet.");
             }
         };
 
         window.destroyInAppWallet = function() {
-            if (confirm("Are you sure? Ensure you have backed up your 12-word seed phrase or you will lose access to funds in this wallet.")) {
+            if (confirm("Are you sure? Without your 12-word seed phrase, any $GRAM or TON inside this wallet will be permanently inaccessible.")) {
                 localStorage.removeItem("kote_inapp_sniper_wallet");
                 inAppWallet = null;
-                walletTonBalance = 0.00;
+                walletTonBalance = 0;
+                walletGramBalance = 0;
+                userGramJettonWalletAddr = null;
                 updateWalletUI();
-                alert("In-app wallet removed from local storage.");
             }
         };
 
         window.viewSeedPhrase = function() {
-            if (!inAppWallet) return alert("No active in-app wallet created yet.");
+            if (!inAppWallet) return alert("No wallet generated yet.");
             document.getElementById('modalSeedText').innerText = inAppWallet.mnemonic;
             openModal('seedModal');
         };
 
         window.copySeedPhrase = function() {
             if (!inAppWallet) return;
-            navigator.clipboard.writeText(inAppWallet.mnemonic).then(() => alert("📋 Seed phrase copied to clipboard!"));
+            navigator.clipboard.writeText(inAppWallet.mnemonic).then(() => alert("📋 12-word seed phrase copied!"));
         };
 
-        window.refreshInAppBalance = async function() {
-            if (!inAppWallet) return alert("No active wallet.");
+        window.copyWalletAddress = function() {
+            if (!inAppWallet) return;
+            navigator.clipboard.writeText(inAppWallet.address).then(() => alert("📋 Wallet address copied!"));
+        };
+
+        // --- REAL-TIME ON-CHAIN BALANCE FETCH (TON + $GRAM JETTON) ---
+        window.refreshInAppBalance = async function(silent = false) {
+            if (!inAppWallet) return;
             try {
-                const client = new window.TonCore.TonClient({ endpoint: "https://toncenter.com/api/v2/jsonRPC" });
-                const balanceNano = await client.getBalance(window.TonCore.Address.parse(inAppWallet.address));
-                walletTonBalance = Number(balanceNano) / 1e9;
+                // 1. Fetch Native TON Gas Balance via TON Center v2 HTTP API
+                const tonRes = await fetch(`https://toncenter.com/api/v2/getAddressBalance?address=${inAppWallet.address}`);
+                const tonData = await tonRes.json();
+                walletTonBalance = (tonData.ok && tonData.result) ? Number(tonData.result) / 1e9 : 0;
+
+                // 2. Fetch Real Jetton Balances ($GRAM and all tokens) via TON Center v3 Indexer
+                const jettonRes = await fetch(`https://toncenter.com/api/v3/jetton/wallets?owner_address=${inAppWallet.address}&limit=50`);
+                const jettonData = await jettonRes.json();
+                
+                walletGramBalance = 0;
+                userGramJettonWalletAddr = null;
+                liveHoldings = [];
+
+                if (jettonData.jetton_wallets && Array.isArray(jettonData.jetton_wallets)) {
+                    const normalizedGramMaster = window.TonCore.Address.parse(GRAM_MASTER_CA).toRawString();
+                    
+                    for (const jw of jettonData.jetton_wallets) {
+                        const bal = Number(jw.balance || 0) / 1e9;
+                        if (jw.jetton === normalizedGramMaster) {
+                            walletGramBalance = bal;
+                            userGramJettonWalletAddr = jw.address;
+                        }
+                        if (bal > 0) {
+                            liveHoldings.push({
+                                jettonMasterRaw: jw.jetton,
+                                jettonWallet: jw.address,
+                                balance: bal
+                            });
+                        }
+                    }
+                }
+
+                // Fetch live $GRAM USD price from GeckoTerminal
+                const gramPoolRes = await fetch(`https://api.geckoterminal.com/api/v2/networks/ton/tokens/${GRAM_MASTER_CA}/pools?page=1`);
+                if (gramPoolRes.ok) {
+                    const gpJson = await gramPoolRes.json();
+                    gramPriceUsd = parseFloat(gpJson.data?.[0]?.attributes?.base_token_price_usd || 0);
+                }
+
                 updateWalletUI();
-                alert(`Balance updated: ${walletTonBalance.toFixed(2)} TON`);
+                updateEstTokens();
+                if (!silent) alert(`✅ Synced with TON Mainnet!\n$GRAM: ${walletGramBalance.toFixed(2)}\nGas TON: ${walletTonBalance.toFixed(4)}`);
             } catch (e) {
-                console.error("Balance fetch error:", e);
-                alert("Could not fetch balance from network.");
+                console.error("Mainnet sync error:", e);
+                if (!silent) alert("Network rate-limit hit on public RPC. Wait 3 seconds and tap Refresh again.");
             }
         };
 
@@ -537,161 +541,114 @@
             if (!inAppWallet) {
                 document.getElementById('topbarWalletPill').innerText = `💼 No Wallet`;
                 document.getElementById('profileWalletAddress').value = "Not Generated Yet";
-                document.getElementById('profileTonBalance').innerText = `0.00 TON`;
-                document.getElementById('tradePageGramBalance').innerText = `0.00 TON`;
+                document.getElementById('profileGramBalance').innerText = `0.00 GRAM`;
+                document.getElementById('profileTonGasBalance').innerText = `Gas: 0.00 TON`;
+                document.getElementById('tradePageGramBalance').innerText = `0.00 GRAM`;
+                document.getElementById('predictModalBalance').innerText = `0.00 GRAM`;
                 return;
             }
 
             const shortAddr = inAppWallet.address.slice(0, 5) + "..." + inAppWallet.address.slice(-4);
             document.getElementById('topbarWalletPill').innerText = `💼 ${shortAddr}`;
             document.getElementById('profileWalletAddress').value = inAppWallet.address;
-            document.getElementById('profileTonBalance').innerText = `${walletTonBalance.toFixed(2)} TON`;
-            document.getElementById('tradePageGramBalance').innerText = `${walletTonBalance.toFixed(2)} TON`;
+            document.getElementById('profileGramBalance').innerText = `${walletGramBalance.toFixed(2)} GRAM`;
+            document.getElementById('profileTonGasBalance').innerText = `Gas: ${walletTonBalance.toFixed(4)} TON`;
+            document.getElementById('tradePageGramBalance').innerText = `${walletGramBalance.toFixed(2)} GRAM`;
+            document.getElementById('predictModalBalance').innerText = `${walletGramBalance.toFixed(2)} GRAM`;
         }
 
         window.openModal = function(modalId) { document.getElementById(modalId).style.display = 'flex'; };
         window.closeModal = function(modalId) { document.getElementById(modalId).style.display = 'none'; };
 
-        window.copyCA = function(ca) {
-            navigator.clipboard.writeText(ca).then(() => alert("📋 Contract Address copied to clipboard!"));
-        };
+        // --- REAL ON-CHAIN JETTON & TON TRANSFER ---
+        async function broadcastJettonTransfer(jettonWalletAddress, destinationAddress, amountJettons, forwardTonAmount = "0.05", forwardPayloadCell = null) {
+            const client = new window.TonCore.TonClient({ endpoint: "https://toncenter.com/api/v2/jsonRPC" });
+            const secretKeyBuffer = Uint8Array.from(inAppWallet.secretKey);
+            const keyPair = await window.TonCrypto.mnemonicToPrivateKey(inAppWallet.mnemonic.split(" "));
+            const wallet = window.TonCore.WalletContractV4.create({ workchain: 0, publicKey: keyPair.publicKey });
+            const contract = client.open(wallet);
 
-        window.copyModalCA = function() {
-            if (activeModalToken?.ca) {
-                navigator.clipboard.writeText(activeModalToken.ca).then(() => alert("📋 CA copied!"));
-            }
-        };
+            // Standard TEP-74 Jetton Transfer Payload (op = 0xf8a7ea5)
+            const bodyBuilder = window.TonCore.beginCell()
+                .storeUint(0xf8a7ea5, 32)
+                .storeUint(0, 64)
+                .storeCoins(window.TonCore.toNano(amountJettons.toString()))
+                .storeAddress(window.TonCore.Address.parse(destinationAddress))
+                .storeAddress(window.TonCore.Address.parse(inAppWallet.address))
+                .storeBit(0)
+                .storeCoins(window.TonCore.toNano(forwardTonAmount));
 
-        window.snipeFromModal = function() {
-            if (activeModalToken?.ca) {
-                closeModal('tokenDetailModal');
-                quickSelectToken(activeModalToken.ca);
+            if (forwardPayloadCell) {
+                bodyBuilder.storeBit(1).storeRef(forwardPayloadCell);
+            } else {
+                bodyBuilder.storeBit(0);
             }
-        };
+
+            const seqno = await contract.getSeqno();
+            const transfer = contract.createTransfer({
+                seqno,
+                secretKey: secretKeyBuffer,
+                messages: [
+                    window.TonCore.internal({
+                        to: jettonWalletAddress,
+                        value: window.TonCore.toNano((parseFloat(forwardTonAmount) + 0.05).toFixed(2)),
+                        bounce: true,
+                        body: bodyBuilder.endCell()
+                    })
+                ]
+            });
+
+            await contract.send(transfer);
+        }
 
         window.executeInAppSend = async function() {
             if (!inAppWallet) return alert("No active in-app wallet.");
+            const asset = document.getElementById('sendAssetType').value;
             const recipient = document.getElementById('sendRecipient').value.trim();
             const amt = parseFloat(document.getElementById('sendAmount').value);
-            if (!recipient || recipient.length < 30) return alert("Enter valid recipient address.");
-            if (!amt || amt <= 0 || amt > walletTonBalance) return alert("Invalid amount or insufficient balance.");
+
+            if (!recipient || recipient.length < 30) return alert("Enter a valid TON address.");
+            if (!amt || amt <= 0) return alert("Enter a valid amount.");
 
             try {
-                const client = new window.TonCore.TonClient({ endpoint: "https://toncenter.com/api/v2/jsonRPC" });
-                const secretKeyBuffer = Buffer.from(inAppWallet.secretKey);
-                const keyPair = await window.TonCrypto.mnemonicToPrivateKey(inAppWallet.mnemonic.split(" "));
-                const wallet = window.TonCore.WalletContractV4.create({ workchain: 0, publicKey: keyPair.publicKey });
-                const contract = client.open(wallet);
+                if (asset === "TON") {
+                    if (amt + 0.02 > walletTonBalance) return alert("Insufficient TON balance for transfer + gas.");
+                    const client = new window.TonCore.TonClient({ endpoint: "https://toncenter.com/api/v2/jsonRPC" });
+                    const secretKeyBuffer = Uint8Array.from(inAppWallet.secretKey);
+                    const keyPair = await window.TonCrypto.mnemonicToPrivateKey(inAppWallet.mnemonic.split(" "));
+                    const wallet = window.TonCore.WalletContractV4.create({ workchain: 0, publicKey: keyPair.publicKey });
+                    const contract = client.open(wallet);
+                    const seqno = await contract.getSeqno();
 
-                const seqno = await contract.getSeqno();
-                const transfer = contract.createTransfer({
-                    seqno,
-                    secretKey: secretKeyBuffer,
-                    messages: [
-                        window.TonCore.internal({
+                    await contract.send(contract.createTransfer({
+                        seqno,
+                        secretKey: secretKeyBuffer,
+                        messages: [window.TonCore.internal({
                             to: recipient,
-                            value: BigInt(Math.floor(amt * 1e9)),
+                            value: window.TonCore.toNano(amt.toString()),
                             bounce: false,
                             body: "Kote Terminal Transfer"
-                        })
-                    ]
-                });
-
-                await contract.send(transfer);
-                walletTonBalance -= amt;
-                saveAppState();
-                updateWalletUI();
-                alert(`✅ Successfully transferred ${amt} TON on-chain!`);
-                closeModal('sendModal');
-            } catch (err) {
-                console.error("Transfer error:", err);
-                alert("Transfer failed. Ensure your wallet has enough TON for network gas fees.");
-            }
-        };
-
-        // --- PREDICT FUNCTIONS ---
-        function checkAndCycleMarkets() {
-            const now = Date.now();
-            let updated = false;
-            predictMarkets = predictMarkets.map(m => {
-                if (m.expiresAt && now >= m.expiresAt) {
-                    updated = true;
-                    const randomBankItem = PREDICTION_BANK[Math.floor(Math.random() * PREDICTION_BANK.length)];
-                    return {
-                        id: Date.now() + Math.random(),
-                        title: randomBankItem.title,
-                        category: randomBankItem.category,
-                        deadline: randomBankItem.deadline,
-                        pool: 0.00,
-                        treasuryPool: 0.00,
-                        yesShare: Math.floor(Math.random() * 50) + 25,
-                        noShare: 0,
-                        betsCount: 0,
-                        expiresAt: now + (30 * 86400000)
-                    };
+                        })]
+                    }));
+                } else {
+                    if (amt > walletGramBalance) return alert("Insufficient $GRAM balance.");
+                    if (!userGramJettonWalletAddr) return alert("$GRAM Jetton wallet contract not indexed yet.");
+                    if (walletTonBalance < 0.08) return alert("You need at least 0.08 native TON in your wallet to pay gas for Jetton transfers.");
+                    await broadcastJettonTransfer(userGramJettonWalletAddr, recipient, amt, "0.02", null);
                 }
-                return m;
-            });
-            predictMarkets.forEach(m => m.noShare = 100 - m.yesShare);
-            if (updated) saveAppState();
-        }
 
-        window.openPredictModal = function(marketId, outcome) {
-            if (!inAppWallet) return alert("Please generate an in-app sniper wallet first!");
-            const market = predictMarkets.find(m => m.id === marketId);
-            if (!market) return;
-            alert(`Wager outcome selected: ${outcome.toUpperCase()} for "${market.title}"`);
+                closeModal('sendModal');
+                alert(`✅ Transaction broadcasted on-chain! Refreshing balance in 5 seconds...`);
+                setTimeout(() => refreshInAppBalance(true), 5000);
+            } catch (err) {
+                console.error("Broadcast error:", err);
+                alert("Broadcast failed: " + (err.message || "Check gas balance and address."));
+            }
         };
 
-        function renderPredictMarkets() {
-            checkAndCycleMarkets();
-            const container = document.getElementById('predictMarketsContainer');
-            if (!container) return;
-
-            container.innerHTML = predictMarkets.map(m => `
-                <div class="predict-card">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                        <span class="badge-pill" style="color: var(--accent-purple); border-color: rgba(168, 85, 247, 0.4);">${m.category} • Deadline: ${m.deadline}</span>
-                        <span style="font-size: 11px; font-weight: 800; color: var(--accent-cyan);">Pot: ${m.pool.toFixed(2)} TON</span>
-                    </div>
-                    <div style="font-size: 14px; font-weight: 900; color: #fff; margin-bottom: 10px;">${m.title}</div>
-                    <div class="market-outcomes">
-                        <div class="outcome-btn" onclick="openPredictModal(${m.id}, 'yes')">
-                            <div style="font-size: 10px; color: var(--text-muted); font-weight: 700;">YES (${m.yesShare}%)</div>
-                            <div style="font-size: 12px; font-weight: 900; color: var(--accent-green); margin-top: 2px;">Bet YES</div>
-                        </div>
-                        <div class="outcome-btn" onclick="openPredictModal(${m.id}, 'no')">
-                            <div style="font-size: 10px; color: var(--text-muted); font-weight: 700;">NO (${m.noShare}%)</div>
-                            <div style="font-size: 12px; font-weight: 900; color: var(--accent-red); margin-top: 2px;">Bet NO</div>
-                        </div>
-                    </div>
-                </div>
-            `).join("");
-        }
-
-        function renderUserPredictions() {
-            const container = document.getElementById('userPredictBetsList');
-            if (!container) return;
-
-            if (userPredictionBets.length === 0) {
-                container.innerHTML = `<div style="color: var(--text-muted); font-size: 12px; text-align: center; padding: 10px;">No active prediction bets placed yet. Choose a market above to wager TON!</div>`;
-                return;
-            }
-
-            container.innerHTML = userPredictionBets.map(bet => `
-                <div style="background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 10px; padding: 10px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        <div style="font-size: 12px; font-weight: 900; color: #fff; margin-bottom: 2px;">${bet.marketTitle}</div>
-                        <div style="font-size: 10px; color: var(--text-muted);">Side: <b style="color: ${bet.outcome === 'YES' ? 'var(--accent-green)' : 'var(--accent-red)'}">${bet.outcome}</b> | Wager: ${bet.wager} TON</div>
-                    </div>
-                </div>
-            `).join("");
-        }
-
-        // --- CHART & COMPACT MARKET CAP EDGE AXIS ---
+        // --- REAL-TIME GECKOTERMINAL DATA & CHARTING (NO SIMULATED DATA) ---
         let tvChart = null;
         let candleSeries = null;
-        let maSeries = null;
 
         function initRealChart() {
             const container = document.getElementById('realCandlestickChart');
@@ -703,22 +660,14 @@
                 layout: { background: { type: 'solid', color: '#0c0e14' }, textColor: '#94a3b8', fontSize: 10 },
                 grid: { vertLines: { color: 'rgba(59, 130, 246, 0.08)' }, horzLines: { color: 'rgba(59, 130, 246, 0.08)' } },
                 crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
-                rightPriceScale: { 
-                    borderColor: 'rgba(59, 130, 246, 0.2)', 
-                    scaleMargins: { top: 0.05, bottom: 0.05 }, 
-                    visible: true,
-                    alignLabels: true
-                },
-                timeScale: { borderColor: 'rgba(59, 130, 246, 0.2)', timeVisible: true },
+                rightPriceScale: { borderColor: 'rgba(59, 130, 246, 0.2)', visible: true },
+                timeScale: { borderColor: 'rgba(59, 130, 246, 0.2)', timeVisible: true }
             });
 
             candleSeries = tvChart.addCandlestickSeries({
-                upColor: '#10b981', downColor: '#ef4444', borderDownColor: '#ef4444', borderUpColor: '#10b981', wickDownColor: '#ef4444', wickUpColor: '#10b981',
-                priceLineVisible: true, priceLineWidth: 2, priceLineColor: '#06b6d4', priceLineSource: LightweightCharts.PriceLineSource.LastBar,
+                upColor: '#10b981', downColor: '#ef4444', borderDownColor: '#ef4444', borderUpColor: '#10b981', wickDownColor: '#ef4444', wickUpColor: '#10b981'
             });
-            maSeries = tvChart.addLineSeries({ color: '#84cc16', lineWidth: 1.5 });
 
-            loadRealCandlesForToken(currentTradeToken.ca, currentTradeToken.price, currentActiveTimeframe);
             window.addEventListener('resize', () => { if (tvChart && container) tvChart.applyOptions({ width: container.clientWidth }); });
         }
 
@@ -726,150 +675,108 @@
             currentActiveTimeframe = tf;
             document.querySelectorAll('.tf-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            loadRealCandlesForToken(currentTradeToken.ca, currentTradeToken.price, tf);
+            if (currentTradeToken.poolAddress) {
+                loadLiveOhlcvCandles(currentTradeToken.poolAddress, tf);
+            }
         };
 
-        async function loadRealCandlesForToken(ca, fallbackPrice, tf = '1h') {
-            if (!candleSeries) return;
-            let finalPrice = fallbackPrice;
-            try {
-                const intervalMap = { '5m': 'minute', '10m': 'minute', '15m': 'minute', '30m': 'minute', '1h': 'hour', '4h': 'hour', '1d': 'day' };
-                const geckoInterval = intervalMap[tf] || 'hour';
-
-                const targetUrl = encodeURIComponent(`https://api.geckoterminal.com/api/v2/networks/ton/tokens/${ca}/pools?page=1`);
-                const poolRes = await fetch(`https://corsproxy.io/?${targetUrl}`);
-                if (poolRes.ok) {
-                    const poolData = await poolRes.json();
-                    const topPoolObj = poolData.data?.[0];
-                    const topPool = topPoolObj?.attributes?.address;
-                    
-                    if (topPoolObj?.attributes?.fdv_usd) {
-                        const mcapVal = parseFloat(topPoolObj.attributes.fdv_usd);
-                        if (mcapVal > 0 && finalPrice > 0) currentCirculatingSupply = mcapVal / finalPrice;
-                    }
-
-                    if (topPool) {
-                        const ohlcvUrl = encodeURIComponent(`https://api.geckoterminal.com/api/v2/networks/ton/pools/${topPool}/ohlcv/${geckoInterval}?limit=80`);
-                        const ohlcvRes = await fetch(`https://corsproxy.io/?${ohlcvUrl}`);
-                        if (ohlcvRes.ok) {
-                            const ohlcvJson = await ohlcvRes.json();
-                            const rawList = ohlcvJson.data?.attributes?.ohlcv_list || [];
-                            if (rawList.length > 5) {
-                                const formatted = rawList.reverse().map(item => {
-                                    const mul = currentCirculatingSupply;
-                                    return { time: item[0], open: parseFloat(item[1]) * mul, high: parseFloat(item[2]) * mul, low: parseFloat(item[3]) * mul, close: parseFloat(item[4]) * mul };
-                                });
-                                candleSeries.setData(formatted);
-                                updateMovingAverage(formatted);
-                                tvChart.timeScale().fitContent();
-                                updateLiveMarketCapScaleBar(formatted[formatted.length - 1].close);
-                                return;
-                            }
-                        }
-                    }
-                }
-            } catch (e) {}
-
-            const now = Math.floor(Date.now() / 1000);
-            const stepSec = tf === '5m' ? 300 : tf === '15m' ? 900 : tf === '30m' ? 1800 : tf === '4h' ? 14400 : tf === '1d' ? 86400 : 3600;
-            const baseMcap = (parseFloat(fallbackPrice) || 0.00245) * currentCirculatingSupply;
-            const simData = [];
-            let prev = baseMcap * 0.88;
-            for (let i = 60; i >= 0; i--) {
-                const t = now - i * stepSec;
-                const change = (Math.random() - 0.46) * (baseMcap * 0.04);
-                const open = prev;
-                const close = i === 0 ? baseMcap : Math.max(baseMcap * 0.1, open + change);
-                const high = Math.max(open, close) * (1 + Math.random() * 0.015);
-                const low = Math.min(open, close) * (1 - Math.random() * 0.015);
-                simData.push({ time: t, open, high, low, close });
-                prev = close;
-            }
-            candleSeries.setData(simData);
-            updateMovingAverage(simData);
-            tvChart.timeScale().fitContent();
-            updateLiveMarketCapScaleBar(baseMcap);
-        }
-
-        function updateLiveMarketCapScaleBar(mcapVal) {
-            if (!candleSeries) return;
-            const compactMcap = formatCompactNumber(mcapVal);
-            candleSeries.applyOptions({
-                priceLineVisible: true, 
-                priceLineWidth: 2, 
-                priceLineColor: '#06b6d4', 
-                priceLineSource: LightweightCharts.PriceLineSource.LastBar,
-                title: `MC: $${compactMcap}`
-            });
-        }
-
-        function updateMovingAverage(candles) {
-            if (!maSeries || candles.length < 5) return;
-            const maData = [];
-            const period = 7;
-            for (let i = period - 1; i < candles.length; i++) {
-                let sum = 0;
-                for (let j = 0; j < period; j++) sum += candles[i - j].close;
-                maData.push({ time: candles[i].time, value: sum / period });
-            }
-            maSeries.setData(maData);
-        }
-
-        window.loadTokenData = async function() {
+        window.loadLiveTokenData = async function() {
             const ca = document.getElementById('caInput').value.trim();
-            if (!ca) return alert("Please enter a Contract Address (CA)");
-            
-            document.getElementById('tokenHeaderName').innerText = "⏳ Fetching Live Data...";
+            if (!ca) return alert("Please enter a valid TON Jetton Contract Address.");
+
+            document.getElementById('tokenHeaderName').innerText = "⏳ Querying GeckoTerminal...";
+            document.getElementById('chartStatusOverlay').style.display = "block";
+            document.getElementById('chartStatusOverlay').innerText = "Fetching live pool & candles...";
+
             try {
-                const targetUrl = encodeURIComponent(`https://api.dexscreener.com/latest/dex/tokens/${ca}`);
-                const res = await fetch(`https://corsproxy.io/?${targetUrl}`);
-                const data = await res.json();
-                const pair = (data.pairs && data.pairs.find(p => p.chainId === 'ton')) || data.pairs?.[0];
+                const res = await fetch(`https://api.geckoterminal.com/api/v2/networks/ton/tokens/${ca}/pools?page=1`);
+                if (!res.ok) throw new Error("Pool not found on GeckoTerminal");
+                const json = await res.json();
+                const topPoolObj = json.data?.[0];
 
-                if (pair) {
-                    const name = pair.baseToken?.name || "TON Token";
-                    const symbol = pair.baseToken?.symbol || "TOKEN";
-                    const price = parseFloat(pair.priceUsd || 0.0001);
-                    const mcapVal = pair.marketCap || pair.fdv || 1000000;
-                    const mcapStr = mcapVal ? `$${formatCompactNumber(mcapVal)}` : "N/A";
-                    const volStr = `$${formatCompactNumber(pair.volume?.h24 || 0)}`;
-                    const chg = pair.priceChange?.h24 || 0;
-                    const logo = pair.info?.imageUrl || pair.baseToken?.logoURI || "";
-
-                    currentCirculatingSupply = price > 0 ? mcapVal / price : 1000000000;
-                    currentTradeToken = { ca, name, symbol, price, mcap: mcapStr, logo };
-
-                    document.getElementById('tokenHeaderName').innerText = name;
-                    document.getElementById('tokenSymbolBadge').innerText = `${symbol} / TON`;
-                    document.getElementById('tokenPriceDisplay').innerText = `$${price < 0.01 ? price.toFixed(6) : price.toFixed(4)}`;
-                    document.getElementById('tokenMcapDisplay').innerText = mcapStr;
-                    document.getElementById('tokenVolDisplay').innerText = `${volStr} (${chg >= 0 ? '+' : ''}${chg}%)`;
-                    document.getElementById('tokenVolDisplay').style.color = chg >= 0 ? 'var(--accent-green)' : 'var(--accent-red)';
-                    if (logo) document.getElementById('tokenLogoImg').src = logo;
-
-                    loadRealCandlesForToken(ca, price, currentActiveTimeframe);
-                    updateEstTokens();
-                } else {
-                    alert("Token pair not found on DexScreener yet.");
+                if (!topPoolObj) {
+                    document.getElementById('tokenHeaderName').innerText = "No Active DEX Pool";
+                    document.getElementById('chartStatusOverlay').innerText = "No live liquidity pool found for this CA.";
+                    if (candleSeries) candleSeries.setData([]);
+                    return;
                 }
+
+                const attr = topPoolObj.attributes;
+                const poolAddress = attr.address;
+                const price = parseFloat(attr.base_token_price_usd || 0);
+                const mcapVal = parseFloat(attr.fdv_usd || attr.market_cap_usd || 0);
+                const vol24h = parseFloat(attr.volume_usd?.h24 || 0);
+                const chg24h = parseFloat(attr.price_change_percentage?.h24 || 0);
+                const poolName = attr.name || "TON Jetton";
+                const symbol = poolName.split('/')[0].trim();
+
+                currentCirculatingSupply = price > 0 && mcapVal > 0 ? mcapVal / price : 0;
+                currentTradeToken = { ca, name: poolName, symbol, price, mcap: `$${formatCompactNumber(mcapVal)}`, poolAddress };
+
+                document.getElementById('tokenHeaderName').innerText = poolName;
+                document.getElementById('tokenSymbolBadge').innerText = `${attr.dex_id?.toUpperCase() || 'TON DEX'} LIVE`;
+                document.getElementById('tokenPriceDisplay').innerText = `$${price < 0.01 ? price.toFixed(6) : price.toFixed(4)}`;
+                document.getElementById('tokenMcapDisplay').innerText = mcapVal > 0 ? `$${formatCompactNumber(mcapVal)}` : "N/A";
+                document.getElementById('tokenVolDisplay').innerText = `$${formatCompactNumber(vol24h)} (${chg24h >= 0 ? '+' : ''}${chg24h.toFixed(2)}%)`;
+                document.getElementById('tokenVolDisplay').style.color = chg24h >= 0 ? 'var(--accent-green)' : 'var(--accent-red)';
+
+                updateEstTokens();
+                await loadLiveOhlcvCandles(poolAddress, currentActiveTimeframe);
             } catch (e) {
-                alert("Error fetching token metrics.");
+                console.error("Live token fetch error:", e);
+                document.getElementById('tokenHeaderName').innerText = "Token Not Indexed";
+                document.getElementById('chartStatusOverlay').innerText = "Unable to load live pool data.";
+                if (candleSeries) candleSeries.setData([]);
             }
         };
 
-        window.quickSelectToken = function(ca) {
-            switchPage('sniper', document.querySelectorAll('.nav-tab')[0]);
-            document.getElementById('caInput').value = ca;
-            loadTokenData();
-        };
+        async function loadLiveOhlcvCandles(poolAddress, tf) {
+            if (!candleSeries || !poolAddress) return;
+            const map = { '5m': ['minute', 5], '15m': ['minute', 15], '1h': ['hour', 1], '4h': ['hour', 4], '1d': ['day', 1] };
+            const [timeframeType, aggregate] = map[tf] || ['hour', 1];
+
+            try {
+                const ohlcvRes = await fetch(`https://api.geckoterminal.com/api/v2/networks/ton/pools/${poolAddress}/ohlcv/${timeframeType}?aggregate=${aggregate}&limit=100`);
+                const ohlcvJson = await ohlcvRes.json();
+                const rawList = ohlcvJson.data?.attributes?.ohlcv_list || [];
+
+                if (rawList.length === 0) {
+                    candleSeries.setData([]);
+                    document.getElementById('chartStatusOverlay').style.display = "block";
+                    document.getElementById('chartStatusOverlay').innerText = "No live candle history available yet.";
+                    return;
+                }
+
+                const formatted = rawList.reverse().map(item => ({
+                    time: item[0],
+                    open: parseFloat(item[1]),
+                    high: parseFloat(item[2]),
+                    low: parseFloat(item[3]),
+                    close: parseFloat(item[4])
+                }));
+
+                candleSeries.setData(formatted);
+                tvChart.timeScale().fitContent();
+                document.getElementById('chartStatusOverlay').style.display = "none";
+            } catch (e) {
+                candleSeries.setData([]);
+                document.getElementById('chartStatusOverlay').style.display = "block";
+                document.getElementById('chartStatusOverlay').innerText = "Failed to load live OHLCV candles.";
+            }
+        }
 
         function updateEstTokens() {
-            const est = currentTradeToken.price > 0 ? (currentTonAmount * 0.39) / currentTradeToken.price : 0;
-            document.getElementById('estTokensReceived').innerText = `${Math.round(est).toLocaleString()} ${currentTradeToken.symbol}`;
+            if (currentTradeToken.price > 0 && gramPriceUsd > 0) {
+                const usdIn = currentGramAmount * gramPriceUsd;
+                const estTokens = usdIn / currentTradeToken.price;
+                document.getElementById('estTokensReceived').innerText = `~${estTokens.toLocaleString(undefined, { maximumFractionDigits: 2 })} ${currentTradeToken.symbol}`;
+            } else {
+                document.getElementById('estTokensReceived').innerText = "Awaiting live price...";
+            }
         }
 
         let currentTradeMode = 'buy';
-        let currentTonAmount = 1;
+        let currentGramAmount = 10;
 
         window.setTradeMode = function(mode, btn) {
             currentTradeMode = mode;
@@ -877,11 +784,11 @@
             btn.classList.add('active');
             const execBtn = document.getElementById('executeTradeBtn');
             execBtn.className = mode === 'buy' ? 'btn-action btn-green' : 'btn-action btn-red';
-            execBtn.innerText = mode === 'buy' ? `⚡ Instant In-App Snipe Buy (${currentTonAmount} TON)` : `⚡ Instant Sell (${currentTonAmount} TON)`;
+            execBtn.innerText = mode === 'buy' ? `⚡ Broadcast Live Snipe Swap (${currentGramAmount} GRAM)` : `⚡ Broadcast Live Sell Swap`;
         };
 
         window.selectPreset = function(amt, btn) {
-            currentTonAmount = amt;
+            currentGramAmount = amt;
             document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             document.getElementById('gramAmountInput').value = amt;
@@ -889,9 +796,9 @@
         };
 
         window.updateGramAmount = function(val) {
-            currentTonAmount = parseFloat(val) || 0;
+            currentGramAmount = parseFloat(val) || 0;
             const execBtn = document.getElementById('executeTradeBtn');
-            execBtn.innerText = currentTradeMode === 'buy' ? `⚡ Instant In-App Snipe Buy (${currentTonAmount} TON)` : `⚡ Instant Sell (${currentTonAmount} TON)`;
+            execBtn.innerText = currentTradeMode === 'buy' ? `⚡ Broadcast Live Snipe Swap (${currentGramAmount} GRAM)` : `⚡ Broadcast Live Sell Swap`;
             updateEstTokens();
         };
 
@@ -899,155 +806,230 @@
             currentSlippageVal = s;
             document.querySelectorAll('.slip-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            document.getElementById('customSlippageInput').value = '';
         };
 
-        window.setCustomSlippage = function(val) {
-            const parsed = parseFloat(val);
-            if (!isNaN(parsed) && parsed > 0) currentSlippageVal = parsed;
-        };
+        // --- REAL ON-CHAIN STON.FI JETTON SWAP EXECUTION ---
+        window.executeLiveOnChainSnipe = async function() {
+            if (!inAppWallet) return alert("Create or load your in-app wallet in Profile first.");
+            if (walletTonBalance < 0.22) return alert("Insufficient gas: You need at least 0.22 native TON to execute a STON.fi DEX swap.");
 
-        // --- IN-APP ON-CHAIN SNIPE SWAP EXECUTION ---
-        window.executeInAppSnipeSwap = async function() {
-            if (!inAppWallet) {
-                return alert("Please generate an in-app sniper wallet first in the Profile tab!");
-            }
-            if (!KoteShield.verifyTransaction({ amount: currentTonAmount })) {
-                return alert("Security guard blocked transaction.");
-            }
-            if (currentTonAmount > walletTonBalance) {
-                return alert("Insufficient TON balance in your in-app wallet.");
-            }
+            try {
+                if (currentTradeMode === 'buy') {
+                    if (currentGramAmount <= 0 || currentGramAmount > walletGramBalance) {
+                        return alert("Insufficient $GRAM balance in your wallet.");
+                    }
+                    if (!userGramJettonWalletAddr) {
+                        return alert("Your $GRAM Jetton wallet contract could not be resolved. Hit Refresh in Profile.");
+                    }
 
-            if (currentTradeMode === 'sell') {
-                const idx = openPositions.findIndex(p => p.ca === currentTradeToken.ca);
-                if (idx !== -1) {
-                    const sold = openPositions.splice(idx, 1)[0];
-                    walletTonBalance += sold.amountTon;
-                    saveAppState();
-                    updateWalletUI();
-                    renderPortfolio();
-                    alert(`✅ Sold ${sold.name} (${sold.amountTon} TON) instantly!`);
+                    // Resolve Router's Jetton Wallet address for the target token via STON.fi API
+                    const stonSimulate = await fetch(`https://api.ston.fi/v1/swap/simulate?offer_address=${GRAM_MASTER_CA}&ask_address=${currentTradeToken.ca}&units=${Math.floor(currentGramAmount * 1e9)}&slippage_tolerance=${currentSlippageVal / 100}`, { method: 'POST' });
+                    const simData = await stonSimulate.json();
+
+                    if (!simData.router_address || !simData.ask_jetton_wallet) {
+                        return alert("No direct $GRAM liquidity route found on STON.fi for this token pair.");
+                    }
+
+                    // Build STON.fi v1 Swap Forward Payload (op = 0x25938561)
+                    const swapPayload = window.TonCore.beginCell()
+                        .storeUint(0x25938561, 32)
+                        .storeAddress(window.TonCore.Address.parse(simData.ask_jetton_wallet))
+                        .storeCoins(BigInt(simData.min_ask_units || 1))
+                        .storeAddress(window.TonCore.Address.parse(inAppWallet.address))
+                        .storeBit(0)
+                        .endCell();
+
+                    await broadcastJettonTransfer(userGramJettonWalletAddr, simData.router_address, currentGramAmount, "0.18", swapPayload);
+                    alert(`⚡ Live $GRAM -> ${currentTradeToken.symbol} Swap Broadcasted to TON Mainnet!\nSyncing balances in 8 seconds...`);
+                    setTimeout(() => { refreshInAppBalance(true); refreshLivePortfolio(); }, 8000);
                 } else {
-                    alert("No open position found for this token to sell.");
+                    const holding = liveHoldings.find(h => {
+                        try { return h.jettonMasterRaw === window.TonCore.Address.parse(currentTradeToken.ca).toRawString(); } catch(e) { return false; }
+                    });
+                    if (!holding || holding.balance <= 0) return alert(`You hold 0 ${currentTradeToken.symbol} on-chain to sell.`);
+
+                    const sellUnits = Math.floor(holding.balance * 1e9);
+                    const stonSimulate = await fetch(`https://api.ston.fi/v1/swap/simulate?offer_address=${currentTradeToken.ca}&ask_address=${GRAM_MASTER_CA}&units=${sellUnits}&slippage_tolerance=${currentSlippageVal / 100}`, { method: 'POST' });
+                    const simData = await stonSimulate.json();
+
+                    if (!simData.router_address || !simData.ask_jetton_wallet) {
+                        return alert("No direct sell route to $GRAM found on STON.fi.");
+                    }
+
+                    const swapPayload = window.TonCore.beginCell()
+                        .storeUint(0x25938561, 32)
+                        .storeAddress(window.TonCore.Address.parse(simData.ask_jetton_wallet))
+                        .storeCoins(BigInt(simData.min_ask_units || 1))
+                        .storeAddress(window.TonCore.Address.parse(inAppWallet.address))
+                        .storeBit(0)
+                        .endCell();
+
+                    await broadcastJettonTransfer(holding.jettonWallet, simData.router_address, holding.balance, "0.18", swapPayload);
+                    alert(`💰 Live Sell Order Broadcasted! Syncing balances in 8 seconds...`);
+                    setTimeout(() => { refreshInAppBalance(true); refreshLivePortfolio(); }, 8000);
                 }
+            } catch (err) {
+                console.error("DEX Swap error:", err);
+                alert("Swap failed: " + (err.message || "Verify liquidity route and gas balance."));
+            }
+        };
+
+        // --- LIVE ON-CHAIN PORTFOLIO SYNC ---
+        window.refreshLivePortfolio = async function() {
+            const container = document.getElementById('activePositionsContainer');
+            const totalUsdEl = document.getElementById('portfolioTotalValueUsd');
+
+            if (!inAppWallet) {
+                container.innerHTML = `<div class="card" style="text-align: center; padding: 24px 14px; color: var(--text-muted); font-size: 12px;">Generate your sniper wallet in Profile first.</div>`;
                 return;
             }
 
+            container.innerHTML = `<div class="card" style="text-align: center; padding: 20px; color: var(--accent-cyan); font-size: 12px;">⏳ Querying TON Mainnet Jetton contracts & live GeckoTerminal prices...</div>`;
+            await refreshInAppBalance(true);
+
+            if (liveHoldings.length === 0) {
+                totalUsdEl.innerText = "$0.00 USD";
+                container.innerHTML = `<div class="card" style="text-align: center; padding: 24px 14px; color: var(--text-muted); font-size: 12px;">No on-chain Jetton balances found in this wallet yet.</div>`;
+                return;
+            }
+
+            let totalPortfolioUsd = 0;
+            let cardsHtml = "";
+
+            for (const item of liveHoldings) {
+                const friendlyMaster = window.TonCore.Address.parseRaw(item.jettonMasterRaw).toString();
+                let tokenName = friendlyMaster.slice(0, 6) + "..." + friendlyMaster.slice(-4);
+                let livePrice = 0;
+
+                try {
+                    const pRes = await fetch(`https://api.geckoterminal.com/api/v2/networks/ton/tokens/${friendlyMaster}/pools?page=1`);
+                    if (pRes.ok) {
+                        const pJson = await pRes.json();
+                        const attr = pJson.data?.[0]?.attributes;
+                        if (attr) {
+                            tokenName = attr.name.split('/')[0].trim();
+                            livePrice = parseFloat(attr.base_token_price_usd || 0);
+                        }
+                    }
+                } catch (e) {}
+
+                const usdValue = item.balance * livePrice;
+                totalPortfolioUsd += usdValue;
+
+                cardsHtml += `
+                    <div class="card" style="padding: 12px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <div>
+                                <div style="font-size: 14px; font-weight: 900; color: #fff;">${tokenName}</div>
+                                <div style="font-size: 10px; color: var(--text-muted);">On-Chain Balance: <b>${item.balance.toLocaleString(undefined, { maximumFractionDigits: 4 })}</b></div>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="font-size: 14px; font-weight: 900; color: var(--accent-green);">$${usdValue.toFixed(2)} USD</div>
+                                <div style="font-size: 10px; color: var(--accent-cyan);">Price: $${livePrice < 0.01 ? livePrice.toFixed(6) : livePrice.toFixed(4)}</div>
+                            </div>
+                        </div>
+                        <button class="btn-action btn-blue" style="padding: 8px; font-size: 11px;" onclick="loadHoldingInSniper('${friendlyMaster}')">📊 Open Live Chart & Trade</button>
+                    </div>
+                `;
+            }
+
+            totalUsdEl.innerText = `$${totalPortfolioUsd.toFixed(2)} USD`;
+            container.innerHTML = cardsHtml;
+        };
+
+        window.loadHoldingInSniper = function(ca) {
+            switchPage('sniper', document.querySelectorAll('.nav-tab')[0]);
+            document.getElementById('caInput').value = ca;
+            loadLiveTokenData();
+        };
+
+        // --- REAL ON-CHAIN PREDICT WAGERS ---
+        window.openPredictModal = function(marketId, outcome) {
+            if (!inAppWallet) return alert("Please generate an in-app sniper wallet first!");
+            activePredictMarket = predictMarkets.find(m => m.id === marketId);
+            activePredictOutcome = outcome;
+            if (!activePredictMarket) return;
+
+            document.getElementById('modalMarketTitle').innerText = activePredictMarket.title;
+            document.getElementById('modalSelectedOutcome').innerText = `Outcome: ${outcome.toUpperCase()}`;
+            updateWalletUI();
+            openModal('predictModal');
+        };
+
+        window.confirmOnChainPredictionWager = async function() {
+            const wager = parseFloat(document.getElementById('predictWagerInput').value);
+            if (!wager || wager <= 0 || wager > walletGramBalance) return alert("Insufficient $GRAM balance.");
+            if (!userGramJettonWalletAddr) return alert("$GRAM Jetton wallet not resolved.");
+            if (walletTonBalance < 0.08) return alert("Need at least 0.08 native TON for network gas fees.");
+
             try {
-                const client = new window.TonCore.TonClient({ endpoint: "https://toncenter.com/api/v2/jsonRPC" });
-                const secretKeyBuffer = Buffer.from(inAppWallet.secretKey);
-                const keyPair = await window.TonCrypto.mnemonicToPrivateKey(inAppWallet.mnemonic.split(" "));
-                const wallet = window.TonCore.WalletContractV4.create({ workchain: 0, publicKey: keyPair.publicKey });
-                const contract = client.open(wallet);
+                // Broadcast real $GRAM wager on-chain to protocol escrow/treasury
+                await broadcastJettonTransfer(userGramJettonWalletAddr, TREASURY_WALLET, wager, "0.02", null);
 
-                const stonApiUrl = encodeURIComponent(`https://api.ston.fi/v1/routers`);
-                const routerRes = await fetch(`https://corsproxy.io/?${stonApiUrl}`);
-                const routerData = await routerRes.json();
-                const routerAddress = routerData[0]?.router_address || "EQC33ANHUzFA5S_FqgJq_86vBqA_vN8b0ZzK0QY5vN8b0ZzK";
-
-                const seqno = await contract.getSeqno();
-                const transfer = contract.createTransfer({
-                    seqno,
-                    secretKey: secretKeyBuffer,
-                    messages: [
-                        window.TonCore.internal({
-                            to: routerAddress,
-                            value: BigInt(Math.floor(currentTonAmount * 1e9)),
-                            bounce: false,
-                            body: "Kote Snipe Swap"
-                        })
-                    ]
-                });
-
-                await contract.send(transfer);
-                walletTonBalance = Math.max(0, walletTonBalance - currentTonAmount);
-                const estTokens = currentTradeToken.price > 0 ? (currentTonAmount * 0.39) / currentTradeToken.price : 0;
-                
-                openPositions.unshift({
-                    id: Date.now(), 
-                    source: 'IN-APP SNIPE', 
-                    ca: currentTradeToken.ca, 
-                    name: currentTradeToken.name, 
-                    symbol: currentTradeToken.symbol, 
-                    logo: currentTradeToken.logo,
-                    entryPrice: currentTradeToken.price, 
-                    amountTon: currentTonAmount, 
-                    tokensHeld: estTokens, 
-                    slippage: currentSlippageVal,
+                activePredictMarket.pool += wager * 0.90;
+                userPredictionBets.unshift({
+                    id: Date.now(),
+                    marketTitle: activePredictMarket.title,
+                    outcome: activePredictOutcome.toUpperCase(),
+                    wager: wager,
                     timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                 });
 
                 saveAppState();
-                updateWalletUI();
-                renderPortfolio();
-                alert(`⚡ In-App On-Chain Snipe Executed Successfully!\nToken: ${currentTradeToken.name}`);
-
-            } catch (error) {
-                console.error("Snipe execution failed:", error);
-                alert("Transaction failed. Ensure your in-app wallet has enough TON for transaction gas fees.");
+                renderPredictMarkets();
+                renderUserPredictions();
+                closeModal('predictModal');
+                alert(`🔮 On-Chain $GRAM Wager Broadcasted! Syncing balance in 5s...`);
+                setTimeout(() => refreshInAppBalance(true), 5000);
+            } catch (e) {
+                alert("On-chain wager failed: " + (e.message || "Check gas balance."));
             }
         };
 
-        window.sellPositionById = function(posId) {
-            const idx = openPositions.findIndex(p => p.id === posId);
-            if (idx !== -1) {
-                const closed = openPositions.splice(idx, 1)[0];
-                walletTonBalance += closed.amountTon;
-                saveAppState();
-                updateWalletUI();
-                renderPortfolio();
-                alert(`💰 Sold 100% of ${closed.name} (${closed.amountTon} TON) instantly!`);
-            }
-        };
+        function renderPredictMarkets() {
+            const container = document.getElementById('predictMarketsContainer');
+            if (!container) return;
 
-        function renderPortfolio() {
-            const container = document.getElementById('activePositionsContainer');
-            const totalEl = document.getElementById('portfolioTotalGram');
-            const badgeEl = document.getElementById('activePositionsCountBadge');
+            container.innerHTML = predictMarkets.map(m => `
+                <div class="predict-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <span class="badge-pill" style="color: var(--accent-purple); border-color: rgba(168, 85, 247, 0.4);">${m.category} • ${m.deadline}</span>
+                        <span style="font-size: 11px; font-weight: 800; color: var(--accent-cyan);">On-Chain Pot: ${m.pool.toFixed(2)} GRAM</span>
+                    </div>
+                    <div style="font-size: 14px; font-weight: 900; color: #fff; margin-bottom: 10px;">${m.title}</div>
+                    <div class="market-outcomes">
+                        <div class="outcome-btn" onclick="openPredictModal(${m.id}, 'yes')">
+                            <div style="font-size: 10px; color: var(--text-muted); font-weight: 700;">YES</div>
+                            <div style="font-size: 12px; font-weight: 900; color: var(--accent-green); margin-top: 2px;">Wager YES</div>
+                        </div>
+                        <div class="outcome-btn" onclick="openPredictModal(${m.id}, 'no')">
+                            <div style="font-size: 10px; color: var(--text-muted); font-weight: 700;">NO</div>
+                            <div style="font-size: 12px; font-weight: 900; color: var(--accent-red); margin-top: 2px;">Wager NO</div>
+                        </div>
+                    </div>
+                </div>
+            `).join("");
+        }
 
-            badgeEl.innerText = `${openPositions.length} Open`;
-            const totalTon = openPositions.reduce((acc, item) => acc + item.amountTon, 0);
-            totalEl.innerText = `${totalTon.toFixed(2)} TON`;
+        function renderUserPredictions() {
+            const container = document.getElementById('userPredictBetsList');
+            if (!container) return;
 
-            if (openPositions.length === 0) {
-                container.innerHTML = `<div class="card" style="text-align: center; padding: 24px 14px; color: var(--text-muted); font-size: 12px;">No active trades or snipes yet. Execute a trade on the Snipe tab to track live PnL here!</div>`;
+            if (userPredictionBets.length === 0) {
+                container.innerHTML = `<div style="color: var(--text-muted); font-size: 12px; text-align: center; padding: 10px;">No on-chain wagers broadcasted yet.</div>`;
                 return;
             }
 
-            container.innerHTML = openPositions.map(pos => {
-                const currentVal = pos.amountTon * (1 + (Math.random() * 0.1 - 0.04));
-                const pnlVal = currentVal - pos.amountTon;
-                const pnlPct = (pnlVal / pos.amountTon) * 100;
-                const pnlColor = pnlVal >= 0 ? 'var(--accent-green)' : 'var(--accent-red)';
-
-                return `
-                    <div class="card" style="padding: 12px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                            <div style="display: flex; align-items: center; gap: 8px;">
-                                <img src="${pos.logo || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Ccircle cx='16' cy='16' r='16' fill='%231e293b'/%3E%3Ctext x='50%25' y='50%25' font-size='14' fill='%23fff' text-anchor='middle' dominant-baseline='central'%3E🚀%3C/text%3E%3C/svg%3E"}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;">
-                                <div>
-                                    <div style="font-size: 14px; font-weight: 900; color: #fff;">${pos.name} <span class="badge-pill" style="font-size: 8px; padding: 2px 6px;">${pos.symbol}</span></div>
-                                    <div style="font-size: 10px; color: var(--text-muted);">Holding: <b>${Math.round(pos.tokensHeld).toLocaleString()} ${pos.symbol}</b></div>
-                                </div>
-                            </div>
-                            <div style="text-align: right;">
-                                <div style="font-size: 14px; font-weight: 900; color: var(--accent-cyan);">${pos.amountTon} TON</div>
-                                <div style="font-size: 11px; font-weight: 900; color: ${pnlColor};">PnL: ${pnlVal >= 0 ? '+' : ''}${pnlVal.toFixed(2)} TON (${pnlPct.toFixed(2)}%)</div>
-                            </div>
-                        </div>
-                        <div style="display: flex; gap: 8px;">
-                            <button class="btn-action btn-blue" style="padding: 8px; font-size: 11px;" onclick="quickSelectToken('${pos.ca}')">📊 View Chart</button>
-                            <button class="btn-action btn-red" style="padding: 8px; font-size: 11px;" onclick="sellPositionById(${pos.id})">💰 Sell 100%</button>
-                        </div>
+            container.innerHTML = userPredictionBets.map(bet => `
+                <div style="background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 10px; padding: 10px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <div style="font-size: 12px; font-weight: 900; color: #fff; margin-bottom: 2px;">${bet.marketTitle}</div>
+                        <div style="font-size: 10px; color: var(--text-muted);">Side: <b style="color: ${bet.outcome === 'YES' ? 'var(--accent-green)' : 'var(--accent-red)'}">${bet.outcome}</b> | ${bet.wager} GRAM</div>
                     </div>
-                `;
-            }).join("");
+                    <span class="badge-pill" style="color: var(--accent-green);">On-Chain</span>
+                </div>
+            `).join("");
         }
-
-        setInterval(() => {
-            if (openPositions.length > 0 && document.getElementById('page-portfolio').classList.contains('active')) renderPortfolio();
-        }, 3000);
 
         window.switchPage = function(pageId, navBtn) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -1061,7 +1043,8 @@
             if (navBtn) navBtn.classList.add('active');
             if (pageId === 'sniper') initRealChart();
             if (pageId === 'predict') { renderPredictMarkets(); renderUserPredictions(); }
-            if (pageId === 'profile') updateWalletUI();
+            if (pageId === 'portfolio') refreshLivePortfolio();
+            if (pageId === 'profile') refreshInAppBalance(true);
         };
 
         window.addEventListener('DOMContentLoaded', () => {
@@ -1073,17 +1056,15 @@
                 tg.expand();
             }
 
-            renderPortfolio();
+            updateWalletUI();
             renderPredictMarkets();
             renderUserPredictions();
-            updateWalletUI();
 
-            setTimeout(() => { 
-                initRealChart(); 
-                loadTokenData(); 
-            }, 100);
-
-            updateEstTokens();
+            setTimeout(() => {
+                initRealChart();
+                loadLiveTokenData();
+                if (inAppWallet) refreshInAppBalance(true);
+            }, 150);
         });
     </script>
 </body>
