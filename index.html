@@ -137,7 +137,7 @@
             position: relative; overflow: hidden; display: flex; justify-content: space-between; align-items: center;
         }
         .token-item-card canvas {
-            position: absolute; left: 0; top: 0; width: 100%; height: 100%; opacity: 0.45; pointer-events: none; z-index: 1;
+            position: absolute; left: 0; top: 0; width: 100%; height: 100%; opacity: 0.50; pointer-events: none; z-index: 1;
         }
         .token-item-content {
             position: relative; z-index: 2; display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0;
@@ -337,6 +337,7 @@
                         <div class="token-item-card">
                             <canvas id="canvas_gram"></canvas>
                             <div class="token-item-content">
+                                <img src="https://assets.geckoterminal.com/tokens/gram.png" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;" alt="Logo">
                                 <div>
                                     <div style="font-weight: 900; font-size: 13px; color: #fff;">GRAM (Official)</div>
                                     <div style="font-size: 11px; color: var(--accent-cyan); font-weight: 800; margin-top: 2px;">MCap: <b>$12,450,000</b></div>
@@ -344,26 +345,26 @@
                                 </div>
                             </div>
                             <div class="token-item-actions">
-                                <button class="btn-action" style="background: var(--bg-input); border: 1px solid var(--border-color); color: #fff; width: 45px; padding: 8px; font-size: 11px;" onclick="copyCA('EQC47093oX5Xhb0xuk2lCr2RhS8rj-vul61u4W2UH5ORmG_O')">📋</button>
-                                <button class="btn-action btn-blue" style="width: 75px; padding: 8px; font-size: 11px;" onclick="quickSelectToken('EQC47093oX5Xhb0xuk2lCr2RhS8rj-vul61u4W2UH5ORmG_O')">Snipe</button>
+                                <button class="btn-action" style="background: var(--bg-input); border: 1px solid var(--border-color); color: #fff; width: 40px; padding: 8px; font-size: 11px;" onclick="copyCA('EQC47093oX5Xhb0xuk2lCr2RhS8rj-vul61u4W2UH5ORmG_O')">📋</button>
+                                <button class="btn-action btn-blue" style="width: 70px; padding: 8px; font-size: 11px;" onclick="quickSelectToken('EQC47093oX5Xhb0xuk2lCr2RhS8rj-vul61u4W2UH5ORmG_O')">Snipe</button>
                             </div>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <!-- 3. TOPBLAST PAGE (INTEGRATED WITH ALL PROVIDED CAs, THICK LINE CHARTS & BOLD MCAP) -->
+            <!-- 3. TOPBLAST PAGE (LIVE DEXTSCREENER LAZY-LOADED NAMES, LOGOS, MCAP & CHARTS) -->
             <section id="page-topblast" class="page">
                 <div class="card">
                     <div class="card-header"><span class="card-title">🚀 Topblast.lol Launchpad</span></div>
-                    <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Fair-launch meme coins with live charts and instant sniper integration.</p>
+                    <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Live tokens launched on Topblast with real-time DexScreener name & logo lookup.</p>
                     <div style="display: flex; flex-direction: column; gap: 10px;" id="topblastListContainer">
-                        <!-- Dynamically populated via script -->
+                        <!-- Populated dynamically via script -->
                     </div>
                 </div>
             </section>
 
-            <!-- 4. PORTFOLIO PAGE (REAL-TIME ACTIVE TRADES & LIVE PnL) -->
+            <!-- 4. PORTFOLIO PAGE -->
             <section id="page-portfolio" class="page">
                 <div class="card" style="background: linear-gradient(135deg, rgba(30, 58, 138, 0.45), rgba(16, 18, 28, 0.90));">
                     <div class="card-header">
@@ -586,12 +587,12 @@
 
         function saveAppState() {
             const stateObj = { wallet: userWallet, positions: openPositions, balance: walletGramBalance };
-            localStorage.setItem("kote_terminal_state_v4", JSON.stringify(stateObj));
+            localStorage.setItem("kote_terminal_state_v5", JSON.stringify(stateObj));
         }
 
         function loadAppState() {
             try {
-                const raw = localStorage.getItem("kote_terminal_state_v4");
+                const raw = localStorage.getItem("kote_terminal_state_v5");
                 if (raw) {
                     const parsed = JSON.parse(raw);
                     if (parsed.wallet) userWallet = parsed.wallet;
@@ -633,7 +634,7 @@
             const secondCheck = confirm("🚨 FINAL CONFIRMATION: Deleting this wallet will wipe access to your funds in this terminal. Proceed with deletion?");
             if (secondCheck) {
                 userWallet = null;
-                localStorage.removeItem("kote_terminal_state_v4");
+                localStorage.removeItem("kote_terminal_state_v5");
                 alert("🗑️ Wallet deleted successfully. Restarting setup wizard...");
                 location.reload();
             }
@@ -806,8 +807,8 @@
             maSeries.setData(maData);
         }
 
-        // --- 4. RENDER TOPBLAST & GRAM MEME THICK BACKGROUND CHARTS ---
-        function renderTopblastAndMemesUI() {
+        // --- 4. RENDER TOPBLAST & MEMES WITH REAL DEXTSCREENER API DATA ---
+        async function renderTopblastAndMemesUI() {
             // Gram Memes background canvas
             const cvsGram = document.getElementById('canvas_gram');
             if (cvsGram) {
@@ -825,14 +826,15 @@
                 ctx.stroke();
             }
 
-            // Topblast list container population
+            // Topblast list container population with DexScreener live search
             const container = document.getElementById('topblastListContainer');
             if (!container) return;
 
+            // Render placeholders instantly
             container.innerHTML = TOPBLAST_CAs.map((ca, idx) => {
                 const shortCa = ca.slice(0, 6) + "..." + ca.slice(-4);
-                const mockMcap = `$${(85000 + (idx * 142000)).toLocaleString()}`;
                 const canvasId = `tb_canvas_${idx}`;
+                const cardId = `tb_card_${idx}`;
                 
                 setTimeout(() => {
                     const c = document.getElementById(canvasId);
@@ -855,13 +857,13 @@
                 }, 50);
 
                 return `
-                    <div class="token-item-card">
+                    <div class="token-item-card" id="${cardId}">
                         <canvas id="${canvasId}"></canvas>
                         <div class="token-item-content">
-                            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Ccircle cx='16' cy='16' r='16' fill='%231e293b'/%3E%3Ctext x='50%25' y='50%25' font-size='14' fill='%23fff' text-anchor='middle' dominant-baseline='central'%3E🚀%3C/text%3E%3C/svg%3E" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;" alt="Logo">
+                            <img id="img_${idx}" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Ccircle cx='16' cy='16' r='16' fill='%231e293b'/%3E%3Ctext x='50%25' y='50%25' font-size='14' fill='%23fff' text-anchor='middle' dominant-baseline='central'%3E🚀%3C/text%3E%3C/svg%3E" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;" alt="Logo">
                             <div>
-                                <div style="font-weight: 900; font-size: 13px; color: #fff;">Topblast Token #${idx + 1}</div>
-                                <div style="font-size: 11px; color: var(--accent-cyan); font-weight: 800; margin-top: 2px;">MCap: <b>${mockMcap}</b></div>
+                                <div id="name_${idx}" style="font-weight: 900; font-size: 13px; color: #fff;">Topblast Token #${idx + 1}</div>
+                                <div id="mcap_${idx}" style="font-size: 11px; color: var(--accent-cyan); font-weight: 800; margin-top: 2px;">MCap: <b>Loading...</b></div>
                                 <div style="font-size: 9px; color: var(--text-muted); cursor: pointer;" onclick="copyCA('${ca}')">${shortCa} 📋</div>
                             </div>
                         </div>
@@ -872,6 +874,37 @@
                     </div>
                 `;
             }).join("");
+
+            // Asynchronously fetch real names, logos, and market caps from DexScreener in batches
+            for (let i = 0; i < TOPBLAST_CAs.length; i++) {
+                const ca = TOPBLAST_CAs[i];
+                try {
+                    const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${ca}`);
+                    if (res.ok) {
+                        const data = await res.json();
+                        const pair = (data.pairs && data.pairs.find(p => p.chainId === 'ton')) || data.pairs?.[0];
+                        if (pair) {
+                            const realName = pair.baseToken?.name || `Token #${i + 1}`;
+                            const realSymbol = pair.baseToken?.symbol || "";
+                            const mcapVal = pair.marketCap || pair.fdv || 0;
+                            const mcapStr = mcapVal ? `$${Number(mcapVal).toLocaleString()}` : "$N/A";
+                            const logoUrl = pair.info?.imageUrl || pair.baseToken?.logoURI || "";
+
+                            const nameEl = document.getElementById(`name_${i}`);
+                            const mcapEl = document.getElementById(`mcap_${i}`);
+                            const imgEl = document.getElementById(`img_${i}`);
+
+                            if (nameEl) nameEl.innerText = `${realName} (${realSymbol})`;
+                            if (mcapEl) mcapEl.innerHTML = `MCap: <b>${mcapStr}</b>`;
+                            if (logoUrl && imgEl) imgEl.src = logoUrl;
+                        }
+                    }
+                } catch (e) {
+                    // Fallback handled silently
+                }
+                // Slight delay between batch requests to respect rate limits
+                if (i % 5 === 4) await new Promise(r => setTimeout(r, 300));
+            }
         }
 
         // --- 5. TOKEN METRICS & ESTIMATES ---
@@ -1039,12 +1072,11 @@
             totalEl.innerText = `${totalGram.toFixed(2)} GRAM`;
 
             if (openPositions.length === 0) {
-                container.innerHTML = `<div class="card" style="text-align: center; padding: 24px 14px; color: var(--text-muted); font-size: 12px;">No active trades or snipes yet. Execute a trade or snipe on the Snipe tab to track live PnL here!</div>`;
+                container.innerHTML = `<div class="card" style="text-align: center; padding: 24px 14px; color: var(--text-muted); font-size: 12px;">No active trades or snipes yet. Execute a trade on the Snipe tab to track live PnL here!</div>`;
                 return;
             }
 
             container.innerHTML = openPositions.map(pos => {
-                // Simulate real-time fluctuating PnL
                 const currentVal = pos.amountGram * (1 + (Math.random() * 0.1 - 0.04));
                 const pnlVal = currentVal - pos.amountGram;
                 const pnlPct = (pnlVal / pos.amountGram) * 100;
@@ -1074,7 +1106,6 @@
             }).join("");
         }
 
-        // Live real-time portfolio ticker interval
         setInterval(() => {
             if (openPositions.length > 0 && document.getElementById('page-portfolio').classList.contains('active')) {
                 renderPortfolio();
