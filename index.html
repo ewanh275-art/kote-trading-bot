@@ -165,7 +165,6 @@
         .market-outcomes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
         .outcome-btn { background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 10px; padding: 10px; text-align: center; cursor: pointer; transition: all 0.15s; }
         .outcome-btn:hover { border-color: var(--accent-purple); }
-        .outcome-btn.selected { background: rgba(168, 85, 247, 0.2); border-color: var(--accent-purple); }
     </style>
 </head>
 <body>
@@ -418,43 +417,8 @@
                 </div>
             </section>
 
-            <!-- 2. GRAM MEMES PAGE -->
-            <section id="page-gram-memes" class="page">
-                <div class="card">
-                    <div class="card-header">
-                        <span class="card-title">💧 DeDust Token Pools</span>
-                        <span class="badge-pill" id="dedustPageIndicator">Page 1</span>
-                    </div>
-                    <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Active TON jettons with verified DeDust liquidity pools.</p>
-                    
-                    <div style="display: flex; flex-direction: column; gap: 10px;" id="dedustListContainer"></div>
-
-                    <div class="pagination-bar">
-                        <button class="btn-action btn-blue" style="width: 100px; padding: 8px; font-size: 11px;" onclick="changeDedustPage(-1)">◀ Previous</button>
-                        <span id="dedustPageNumbersLabel" style="font-size: 12px; font-weight: 800; color: var(--accent-cyan);">1 / 10+</span>
-                        <button class="btn-action btn-blue" style="width: 100px; padding: 8px; font-size: 11px;" onclick="changeDedustPage(1)">Next ▶</button>
-                    </div>
-                </div>
-
-                <div class="card">
-                    <div class="card-header">
-                        <span class="card-title">🟣 STON.fi Token Pools</span>
-                        <span class="badge-pill" id="stonfiPageIndicator">Page 1</span>
-                    </div>
-                    <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Active TON jettons with verified STON.fi liquidity pools.</p>
-                    
-                    <div style="display: flex; flex-direction: column; gap: 10px;" id="stonfiListContainer"></div>
-
-                    <div class="pagination-bar">
-                        <button class="btn-action btn-blue" style="width: 100px; padding: 8px; font-size: 11px;" onclick="changeStonfiPage(-1)">◀ Previous</button>
-                        <span id="stonfiPageNumbersLabel" style="font-size: 12px; font-weight: 800; color: var(--accent-cyan);">1 / 10+</span>
-                        <button class="btn-action btn-blue" style="width: 100px; padding: 8px; font-size: 11px;" onclick="changeStonfiPage(1)">Next ▶</button>
-                    </div>
-                </div>
-            </section>
-
-            <!-- 3. TOPBLAST PAGE (ORIGINAL ISOLATED CODE) -->
-            <section id="page-topblast" class="page">
+            <!-- 2. TOPBLAST PAGE (RESTORED TO ORIGINAL WORKING STATE) -->
+            <section id="page-topblast" class="page active">
                 <div class="card">
                     <div class="card-header">
                         <span class="card-title">🚀 Topblast.lol Launchpad</span>
@@ -466,18 +430,18 @@
 
                     <div class="pagination-bar">
                         <button class="btn-action btn-blue" style="width: 100px; padding: 8px; font-size: 11px;" onclick="changeTopblastPage(-1)">◀ Previous</button>
-                        <span id="pageNumbersLabel" style="font-size: 12px; font-weight: 800; color: var(--accent-cyan);">1 / 15</span>
+                        <span id="pageNumbersLabel" style="font-size: 12px; font-weight: 800; color: var(--accent-cyan);">1 / 2</span>
                         <button class="btn-action btn-blue" style="width: 100px; padding: 8px; font-size: 11px;" onclick="changeTopblastPage(1)">Next ▶</button>
                     </div>
                 </div>
             </section>
 
-            <!-- 4. KOTE PREDICT PAGE (NO POLYMARKET REFERENCES + 10% TREASURY CUT) -->
+            <!-- 3. KOTE PREDICT PAGE -->
             <section id="page-predict" class="page">
                 <div class="card" style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.2), rgba(16, 18, 28, 0.95)); border-color: rgba(168, 85, 247, 0.4);">
                     <div class="card-header"><span class="card-title" style="color: #c084fc;">🔮 KOTE PREDICT MARKETS</span></div>
-                    <div style="font-size: 13px; font-weight: 800; color: #fff;">Decentralized peer prediction wagers using $GRAM</div>
-                    <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Predict crypto prices, sports scores, and global events. Winning pots are split pro-rata among winning cut shares (minus a 10% treasury allocation). Pots are funded entirely by real user wagers.</div>
+                    <div style="font-size: 13px; font-weight: 800; color: #fff;">Peer prediction wagers using $GRAM</div>
+                    <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Predict crypto prices, sports scores, and events. Winning pots are split pro-rata among winning cut shares (minus a 10% treasury allocation sent to <code style="font-size:9px; color:var(--accent-cyan)">UQAC-pXNqjUJ0u1wBkLPiDkLVMZkWYXWvNQuH5Mtx_tPdsGV</code>). Finished questions auto-cycle with new ones!</div>
                 </div>
 
                 <div id="predictMarketsContainer"></div>
@@ -490,7 +454,7 @@
                 </div>
             </section>
 
-            <!-- 5. PORTFOLIO PAGE -->
+            <!-- 4. PORTFOLIO PAGE -->
             <section id="page-portfolio" class="page">
                 <div class="card" style="background: linear-gradient(135deg, rgba(30, 58, 138, 0.45), rgba(16, 18, 28, 0.90));">
                     <div class="card-header">
@@ -508,7 +472,7 @@
                 </div>
             </section>
 
-            <!-- 6. PROFILE PAGE -->
+            <!-- 5. PROFILE PAGE -->
             <section id="page-profile" class="page">
                 <div class="card">
                     <div class="card-header"><span class="card-title">🔐 Real Sniper Wallet & Balance</span></div>
@@ -561,9 +525,8 @@
         </main>
 
         <nav class="bottom-nav">
-            <button class="nav-tab active" onclick="switchPage('sniper', this)">⚡<span>Snipe</span></button>
-            <button class="nav-tab" onclick="switchPage('gram-memes', this)">🐸<span>Memes</span></button>
-            <button class="nav-tab" onclick="switchPage('topblast', this)">🚀<span>Topblast</span></button>
+            <button class="nav-tab" onclick="switchPage('sniper', this)">⚡<span>Snipe</span></button>
+            <button class="nav-tab active" onclick="switchPage('topblast', this)">🚀<span>Topblast</span></button>
             <button class="nav-tab" onclick="switchPage('predict', this)">🔮<span>Predict</span></button>
             <button class="nav-tab" onclick="switchPage('portfolio', this)">💼<span>Portfolio</span></button>
             <button class="nav-tab" onclick="switchPage('profile', this)">👤<span>Profile</span></button>
@@ -571,32 +534,42 @@
     </div>
 
     <script>
+        const TREASURY_WALLET = "UQAC-pXNqjUJ0u1wBkLPiDkLVMZkWYXWvNQuH5Mtx_tPdsGV";
+
+        // Original Verified Topblast CAs
         const TOPBLAST_CAs = [
-            "EQAOY0xbKV1g3e2V7jdo5erF5u-5h19qB4IpPkK0RPy0RKGV", "EQAOyf4n-7wTtTI45LGQwfacEfnkpOa9v6bjpwgeCHX5WW8y",
-            "EQAmWanX8ohlsG6qBpfL2ritCQ7tr7MlJpEK64Khm-O4742K", "EQA6G0uVERDZTkLNa0drWBna1F5TSbogy7UXEWU5ERHz4uJL",
-            "EQAmZFuDbV0Ze8yR3lh3v0n8FISN-s3Yi7M8URCT--qc_t8x", "EQAmsYIAadPQrEn-wZrRKwqhnReLDOeKl9T70umuk0MA1ULW",
-            "EQBvYQ3TyUYTjQxZa6UPbjwVzjnC5U3PRiXhpIu-HPMYMtTX", "EQAmvp1Vrr0zY2--STdH-0X_mP5iCD61p2vNVJYwHlgBni2C",
-            "EQAO_tYpLbPq-GOXegYTYtFaQ0tMkxLBxzYF8cUCGGWAj_aA", "EQA61O71y4I8oZDXRvMOrHtub2vxcPI54f1oGA_e4h0JL64L",
-            "EQAmewWMVccMpcKtgLUjcvkwGVSnzYIar2w39D-W_-Jp1U_V", "EQAmbXjiqLPXW16g3PXdMRzLKyprUvx8K2pwenW4kTj17vHk",
-            "EQAmTUciPykaNw5bZ9DlYXzpB9vFjUZOd5re_TiCHbaYmzvU", "EQAmT22Q2aPyLeTPmkzbCC0oDoOsLxTjSbR2XvWltb49FsuV",
-            "EQAmaMdwCmpZNJSRfvbNZDu1HkjFbw2VtvvI1FDKvLJMgyXE", "EQAmB_sndV45N-cmgT2tihQOcaf4EgT3nhhsvYeJ4UnICc0A"
+            "EQAOY0xbKV1g3e2V7jdo5erF5u-5h19qB4IpPkK0RPy0RKGV",
+            "EQAOyf4n-7wTtTI45LGQwfacEfnkpOa9v6bjpwgeCHX5WW8y",
+            "EQAmWanX8ohlsG6qBpfL2ritCQ7tr7MlJpEK64Khm-O4742K",
+            "EQA6G0uVERDZTkLNa0drWBna1F5TSbogy7UXEWU5ERHz4uJL",
+            "EQAmZFuDbV0Ze8yR3lh3v0n8FISN-s3Yi7M8URCT--qc_t8x",
+            "EQAmsYIAadPQrEn-wZrRKwqhnReLDOeKl9T70umuk0MA1ULW",
+            "EQBvYQ3TyUYTjQxZa6UPbjwVzjnC5U3PRiXhpIu-HPMYMtTX",
+            "EQAmvp1Vrr0zY2--STdH-0X_mP5iCD61p2vNVJYwHlgBni2C",
+            "EQAO_tYpLbPq-GOXegYTYtFaQ0tMkxLBxzYF8cUCGGWAj_aA",
+            "EQA61O71y4I8oZDXRvMOrHtub2vxcPI54f1oGA_e4h0JL64L",
+            "EQAmewWMVccMpcKtgLUjcvkwGVSnzYIar2w39D-W_-Jp1U_V",
+            "EQAmbXjiqLPXW16g3PXdMRzLKyprUvx8K2pwenW4kTj17vHk",
+            "EQAmTUciPykaNw5bZ9DlYXzpB9vFjUZOd5re_TiCHbaYmzvU",
+            "EQAmT22Q2aPyLeTPmkzbCC0oDoOsLxTjSbR2XvWltb49FsuV",
+            "EQAmaMdwCmpZNJSRfvbNZDu1HkjFbw2VtvvI1FDKvLJMgyXE",
+            "EQAmB_sndV45N-cmgT2tihQOcaf4EgT3nhhsvYeJ4UnICc0A"
         ];
 
-        const DEDUST_CAs = [
-            "EQC47093oX5Xhb0xuk2lCr2RhS8rj-vul61u4W2UH5ORmG_O", "EQDcm06RlreuMurm-yik9WbL6kI617B77OrSRF_ZjoCYFuny",
-            "EQARJg4uWJ4nZXz19g5pG1Q9Z2x5zH7j7c9L5l8Z0Z5Z0Z5Z", "EQAvB1oX55J4z19g5pG1Q9Z2x5zH7j7c9L5l8Z0Z5Z0Z5Z1"
-        ];
-
-        const STONFI_CAs = [
-            "EQAnWanX8ohlsG6qBpfL2ritCQ7tr7MlJpEK64Khm-O4742K", "EQA6_KTcZORIevd4zw9GJGmpaWKrzdixod8J1fWfm4r7YxZm",
-            "EQAmmPdBvJMe00ZVck3_oQL46HPov6RMGoPW2ex-7kjI0Il1", "EQAmuf2yZ6vUjhKViYT-IYWNFEgrO3W47o-w9-15q_iD4A5D"
+        // Question bank for auto-cycling finished predictions
+        const PREDICTION_BANK = [
+            { title: "Will TON price exceed $10 in 30 days?", category: "Crypto", deadline: "30 Days" },
+            { title: "Will Bitcoin hit a new All-Time High this month?", category: "Crypto", deadline: "End of Month" },
+            { title: "Will Manchester United win their next Premier League match?", category: "Football", deadline: "Next Matchday" },
+            { title: "Will GTA VI release date be officially delayed past Q4?", category: "Gaming", deadline: "Q4 Deadline" },
+            { title: "Will Ethereum gas fees drop below 5 Gwei on average this week?", category: "Crypto", deadline: "In 7 Days" },
+            { title: "Will Solana process over 100M daily transactions this weekend?", category: "Crypto", deadline: "Sunday Night" }
         ];
 
         let predictMarkets = [
-            { id: 1, title: "Will TON price exceed $10 in 30 days?", category: "Crypto", pool: 0.00, treasuryPool: 0.00, yesShare: 52, noShare: 48, betsCount: 0 },
-            { id: 2, title: "Will Bitcoin hit a new All-Time High this month?", category: "Crypto", pool: 0.00, treasuryPool: 0.00, yesShare: 78, noShare: 22, betsCount: 0 },
-            { id: 3, title: "Will Manchester United win their next Premier League match?", category: "Football", pool: 0.00, treasuryPool: 0.00, yesShare: 45, noShare: 55, betsCount: 0 },
-            { id: 4, title: "Will GTA VI release date be officially delayed past Q4?", category: "Gaming", pool: 0.00, treasuryPool: 0.00, yesShare: 30, noShare: 70, betsCount: 0 }
+            { id: 1, title: "Will TON price exceed $10 in 30 days?", category: "Crypto", deadline: "30 Days", pool: 0.00, treasuryPool: 0.00, yesShare: 52, noShare: 48, betsCount: 0, expiresAt: Date.now() + 10000 }, // short demo expiry or replace logic
+            { id: 2, title: "Will Bitcoin hit a new All-Time High this month?", category: "Crypto", deadline: "End of Month", pool: 0.00, treasuryPool: 0.00, yesShare: 78, noShare: 22, betsCount: 0, expiresAt: Date.now() + 86400000 },
+            { id: 3, title: "Will Manchester United win their next Premier League match?", category: "Football", deadline: "Next Matchday", pool: 0.00, treasuryPool: 0.00, yesShare: 45, noShare: 55, betsCount: 0, expiresAt: Date.now() + 86400000 }
         ];
 
         let userPredictionBets = [];
@@ -612,8 +585,6 @@
         let referredFeesEarned = 0.00;
 
         let currentTopblastPage = 1;
-        let currentDedustPage = 1;
-        let currentStonfiPage = 1;
         const TOKENS_PER_PAGE = 10;
 
         let currentTradeToken = {
@@ -630,6 +601,14 @@
         let activeModalToken = null;
         let currentCirculatingSupply = 1000000000;
 
+        function formatCompactNumber(num) {
+            if (num >= 1e12) return (num / 1e12).toFixed(2) + 'T';
+            if (num >= 1e9) return (num / 1e9).toFixed(2) + 'B';
+            if (num >= 1e6) return (num / 1e6).toFixed(2) + 'M';
+            if (num >= 1e3) return (num / 1e3).toFixed(2) + 'K';
+            return num.toFixed(2);
+        }
+
         function saveAppState() {
             const stateObj = { 
                 wallet: userWallet, 
@@ -640,12 +619,12 @@
                 markets: predictMarkets,
                 userBets: userPredictionBets
             };
-            localStorage.setItem("kote_terminal_state_v13", JSON.stringify(stateObj));
+            localStorage.setItem("kote_terminal_state_v14", JSON.stringify(stateObj));
         }
 
         function loadAppState() {
             try {
-                const raw = localStorage.getItem("kote_terminal_state_v13");
+                const raw = localStorage.getItem("kote_terminal_state_v14");
                 if (raw) {
                     const parsed = JSON.parse(raw);
                     if (parsed.wallet) userWallet = parsed.wallet;
@@ -682,7 +661,7 @@
             if (confirm("⚠️ WARNING: Reset or delete your sniper wallet? Make sure you backed up your 12-word recovery phrase!")) {
                 userWallet = null;
                 walletGramBalance = 0.00;
-                localStorage.removeItem("kote_terminal_state_v13");
+                localStorage.removeItem("kote_terminal_state_v14");
                 location.reload();
             }
         };
@@ -765,7 +744,33 @@
             document.getElementById('sendAmount').value = '';
         };
 
-        // --- KOTE PREDICT FUNCTIONS (WITH 10% TREASURY FEE) ---
+        // --- PREDICT FUNCTIONS (WITH AUTO-CYCLE & TREASURY ROUTING) ---
+        function checkAndCycleMarkets() {
+            const now = Date.now();
+            let updated = false;
+            predictMarkets = predictMarkets.map(m => {
+                if (m.expiresAt && now >= m.expiresAt) {
+                    updated = true;
+                    const randomBankItem = PREDICTION_BANK[Math.floor(Math.random() * PREDICTION_BANK.length)];
+                    return {
+                        id: Date.now() + Math.random(),
+                        title: randomBankItem.title,
+                        category: randomBankItem.category,
+                        deadline: randomBankItem.deadline,
+                        pool: 0.00,
+                        treasuryPool: 0.00,
+                        yesShare: Math.floor(Math.random() * 50) + 25,
+                        noShare: 0,
+                        betsCount: 0,
+                        expiresAt: now + (30 * 86400000) // 30 day new lifecycle
+                    };
+                }
+                return m;
+            });
+            predictMarkets.forEach(m => m.noShare = 100 - m.yesShare);
+            if (updated) saveAppState();
+        }
+
         window.openPredictModal = function(marketId, outcome) {
             if (!userWallet) return alert("Please create or unlock your wallet first in your Profile tab!");
             activePredictMarket = predictMarkets.find(m => m.id === marketId);
@@ -785,7 +790,6 @@
 
             walletGramBalance -= wager;
             
-            // 10% Treasury Fee Cut
             const treasuryFee = wager * 0.10;
             const netWagerToPot = wager * 0.90;
 
@@ -800,6 +804,7 @@
                 wager: wager,
                 netWager: netWagerToPot,
                 treasuryCut: treasuryFee,
+                treasuryWallet: TREASURY_WALLET,
                 timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
             });
 
@@ -808,18 +813,19 @@
             renderPredictMarkets();
             renderUserPredictions();
             closeModal('predictModal');
-            alert(`🔮 Successfully placed wager of ${wager} GRAM on "${activePredictOutcome.toUpperCase()}" for:\n"${activePredictMarket.title}"\n(10% Treasury Fee: ${treasuryFee.toFixed(2)} GRAM allocated)`);
+            alert(`🔮 Placed wager of ${wager} GRAM on "${activePredictOutcome.toUpperCase()}"!\n(10% Treasury Fee: ${treasuryFee.toFixed(2)} GRAM routed to treasury wallet)`);
         };
 
         function renderPredictMarkets() {
+            checkAndCycleMarkets();
             const container = document.getElementById('predictMarketsContainer');
             if (!container) return;
 
             container.innerHTML = predictMarkets.map(m => `
                 <div class="predict-card">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-                        <span class="badge-pill" style="color: var(--accent-purple); border-color: rgba(168, 85, 247, 0.4);">${m.category}</span>
-                        <span style="font-size: 11px; font-weight: 800; color: var(--accent-cyan);">Pot: ${m.pool.toFixed(2)} GRAM (Treasury: ${m.treasuryPool.toFixed(2)})</span>
+                        <span class="badge-pill" style="color: var(--accent-purple); border-color: rgba(168, 85, 247, 0.4);">${m.category} • Deadline: ${m.deadline}</span>
+                        <span style="font-size: 11px; font-weight: 800; color: var(--accent-cyan);">Pot: ${m.pool.toFixed(2)} GRAM</span>
                     </div>
                     <div style="font-size: 14px; font-weight: 900; color: #fff; margin-bottom: 10px;">${m.title}</div>
                     <div class="market-outcomes">
@@ -849,7 +855,7 @@
                 <div style="background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 10px; padding: 10px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
                     <div>
                         <div style="font-size: 12px; font-weight: 900; color: #fff; margin-bottom: 2px;">${bet.marketTitle}</div>
-                        <div style="font-size: 10px; color: var(--text-muted);">Side: <b style="color: ${bet.outcome === 'YES' ? 'var(--accent-green)' : 'var(--accent-red)'}">${bet.outcome}</b> | Wager: ${bet.wager} GRAM (10% Treasury Fee: ${bet.treasuryCut.toFixed(2)})</div>
+                        <div style="font-size: 10px; color: var(--text-muted);">Side: <b style="color: ${bet.outcome === 'YES' ? 'var(--accent-green)' : 'var(--accent-red)'}">${bet.outcome}</b> | Wager: ${bet.wager} GRAM (Fee: ${bet.treasuryCut.toFixed(2)})</div>
                     </div>
                     <div style="text-align: right;">
                         <div style="font-size: 13px; font-weight: 900; color: var(--accent-cyan);">${bet.netWager.toFixed(2)} GRAM Pot</div>
@@ -859,7 +865,7 @@
             `).join("");
         }
 
-        // --- CHART & LIVE M-CAP TRACKING ---
+        // --- CHART & COMPACT MARKET CAP EDGE AXIS ---
         let tvChart = null;
         let candleSeries = null;
         let maSeries = null;
@@ -874,7 +880,12 @@
                 layout: { background: { type: 'solid', color: '#0c0e14' }, textColor: '#94a3b8', fontSize: 10 },
                 grid: { vertLines: { color: 'rgba(59, 130, 246, 0.08)' }, horzLines: { color: 'rgba(59, 130, 246, 0.08)' } },
                 crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
-                rightPriceScale: { borderColor: 'rgba(59, 130, 246, 0.2)', scaleMargins: { top: 0.1, bottom: 0.1 }, visible: true },
+                rightPriceScale: { 
+                    borderColor: 'rgba(59, 130, 246, 0.2)', 
+                    scaleMargins: { top: 0.05, bottom: 0.05 }, 
+                    visible: true,
+                    alignLabels: true
+                },
                 timeScale: { borderColor: 'rgba(59, 130, 246, 0.2)', timeVisible: true },
             });
 
@@ -959,9 +970,13 @@
 
         function updateLiveMarketCapScaleBar(mcapVal) {
             if (!candleSeries) return;
+            const compactMcap = formatCompactNumber(mcapVal);
             candleSeries.applyOptions({
-                priceLineVisible: true, priceLineWidth: 2, priceLineColor: '#06b6d4', priceLineSource: LightweightCharts.PriceLineSource.LastBar,
-                title: `MCap: $${Math.round(mcapVal).toLocaleString()}`
+                priceLineVisible: true, 
+                priceLineWidth: 2, 
+                priceLineColor: '#06b6d4', 
+                priceLineSource: LightweightCharts.PriceLineSource.LastBar,
+                title: `MC: $${compactMcap}`
             });
         }
 
@@ -977,239 +992,7 @@
             maSeries.setData(maData);
         }
 
-        async function renderTopblastAndMemesUI() {
-            renderTopblastPaginationPage();
-            renderDedustPaginationPage();
-            renderStonfiPaginationPage();
-            renderPredictMarkets();
-            renderUserPredictions();
-        }
-
-        // --- DEDUST TOKEN LOADER ---
-        async function renderDedustPaginationPage() {
-            const container = document.getElementById('dedustListContainer');
-            if (!container) return;
-
-            const totalPages = Math.ceil(DEDUST_CAs.length / TOKENS_PER_PAGE);
-            if (currentDedustPage > totalPages) currentDedustPage = totalPages;
-            if (currentDedustPage < 1) currentDedustPage = 1;
-
-            document.getElementById('dedustPageIndicator').innerText = `Page ${currentDedustPage} / ${totalPages}`;
-            document.getElementById('dedustPageNumbersLabel').innerText = `${currentDedustPage} / ${totalPages}`;
-
-            const startIdx = (currentDedustPage - 1) * TOKENS_PER_PAGE;
-            const pageCAs = DEDUST_CAs.slice(startIdx, startIdx + TOKENS_PER_PAGE);
-
-            container.innerHTML = pageCAs.map((ca, idx) => {
-                const globalIdx = startIdx + idx;
-                const canvasId = `dedust_canvas_${globalIdx}`;
-                
-                setTimeout(() => {
-                    const c = document.getElementById(canvasId);
-                    if (c) {
-                        const cx = c.getContext('2d');
-                        c.width = c.parentElement.clientWidth;
-                        c.height = c.parentElement.clientHeight || 65;
-                        cx.clearRect(0, 0, c.width, c.height);
-                        cx.strokeStyle = '#06b6d4';
-                        cx.lineWidth = 3.5;
-                        cx.beginPath();
-                        let y = c.height / 2; cx.moveTo(0, y);
-                        for (let x = 12; x <= c.width; x += 12) {
-                            y += (Math.random() - 0.48) * 16;
-                            y = Math.max(6, Math.min(c.height - 6, y));
-                            cx.lineTo(x, y);
-                        }
-                        cx.stroke();
-                    }
-                }, 40);
-
-                return `
-                    <div class="token-item-card" onclick="openTokenDetailsByCA('${ca}', 'DeDust Pool #${globalIdx + 1}')">
-                        <canvas id="${canvasId}"></canvas>
-                        <div class="token-item-content">
-                            <img id="dedust_img_${globalIdx}" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Ccircle cx='16' cy='16' r='16' fill='%231e293b'/%3E%3Ctext x='50%25' y='50%25' font-size='14' fill='%23fff' text-anchor='middle' dominant-baseline='central'%3E💧%3C/text%3E%3C/svg%3E" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;" alt="Logo">
-                            <div>
-                                <div id="dedust_name_${globalIdx}" style="font-weight: 900; font-size: 13px; color: #fff;">DeDust Pool #${globalIdx + 1}</div>
-                                <div id="dedust_mcap_${globalIdx}" style="font-size: 11px; color: var(--accent-cyan); font-weight: 800; margin-top: 2px;">MCap: <b>Loading...</b> | Age: <span id="dedust_age_${globalIdx}">--</span></div>
-                                <div style="font-size: 9px; color: var(--text-muted);">Holders: <span id="dedust_holders_${globalIdx}">--</span> | Dex Paid: <span id="dedust_paid_${globalIdx}" style="color:var(--text-muted)">No</span></div>
-                            </div>
-                        </div>
-                        <div class="token-item-actions" onclick="event.stopPropagation()">
-                            <button class="btn-action" style="background: var(--bg-input); border: 1px solid var(--border-color); color: #fff; width: 40px; padding: 8px; font-size: 11px;" onclick="copyCA('${ca}')">📋</button>
-                            <button class="btn-action btn-blue" style="width: 70px; padding: 8px; font-size: 11px;" onclick="quickSelectToken('${ca}')">Snipe</button>
-                        </div>
-                    </div>
-                `;
-            }).join("");
-
-            for (let i = 0; i < pageCAs.length; i++) {
-                const gIdx = startIdx + i;
-                const ca = pageCAs[i];
-                try {
-                    const targetUrl = encodeURIComponent(`https://api.dexscreener.com/latest/dex/tokens/${ca}`);
-                    const res = await fetch(`https://corsproxy.io/?${targetUrl}`);
-                    if (res.ok) {
-                        const data = await res.json();
-                        const pair = (data.pairs && data.pairs.find(p => p.chainId === 'ton')) || data.pairs?.[0];
-                        if (pair) {
-                            const realName = pair.baseToken?.name || `DeDust Pool #${gIdx + 1}`;
-                            const realSymbol = pair.baseToken?.symbol || "";
-                            const mcapVal = pair.marketCap || pair.fdv || 0;
-                            const mcapStr = mcapVal ? `$${Number(mcapVal).toLocaleString()}` : "$N/A";
-                            const logoUrl = pair.info?.imageUrl || pair.baseToken?.logoURI || "";
-                            
-                            const createdAt = pair.pairCreatedAt ? new Date(pair.pairCreatedAt) : new Date(Date.now() - (globalIdx * 3600000 * 3));
-                            const diffHours = Math.max(1, Math.floor((Date.now() - createdAt) / (1000 * 60 * 60)));
-                            const ageStr = diffHours > 24 ? `${Math.floor(diffHours / 24)}d ago` : `${diffHours}h ago`;
-                            const holdersCount = pair.holders || Math.max(75, Math.floor((pair.txns?.h24?.buys || 12) * 15 + (mcapVal / 9000)));
-                            const hasDexPaid = (pair.boosts && pair.boosts.active > 0) || (pair.info?.websites && pair.info.websites.length > 0) || pair.dexPaid === true;
-
-                            const nameEl = document.getElementById(`dedust_name_${gIdx}`);
-                            const mcapEl = document.getElementById(`dedust_mcap_${gIdx}`);
-                            const imgEl = document.getElementById(`dedust_img_${gIdx}`);
-                            const ageEl = document.getElementById(`dedust_age_${gIdx}`);
-                            const holdersEl = document.getElementById(`dedust_holders_${gIdx}`);
-                            const paidEl = document.getElementById(`dedust_paid_${gIdx}`);
-
-                            if (nameEl) nameEl.innerText = `${realName} (${realSymbol})`;
-                            if (mcapEl) mcapEl.innerHTML = `MCap: <b>${mcapStr}</b> | Age: `;
-                            if (ageEl) ageEl.innerText = ageStr;
-                            if (holdersEl) holdersEl.innerText = holdersCount.toLocaleString();
-                            if (paidEl) {
-                                paidEl.innerText = hasDexPaid ? "Yes" : "No";
-                                paidEl.style.color = hasDexPaid ? "var(--accent-green)" : "var(--text-muted)";
-                            }
-                            if (logoUrl && imgEl) imgEl.src = logoUrl;
-                        }
-                    }
-                } catch (e) {}
-            }
-        }
-
-        window.changeDedustPage = function(dir) {
-            const totalPages = Math.ceil(DEDUST_CAs.length / TOKENS_PER_PAGE);
-            currentDedustPage += dir;
-            if (currentDedustPage > totalPages) {
-                for(let k=1; k<=10; k++) DEDUST_CAs.push("EQD" + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15));
-            }
-            if (currentDedustPage < 1) currentDedustPage = 1;
-            renderDedustPaginationPage();
-        };
-
-        // --- STON.FI TOKEN LOADER ---
-        async function renderStonfiPaginationPage() {
-            const container = document.getElementById('stonfiListContainer');
-            if (!container) return;
-
-            const totalPages = Math.ceil(STONFI_CAs.length / TOKENS_PER_PAGE);
-            if (currentStonfiPage > totalPages) currentStonfiPage = totalPages;
-            if (currentStonfiPage < 1) currentStonfiPage = 1;
-
-            document.getElementById('stonfiPageIndicator').innerText = `Page ${currentStonfiPage} / ${totalPages}`;
-            document.getElementById('stonfiPageNumbersLabel').innerText = `${currentStonfiPage} / ${totalPages}`;
-
-            const startIdx = (currentStonfiPage - 1) * TOKENS_PER_PAGE;
-            const pageCAs = STONFI_CAs.slice(startIdx, startIdx + TOKENS_PER_PAGE);
-
-            container.innerHTML = pageCAs.map((ca, idx) => {
-                const globalIdx = startIdx + idx;
-                const canvasId = `stonfi_canvas_${globalIdx}`;
-                
-                setTimeout(() => {
-                    const c = document.getElementById(canvasId);
-                    if (c) {
-                        const cx = c.getContext('2d');
-                        c.width = c.parentElement.clientWidth;
-                        c.height = c.parentElement.clientHeight || 65;
-                        cx.clearRect(0, 0, c.width, c.height);
-                        cx.strokeStyle = '#a855f7';
-                        cx.lineWidth = 3.5;
-                        cx.beginPath();
-                        let y = c.height / 2; cx.moveTo(0, y);
-                        for (let x = 12; x <= c.width; x += 12) {
-                            y += (Math.random() - 0.48) * 16;
-                            y = Math.max(6, Math.min(c.height - 6, y));
-                            cx.lineTo(x, y);
-                        }
-                        cx.stroke();
-                    }
-                }, 40);
-
-                return `
-                    <div class="token-item-card" onclick="openTokenDetailsByCA('${ca}', 'STON.fi Pool #${globalIdx + 1}')">
-                        <canvas id="${canvasId}"></canvas>
-                        <div class="token-item-content">
-                            <img id="stonfi_img_${globalIdx}" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Ccircle cx='16' cy='16' r='16' fill='%231e293b'/%3E%3Ctext x='50%25' y='50%25' font-size='14' fill='%23fff' text-anchor='middle' dominant-baseline='central'%3E🟣%3C/text%3E%3C/svg%3E" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;" alt="Logo">
-                            <div>
-                                <div id="stonfi_name_${globalIdx}" style="font-weight: 900; font-size: 13px; color: #fff;">STON.fi Pool #${globalIdx + 1}</div>
-                                <div id="stonfi_mcap_${globalIdx}" style="font-size: 11px; color: var(--accent-cyan); font-weight: 800; margin-top: 2px;">MCap: <b>Loading...</b> | Age: <span id="stonfi_age_${globalIdx}">--</span></div>
-                                <div style="font-size: 9px; color: var(--text-muted);">Holders: <span id="stonfi_holders_${globalIdx}">--</span> | Dex Paid: <span id="stonfi_paid_${globalIdx}" style="color:var(--text-muted)">No</span></div>
-                            </div>
-                        </div>
-                        <div class="token-item-actions" onclick="event.stopPropagation()">
-                            <button class="btn-action" style="background: var(--bg-input); border: 1px solid var(--border-color); color: #fff; width: 40px; padding: 8px; font-size: 11px;" onclick="copyCA('${ca}')">📋</button>
-                            <button class="btn-action btn-blue" style="width: 70px; padding: 8px; font-size: 11px;" onclick="quickSelectToken('${ca}')">Snipe</button>
-                        </div>
-                    </div>
-                `;
-            }).join("");
-
-            for (let i = 0; i < pageCAs.length; i++) {
-                const gIdx = startIdx + i;
-                const ca = pageCAs[i];
-                try {
-                    const targetUrl = encodeURIComponent(`https://api.dexscreener.com/latest/dex/tokens/${ca}`);
-                    const res = await fetch(`https://corsproxy.io/?${targetUrl}`);
-                    if (res.ok) {
-                        const data = await res.json();
-                        const pair = (data.pairs && data.pairs.find(p => p.chainId === 'ton')) || data.pairs?.[0];
-                        if (pair) {
-                            const realName = pair.baseToken?.name || `STON.fi Pool #${gIdx + 1}`;
-                            const realSymbol = pair.baseToken?.symbol || "";
-                            const mcapVal = pair.marketCap || pair.fdv || 0;
-                            const mcapStr = mcapVal ? `$${Number(mcapVal).toLocaleString()}` : "$N/A";
-                            const logoUrl = pair.info?.imageUrl || pair.baseToken?.logoURI || "";
-                            
-                            const createdAt = pair.pairCreatedAt ? new Date(pair.pairCreatedAt) : new Date(Date.now() - (globalIdx * 3600000 * 3));
-                            const diffHours = Math.max(1, Math.floor((Date.now() - createdAt) / (1000 * 60 * 60)));
-                            const ageStr = diffHours > 24 ? `${Math.floor(diffHours / 24)}d ago` : `${diffHours}h ago`;
-                            const holdersCount = pair.holders || Math.max(80, Math.floor((pair.txns?.h24?.buys || 14) * 16 + (mcapVal / 8500)));
-                            const hasDexPaid = (pair.boosts && pair.boosts.active > 0) || (pair.info?.websites && pair.info.websites.length > 0) || pair.dexPaid === true;
-
-                            const nameEl = document.getElementById(`stonfi_name_${gIdx}`);
-                            const mcapEl = document.getElementById(`stonfi_mcap_${gIdx}`);
-                            const imgEl = document.getElementById(`stonfi_img_${gIdx}`);
-                            const ageEl = document.getElementById(`stonfi_age_${gIdx}`);
-                            const holdersEl = document.getElementById(`stonfi_holders_${gIdx}`);
-                            const paidEl = document.getElementById(`stonfi_paid_${gIdx}`);
-
-                            if (nameEl) nameEl.innerText = `${realName} (${realSymbol})`;
-                            if (mcapEl) mcapEl.innerHTML = `MCap: <b>${mcapStr}</b> | Age: `;
-                            if (ageEl) ageEl.innerText = ageStr;
-                            if (holdersEl) holdersEl.innerText = holdersCount.toLocaleString();
-                            if (paidEl) {
-                                paidEl.innerText = hasDexPaid ? "Yes" : "No";
-                                paidEl.style.color = hasDexPaid ? "var(--accent-green)" : "var(--text-muted)";
-                            }
-                            if (logoUrl && imgEl) imgEl.src = logoUrl;
-                        }
-                    }
-                } catch (e) {}
-            }
-        }
-
-        window.changeStonfiPage = function(dir) {
-            const totalPages = Math.ceil(STONFI_CAs.length / TOKENS_PER_PAGE);
-            currentStonfiPage += dir;
-            if (currentStonfiPage > totalPages) {
-                for(let k=1; k<=10; k++) STONFI_CAs.push("EQQ" + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15));
-            }
-            if (currentStonfiPage < 1) currentStonfiPage = 1;
-            renderStonfiPaginationPage();
-        };
-
-        // --- TOPBLAST TOKEN LOADER (RESTORED & ISOLATED TO PREVENT CONFLICTS) ---
+        // --- ISOLATED TOPBLAST TOKEN LOADER (ORIGINAL LOGIC RESTORED) ---
         async function renderTopblastPaginationPage() {
             const container = document.getElementById('topblastListContainer');
             if (!container) return;
@@ -1280,7 +1063,7 @@
                             const realName = pair.baseToken?.name || `Token #${gIdx + 1}`;
                             const realSymbol = pair.baseToken?.symbol || "";
                             const mcapVal = pair.marketCap || pair.fdv || 0;
-                            const mcapStr = mcapVal ? `$${Number(mcapVal).toLocaleString()}` : "$N/A";
+                            const mcapStr = mcapVal ? `$${formatCompactNumber(mcapVal)}` : "$N/A";
                             const logoUrl = pair.info?.imageUrl || pair.baseToken?.logoURI || "";
                             
                             const createdAt = pair.pairCreatedAt ? new Date(pair.pairCreatedAt) : new Date(Date.now() - (globalIdx * 3600000 * 4));
@@ -1314,9 +1097,7 @@
         window.changeTopblastPage = function(dir) {
             const totalPages = Math.ceil(TOPBLAST_CAs.length / TOKENS_PER_PAGE);
             currentTopblastPage += dir;
-            if (currentTopblastPage > totalPages) {
-                for(let k=1; k<=10; k++) TOPBLAST_CAs.push("EQB" + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15));
-            }
+            if (currentTopblastPage > totalPages) currentTopblastPage = totalPages;
             if (currentTopblastPage < 1) currentTopblastPage = 1;
             renderTopblastPaginationPage();
         };
@@ -1358,7 +1139,8 @@
                     if (pair) {
                         const name = pair.baseToken?.name || fallbackName;
                         const symbol = pair.baseToken?.symbol || "TOKEN";
-                        const mcap = pair.marketCap || pair.fdv ? `$${Number(pair.marketCap || pair.fdv).toLocaleString()}` : "$N/A";
+                        const mcapVal = pair.marketCap || pair.fdv || 0;
+                        const mcap = mcapVal ? `$${formatCompactNumber(mcapVal)}` : "$N/A";
                         const logo = pair.info?.imageUrl || pair.baseToken?.logoURI || "";
                         
                         const createdAt = pair.pairCreatedAt ? new Date(pair.pairCreatedAt) : new Date(Date.now() - (3600000 * 12));
@@ -1419,8 +1201,8 @@
                     const symbol = pair.baseToken?.symbol || "TOKEN";
                     const price = parseFloat(pair.priceUsd || 0.0001);
                     const mcapVal = pair.marketCap || pair.fdv || 1000000;
-                    const mcapStr = mcapVal ? `$${Number(mcapVal).toLocaleString()}` : "N/A";
-                    const volStr = `$${Number(pair.volume?.h24 || 0).toLocaleString()}`;
+                    const mcapStr = mcapVal ? `$${formatCompactNumber(mcapVal)}` : "N/A";
+                    const volStr = `$${formatCompactNumber(pair.volume?.h24 || 0)}`;
                     const chg = pair.priceChange?.h24 || 0;
                     const logo = pair.info?.imageUrl || pair.baseToken?.logoURI || "";
 
@@ -1605,7 +1387,8 @@
             }
             if (navBtn) navBtn.classList.add('active');
             if (pageId === 'sniper') initRealChart();
-            if (pageId === 'gram-memes' || pageId === 'topblast' || pageId === 'predict') setTimeout(renderTopblastAndMemesUI, 50);
+            if (pageId === 'topblast') setTimeout(renderTopblastPaginationPage, 50);
+            if (pageId === 'predict') { renderPredictMarkets(); renderUserPredictions(); }
         };
 
         window.copyReferralLink = function() {
@@ -1624,7 +1407,10 @@
                 document.getElementById('intro-screen').classList.add('active');
             } else {
                 updateWalletUI();
-                setTimeout(() => { initRealChart(); }, 100);
+                setTimeout(() => { 
+                    initRealChart(); 
+                    renderTopblastPaginationPage();
+                }, 100);
             }
 
             const tg = window.Telegram?.WebApp;
