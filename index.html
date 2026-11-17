@@ -336,7 +336,7 @@
                     </div>
 
                     <div style="font-size: 10px; color: var(--text-muted); margin-bottom: 10px; line-height: 1.4;">
-                        💡 <b>Tip:</b> Your $GRAM balance will automatically populate here once the network indexer processes your transfer.
+                        💡 <b>Tip:</b> Your $GRAM balance will automatically populate here via TonAPI.
                     </div>
 
                     <div id="walletActionsContainer" style="display: flex; flex-direction: column; gap: 8px;">
@@ -401,7 +401,7 @@
         }
 
         function saveAppState() {
-            localStorage.setItem("kote_live_state_v2", JSON.stringify({
+            localStorage.setItem("kote_live_state_v3", JSON.stringify({
                 markets: predictMarkets,
                 userBets: userPredictionBets
             }));
@@ -409,7 +409,7 @@
 
         function loadAppState() {
             try {
-                const raw = localStorage.getItem("kote_live_state_v2");
+                const raw = localStorage.getItem("kote_live_state_v3");
                 if (raw) {
                     const parsed = JSON.parse(raw);
                     if (Array.isArray(parsed.markets)) predictMarkets = parsed.markets;
@@ -472,31 +472,40 @@
             navigator.clipboard.writeText(inAppWallet.address).then(() => alert("📋 Wallet address copied!"));
         };
 
-        // --- FETCH REAL JETTON BALANCES VIA TON CENTER V3 INDEXER ---
+        // --- FETCH REAL JETTON BALANCES VIA TONAPI (TONVIEWER INDEXER) ---
         window.refreshInAppBalance = async function(silent = false) {
             if (!inAppWallet) return;
             try {
-                const jettonRes = await fetch(`https://toncenter.com/api/v3/jetton/wallets?owner_address=${inAppWallet.address}&limit=50`);
-                const jettonData = await jettonRes.json();
+                const res = await fetch(`https://tonapi.io/v2/accounts/${inAppWallet.address}/jettons`);
+                const data = await res.json();
                 
                 walletGramBalance = 0;
                 userGramJettonWalletAddr = null;
                 liveHoldings = [];
 
-                if (jettonData.jetton_wallets && Array.isArray(jettonData.jetton_wallets)) {
-                    const normalizedGramMaster = window.TonCore.Address.parse(GRAM_MASTER_CA).toRawString();
+                if (data.balances && Array.isArray(data.balances)) {
+                    const normalizedGramMaster = GRAM_MASTER_CA;
                     
-                    for (const jw of jettonData.jetton_wallets) {
-                        const bal = Number(jw.balance || 0) / 1e9;
-                        if (jw.jetton === normalizedGramMaster) {
+                    for (const item of data.balances) {
+                        const dec = item.jetton.decimals || 9;
+                        const rawBal = BigInt(item.balance || 0);
+                        const bal = Number(rawBal) / Math.pow(10, dec);
+                        const masterAddr = item.jetton.address;
+                        
+                        if (masterAddr === normalizedGramMaster || item.jetton.symbol === "GRAM") {
                             walletGramBalance = bal;
-                            userGramJettonWalletAddr = jw.address;
+                            userGramJettonWalletAddr = item.wallet_address.address;
                         }
+
                         if (bal > 0) {
                             liveHoldings.push({
-                                jettonMasterRaw: jw.jetton,
-                                jettonWallet: jw.address,
-                                balance: bal
+                                jettonMasterRaw: masterAddr,
+                                jettonWallet: item.wallet_address.address,
+                                symbol: item.jetton.symbol || "TOKEN",
+                                name: item.jetton.name || "Jetton",
+                                decimals: dec,
+                                balance: bal,
+                                priceUsd: item.price?.prices?.USD || 0
                             });
                         }
                     }
@@ -510,10 +519,10 @@
 
                 updateWalletUI();
                 updateEstTokens();
-                if (!silent) alert(`✅ Synced! $GRAM Balance: ${walletGramBalance.toFixed(2)} GRAM`);
+                if (!silent) alert(`✅ Synced with Tonviewer Indexer!\n$GRAM Balance: ${walletGramBalance.toFixed(2)} GRAM`);
             } catch (e) {
-                console.error("Mainnet sync error:", e);
-                if (!silent) alert("Network rate-limit hit. Wait 3 seconds and tap Refresh again.");
+                console.error("TonAPI sync error:", e);
+                if (!silent) alert("Failed to fetch balance from TonAPI network.");
             }
         };
 
@@ -760,7 +769,7 @@
             if (currentGramAmount <= 0 || currentGramAmount > walletGramBalance) {
                 return alert("Insufficient $GRAM balance in your wallet.");
             }
-            if (!userGramJettonWalletAddr) return alert("Jetton wallet contract not indexed yet. Hit Refresh.");
+            if (!userGramJettonWalletAddr) return alert("Jetton wallet contract not resolved. Hit Refresh.");
 
             try {
                 const stonSimulate = await fetch(`https://api.ston.fi/v1/swap/simulate?offer_address=${GRAM_MASTER_CA}&ask_address=${currentTradeToken.ca}&units=${Math.floor(currentGramAmount * 1e9)}&slippage_tolerance=${currentSlippageVal / 100}`, { method: 'POST' });
@@ -796,7 +805,7 @@
                 return;
             }
 
-            container.innerHTML = `<div class="card" style="text-align: center; padding: 20px; color: var(--accent-cyan); font-size: 12px;">⏳ Querying TON Mainnet Jettons & GeckoTerminal prices...</div>`;
+            container.innerHTML = `<div class="card" style="text-align: center; padding: 20px; color: var(--accent-cyan); font-size: 12px;">⏳ Querying Tonviewer indexer & GeckoTerminal prices...</div>`;
             await refreshInAppBalance(true);
 
             if (liveHoldings.length === 0) {
@@ -809,21 +818,23 @@
             let cardsHtml = "";
 
             for (const item of liveHoldings) {
-                const friendlyMaster = window.TonCore.Address.parseRaw(item.jettonMasterRaw).toString();
-                let tokenName = friendlyMaster.slice(0, 6) + "..." + friendlyMaster.slice(-4);
-                let livePrice = 0;
+                const friendlyMaster = item.jettonMasterRaw;
+                let tokenName = item.name || (friendlyMaster.slice(0, 6) + "..." + friendlyMaster.slice(-4));
+                let livePrice = item.priceUsd;
 
-                try {
-                    const pRes = await fetch(`https://api.geckoterminal.com/api/v2/networks/ton/tokens/${friendlyMaster}/pools?page=1`);
-                    if (pRes.ok) {
-                        const pJson = await pRes.json();
-                        const attr = pJson.data?.[0]?.attributes;
-                        if (attr) {
-                            tokenName = attr.name.split('/')[0].trim();
-                            livePrice = parseFloat(attr.base_token_price_usd || 0);
+                if (!livePrice || livePrice === 0) {
+                    try {
+                        const pRes = await fetch(`https://api.geckoterminal.com/api/v2/networks/ton/tokens/${friendlyMaster}/pools?page=1`);
+                        if (pRes.ok) {
+                            const pJson = await pRes.json();
+                            const attr = pJson.data?.[0]?.attributes;
+                            if (attr) {
+                                tokenName = attr.name.split('/')[0].trim();
+                                livePrice = parseFloat(attr.base_token_price_usd || 0);
+                            }
                         }
-                    }
-                } catch (e) {}
+                    } catch (e) {}
+                }
 
                 const usdValue = item.balance * livePrice;
                 totalPortfolioUsd += usdValue;
@@ -832,7 +843,7 @@
                     <div class="card" style="padding: 12px;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                             <div>
-                                <div style="font-size: 14px; font-weight: 900; color: #fff;">${tokenName}</div>
+                                <div style="font-size: 14px; font-weight: 900; color: #fff;">${tokenName} <span class="badge-pill" style="font-size: 8px; padding: 2px 6px;">${item.symbol}</span></div>
                                 <div style="font-size: 10px; color: var(--text-muted);">Balance: <b>${item.balance.toLocaleString()}</b></div>
                             </div>
                             <div style="text-align: right;">
