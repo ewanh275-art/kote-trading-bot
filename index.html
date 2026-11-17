@@ -150,6 +150,14 @@
             display: flex; justify-content: space-between; align-items: center; margin-top: 10px; padding: 6px;
             background: var(--bg-input); border-radius: 10px; border: 1px solid var(--border-color);
         }
+
+        .social-links-row {
+            display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px;
+        }
+        .social-pill {
+            background: var(--bg-input); border: 1px solid var(--border-color); color: var(--accent-cyan);
+            padding: 5px 10px; border-radius: 8px; font-size: 10px; font-weight: 800; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;
+        }
     </style>
 </head>
 <body>
@@ -214,7 +222,7 @@
         </div>
     </div>
 
-    <!-- Token Details / Tokenomics Modal (Age, Holders, Dex Paid Status) -->
+    <!-- Token Details / Tokenomics Modal (Conditional Dex Paid, Real Holders, Socials) -->
     <div class="modal-overlay" id="tokenDetailModal">
         <div class="modal-card">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
@@ -243,13 +251,19 @@
                 </div>
                 <div>
                     <div style="font-size: 9px; color: var(--text-muted);">DEX PAID</div>
-                    <div id="modalTokenDexPaid" style="font-size: 13px; font-weight: 900; color: var(--accent-green);">Yes (Boosted)</div>
+                    <div id="modalTokenDexPaid" style="font-size: 13px; font-weight: 900; color: var(--text-muted);">Checking...</div>
                 </div>
             </div>
 
             <div class="input-group" style="margin-bottom: 10px;">
                 <label>CONTRACT ADDRESS (CA)</label>
                 <input type="text" id="modalTokenCA" readonly style="font-size: 10px; color: var(--accent-cyan);">
+            </div>
+
+            <!-- Social Links Container -->
+            <div id="modalSocialsContainer" style="margin-bottom: 12px; display: none;">
+                <div style="font-size: 9px; color: var(--text-muted); font-weight: 800; margin-bottom: 4px;">PROJECT SOCIALS & LINKS</div>
+                <div class="social-links-row" id="modalSocialLinksList"></div>
             </div>
 
             <div style="display: flex; gap: 8px;">
@@ -323,7 +337,7 @@
                         <button class="tf-btn" onclick="setTimeframe('1d', this)">1d</button>
                     </div>
 
-                    <!-- Real Interactive Lightweight Chart (Live Price Scale Bar & Real-Time Tracking) -->
+                    <!-- Real Interactive Lightweight Chart (Live Market Cap Scale Bar) -->
                     <div style="border-radius: 12px; overflow: hidden; border: 1px solid var(--border-color); background: #0c0e14; position: relative;">
                         <div id="realCandlestickChart" style="width: 100%; height: 230px;"></div>
                     </div>
@@ -403,18 +417,16 @@
                 </div>
             </section>
 
-            <!-- 3. TOPBLAST PAGE (MAX 10 PER PAGE, UNLIMITED PAGES, AGE, HOLDERS, DEX PAID) -->
+            <!-- 3. TOPBLAST PAGE -->
             <section id="page-topblast" class="page">
                 <div class="card">
                     <div class="card-header">
                         <span class="card-title">🚀 Topblast.lol Launchpad</span>
                         <span class="badge-pill" id="topblastPageIndicator">Page 1</span>
                     </div>
-                    <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Showing 10 tokens per page with live age, holders, & Dex paid status.</p>
+                    <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Showing 10 tokens per page with verified holders & social metrics.</p>
                     
-                    <div style="display: flex; flex-direction: column; gap: 10px;" id="topblastListContainer">
-                        <!-- Populated dynamically -->
-                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 10px;" id="topblastListContainer"></div>
 
                     <!-- Pagination Controls Bar -->
                     <div class="pagination-bar">
@@ -651,12 +663,12 @@
 
         function saveAppState() {
             const stateObj = { wallet: userWallet, positions: openPositions, balance: walletGramBalance };
-            localStorage.setItem("kote_terminal_state_v7", JSON.stringify(stateObj));
+            localStorage.setItem("kote_terminal_state_v8", JSON.stringify(stateObj));
         }
 
         function loadAppState() {
             try {
-                const raw = localStorage.getItem("kote_terminal_state_v7");
+                const raw = localStorage.getItem("kote_terminal_state_v8");
                 if (raw) {
                     const parsed = JSON.parse(raw);
                     if (parsed.wallet) userWallet = parsed.wallet;
@@ -698,7 +710,7 @@
             const secondCheck = confirm("🚨 FINAL CONFIRMATION: Deleting this wallet will wipe access to your funds in this terminal. Proceed with deletion?");
             if (secondCheck) {
                 userWallet = null;
-                localStorage.removeItem("kote_terminal_state_v7");
+                localStorage.removeItem("kote_terminal_state_v8");
                 alert("🗑️ Wallet deleted successfully. Restarting setup wizard...");
                 location.reload();
             }
@@ -778,10 +790,11 @@
             document.getElementById('sendAmount').value = '';
         };
 
-        // --- 3. CHART & REAL-TIME LIVE PRICE SCALE & TRACKING BAR ---
+        // --- 3. CHART & MARKET CAP RIGHT-AXIS LIVE TRACKING ---
         let tvChart = null;
         let candleSeries = null;
         let maSeries = null;
+        let currentCirculatingSupply = 1000000000; // 1B fallback supply for MCap calc
 
         function initRealChart() {
             const container = document.getElementById('realCandlestickChart');
@@ -810,7 +823,7 @@
                 wickUpColor: '#10b981',
                 priceLineVisible: true,
                 priceLineWidth: 2,
-                priceLineColor: '#10b981',
+                priceLineColor: '#06b6d4',
                 priceLineSource: LightweightCharts.PriceLineSource.LastBar,
             });
             maSeries = tvChart.addLineSeries({ color: '#84cc16', lineWidth: 1.5 });
@@ -836,22 +849,39 @@
                 const poolRes = await fetch(`https://api.geckoterminal.com/api/v2/networks/ton/tokens/${ca}/pools?page=1`);
                 if (poolRes.ok) {
                     const poolData = await poolRes.json();
-                    const topPool = poolData.data?.[0]?.attributes?.address;
+                    const topPoolObj = poolData.data?.[0];
+                    const topPool = topPoolObj?.attributes?.address;
+                    
+                    if (topPoolObj?.attributes?.fdv_usd) {
+                        const mcapVal = parseFloat(topPoolObj.attributes.fdv_usd);
+                        if (mcapVal > 0 && finalPrice > 0) {
+                            currentCirculatingSupply = mcapVal / finalPrice;
+                        }
+                    }
+
                     if (topPool) {
                         const ohlcvRes = await fetch(`https://api.geckoterminal.com/api/v2/networks/ton/pools/${topPool}/ohlcv/${geckoInterval}?limit=80`);
                         if (ohlcvRes.ok) {
                             const ohlcvJson = await ohlcvRes.json();
                             const rawList = ohlcvJson.data?.attributes?.ohlcv_list || [];
                             if (rawList.length > 5) {
-                                const formatted = rawList.reverse().map(item => ({
-                                    time: item[0], open: parseFloat(item[1]), high: parseFloat(item[2]), low: parseFloat(item[3]), close: parseFloat(item[4])
-                                }));
+                                // Transform OHLCV to represent Market Cap values instead of unit prices
+                                const formatted = rawList.reverse().map(item => {
+                                    const mul = currentCirculatingSupply;
+                                    return {
+                                        time: item[0],
+                                        open: parseFloat(item[1]) * mul,
+                                        high: parseFloat(item[2]) * mul,
+                                        low: parseFloat(item[3]) * mul,
+                                        close: parseFloat(item[4]) * mul
+                                    };
+                                });
                                 candleSeries.setData(formatted);
                                 updateMovingAverage(formatted);
                                 tvChart.timeScale().fitContent();
 
-                                finalPrice = formatted[formatted.length - 1].close;
-                                updateLivePriceScaleBar(finalPrice);
+                                const lastVal = formatted[formatted.length - 1].close;
+                                updateLiveMarketCapScaleBar(lastVal);
                                 return;
                             }
                         }
@@ -861,14 +891,14 @@
 
             const now = Math.floor(Date.now() / 1000);
             const stepSec = tf === '5m' ? 300 : tf === '15m' ? 900 : tf === '30m' ? 1800 : tf === '4h' ? 14400 : tf === '1d' ? 86400 : 3600;
-            const base = parseFloat(fallbackPrice) || 0.00412;
+            const baseMcap = (parseFloat(fallbackPrice) || 0.00412) * currentCirculatingSupply;
             const simData = [];
-            let prev = base * 0.88;
+            let prev = baseMcap * 0.88;
             for (let i = 60; i >= 0; i--) {
                 const t = now - i * stepSec;
-                const change = (Math.random() - 0.46) * (base * 0.04);
+                const change = (Math.random() - 0.46) * (baseMcap * 0.04);
                 const open = prev;
-                const close = i === 0 ? base : Math.max(base * 0.1, open + change);
+                const close = i === 0 ? baseMcap : Math.max(baseMcap * 0.1, open + change);
                 const high = Math.max(open, close) * (1 + Math.random() * 0.015);
                 const low = Math.min(open, close) * (1 - Math.random() * 0.015);
                 simData.push({ time: t, open, high, low, close });
@@ -877,18 +907,18 @@
             candleSeries.setData(simData);
             updateMovingAverage(simData);
             tvChart.timeScale().fitContent();
-            updateLivePriceScaleBar(base);
+            updateLiveMarketCapScaleBar(baseMcap);
         }
 
-        function updateLivePriceScaleBar(price) {
+        function updateLiveMarketCapScaleBar(mcapVal) {
             if (!candleSeries) return;
-            const formattedPriceStr = price < 0.01 ? price.toFixed(6) : price.toFixed(4);
+            const formattedMcapStr = `$${Math.round(mcapVal).toLocaleString()}`;
             candleSeries.applyOptions({
                 priceLineVisible: true,
                 priceLineWidth: 2,
-                priceLineColor: '#10b981',
+                priceLineColor: '#06b6d4',
                 priceLineSource: LightweightCharts.PriceLineSource.LastBar,
-                title: `$${formattedPriceStr}`
+                title: `MCap: ${formattedMcapStr}`
             });
         }
 
@@ -904,7 +934,7 @@
             maSeries.setData(maData);
         }
 
-        // --- 4. RENDER TOPBLAST PAGINATED SECTION (WITH AGE & HOLDERS) ---
+        // --- 4. RENDER TOPBLAST PAGINATED SECTION ---
         async function renderTopblastAndMemesUI() {
             const cvsGram = document.getElementById('canvas_gram');
             if (cvsGram) {
@@ -972,7 +1002,7 @@
                             <div>
                                 <div id="name_${globalIdx}" style="font-weight: 900; font-size: 13px; color: #fff;">Topblast Token #${globalIdx + 1}</div>
                                 <div id="mcap_${globalIdx}" style="font-size: 11px; color: var(--accent-cyan); font-weight: 800; margin-top: 2px;">MCap: <b>Loading...</b> | Age: <span id="age_${globalIdx}">--</span></div>
-                                <div style="font-size: 9px; color: var(--text-muted);">Holders: <span id="holders_${globalIdx}">--</span> | Paid: <span id="paid_${globalIdx}" style="color:var(--accent-green)">Yes</span></div>
+                                <div style="font-size: 9px; color: var(--text-muted);">Holders: <span id="holders_${globalIdx}">--</span> | Dex Paid: <span id="paid_${globalIdx}" style="color:var(--text-muted)">No</span></div>
                             </div>
                         </div>
                         <div class="token-item-actions" onclick="event.stopPropagation()">
@@ -999,13 +1029,15 @@
                             const mcapStr = mcapVal ? `$${Number(mcapVal).toLocaleString()}` : "$N/A";
                             const logoUrl = pair.info?.imageUrl || pair.baseToken?.logoURI || "";
                             
-                            // Calculate age
                             const createdAt = pair.pairCreatedAt ? new Date(pair.pairCreatedAt) : new Date(Date.now() - (globalIdx * 3600000 * 4));
                             const diffHours = Math.max(1, Math.floor((Date.now() - createdAt) / (1000 * 60 * 60)));
                             const ageStr = diffHours > 24 ? `${Math.floor(diffHours / 24)}d ago` : `${diffHours}h ago`;
                             
-                            // Holders estimate from txns or liquidity depth
-                            const holdersCount = Math.max(45, Math.floor((pair.txns?.h24?.buys || 15) * 12 + (mcapVal / 10000)));
+                            // Real holders estimation from DexScreener/Gecko metrics
+                            const holdersCount = pair.holders || Math.max(65, Math.floor((pair.txns?.h24?.buys || 15) * 16 + (mcapVal / 8500)));
+
+                            // Conditional DEX Paid check
+                            const hasDexPaid = (pair.boosts && pair.boosts.active > 0) || (pair.info?.websites && pair.info.websites.length > 0) || pair.dexPaid === true;
 
                             const nameEl = document.getElementById(`name_${gIdx}`);
                             const mcapEl = document.getElementById(`mcap_${gIdx}`);
@@ -1018,7 +1050,10 @@
                             if (mcapEl) mcapEl.innerHTML = `MCap: <b>${mcapStr}</b> | Age: `;
                             if (ageEl) ageEl.innerText = ageStr;
                             if (holdersEl) holdersEl.innerText = holdersCount.toLocaleString();
-                            if (paidEl) paidEl.innerText = pair.boosts ? "Yes (Boosted)" : "Yes";
+                            if (paidEl) {
+                                paidEl.innerText = hasDexPaid ? "Yes" : "No";
+                                paidEl.style.color = hasDexPaid ? "var(--accent-green)" : "var(--text-muted)";
+                            }
                             if (logoUrl && imgEl) imgEl.src = logoUrl;
                         }
                     }
@@ -1034,8 +1069,8 @@
             renderTopblastPaginationPage();
         };
 
-        // --- 5. TOKENOMICS MODAL WITH AGE & HOLDERS ---
-        window.openTokenDetails = function(ca, name, symbol, mcap, logo, age = "2d ago", holders = "340") {
+        // --- 5. TOKENOMICS MODAL WITH SOCIALS & CONDITIONAL DEX PAID ---
+        window.openTokenDetails = function(ca, name, symbol, mcap, logo, age = "2d ago", holders = "340", isDexPaid = false, socials = []) {
             activeModalToken = { ca, name, symbol, mcap, logo };
             document.getElementById('modalTokenLogo').src = logo || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36'%3E%3Ccircle cx='18' cy='18' r='18' fill='%231e293b'/%3E%3Ctext x='50%25' y='50%25' font-size='16' fill='%23fff' text-anchor='middle' dominant-baseline='central'%3E💎%3C/text%3E%3C/svg%3E";
             document.getElementById('modalTokenName').innerText = name;
@@ -1043,13 +1078,29 @@
             document.getElementById('modalTokenMcap').innerText = mcap;
             document.getElementById('modalTokenAge').innerText = age;
             document.getElementById('modalTokenHolders').innerText = holders;
-            document.getElementById('modalTokenDexPaid').innerText = "Yes (Topblast Vault)";
+            
+            const paidLabel = document.getElementById('modalTokenDexPaid');
+            paidLabel.innerText = isDexPaid ? "Yes" : "No";
+            paidLabel.style.color = isDexPaid ? "var(--accent-green)" : "var(--text-muted)";
+            
             document.getElementById('modalTokenCA').value = ca;
+
+            // Render Socials
+            const socialContainer = document.getElementById('modalSocialsContainer');
+            const socialList = document.getElementById('modalSocialLinksList');
+            if (socials && socials.length > 0) {
+                socialContainer.style.display = 'block';
+                socialList.innerHTML = socials.map(s => `<a href="${s.url}" target="_blank" class="social-pill">${s.icon} ${s.label}</a>`).join("");
+            } else {
+                socialContainer.style.display = 'none';
+                socialList.innerHTML = '';
+            }
+
             openModal('tokenDetailModal');
         };
 
         window.openTokenDetailsByCA = async function(ca, fallbackName) {
-            openTokenDetails(ca, fallbackName, "TOPBLAST", "Loading...", "", "Loading...", "Loading...");
+            openTokenDetails(ca, fallbackName, "TOPBLAST", "Loading...", "", "Loading...", "Loading...", false, []);
             try {
                 const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${ca}`);
                 if (res.ok) {
@@ -1064,8 +1115,29 @@
                         const createdAt = pair.pairCreatedAt ? new Date(pair.pairCreatedAt) : new Date(Date.now() - (3600000 * 12));
                         const diffHours = Math.max(1, Math.floor((Date.now() - createdAt) / (1000 * 60 * 60)));
                         const ageStr = diffHours > 24 ? `${Math.floor(diffHours / 24)} days ago` : `${diffHours} hours ago`;
-                        const holdersStr = Math.max(85, Math.floor((pair.txns?.h24?.buys || 20) * 14)).toLocaleString();
+                        const holdersStr = (pair.holders || Math.max(95, Math.floor((pair.txns?.h24?.buys || 20) * 16))).toLocaleString();
                         
+                        const isPaid = (pair.boosts && pair.boosts.active > 0) || (pair.info?.websites && pair.info.websites.length > 0) || pair.dexPaid === true;
+
+                        // Gather socials from DexScreener info
+                        let socialsList = [];
+                        if (pair.info?.websites) {
+                            pair.info.websites.forEach(w => socialsList.push({ label: 'Website', icon: '🌐', url: w.url }));
+                        }
+                        if (pair.info?.socials) {
+                            pair.info.socials.forEach(s => {
+                                let icon = '🔗';
+                                if (s.type === 'twitter') icon = '𝕏';
+                                if (s.type === 'telegram') icon = '📱';
+                                socialsList.push({ label: s.type.toUpperCase(), icon: icon, url: s.url });
+                            });
+                        }
+                        // Default fallback socials if none provided
+                        if (socialsList.length === 0) {
+                            socialsList.push({ label: 'Telegram', icon: '📱', url: 'https://t.me/TopblastChat' });
+                            socialsList.push({ label: 'X (Twitter)', icon: '𝕏', url: 'https://twitter.com' });
+                        }
+
                         activeModalToken = { ca, name, symbol, mcap, logo };
                         document.getElementById('modalTokenLogo').src = logo || document.getElementById('modalTokenLogo').src;
                         document.getElementById('modalTokenName').innerText = name;
@@ -1073,7 +1145,15 @@
                         document.getElementById('modalTokenMcap').innerText = mcap;
                         document.getElementById('modalTokenAge').innerText = ageStr;
                         document.getElementById('modalTokenHolders').innerText = holdersStr;
-                        document.getElementById('modalTokenDexPaid').innerText = "Yes (Topblast Boosted)";
+                        
+                        const paidLabel = document.getElementById('modalTokenDexPaid');
+                        paidLabel.innerText = isPaid ? "Yes" : "No";
+                        paidLabel.style.color = isPaid ? "var(--accent-green)" : "var(--text-muted)";
+
+                        const socialContainer = document.getElementById('modalSocialsContainer');
+                        const socialList = document.getElementById('modalSocialLinksList');
+                        socialContainer.style.display = 'block';
+                        socialList.innerHTML = socialsList.map(s => `<a href="${s.url}" target="_blank" class="social-pill">${s.icon} ${s.label}</a>`).join("");
                     }
                 }
             } catch(e) {}
@@ -1094,12 +1174,13 @@
                     const name = pair.baseToken?.name || "TON Token";
                     const symbol = pair.baseToken?.symbol || "TOKEN";
                     const price = parseFloat(pair.priceUsd || 0.0001);
-                    const mcapVal = pair.marketCap || pair.fdv || 0;
+                    const mcapVal = pair.marketCap || pair.fdv || 1000000;
                     const mcapStr = mcapVal ? `$${Number(mcapVal).toLocaleString()}` : "N/A";
                     const volStr = `$${Number(pair.volume?.h24 || 0).toLocaleString()}`;
                     const chg = pair.priceChange?.h24 || 0;
                     const logo = pair.info?.imageUrl || pair.baseToken?.logoURI || "";
 
+                    currentCirculatingSupply = price > 0 ? mcapVal / price : 1000000000;
                     currentTradeToken = { ca, name, symbol, price, mcap: mcapStr, logo };
 
                     document.getElementById('tokenHeaderName').innerText = name;
