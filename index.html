@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kote Trade & Sniper Terminal</title>
+    <title>Kote Trade & Predict Terminal</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
     <style>
@@ -14,6 +14,7 @@
             --border-color: rgba(59, 130, 246, 0.22);
             --accent-blue: #3b82f6;
             --accent-cyan: #06b6d4;
+            --accent-purple: #a855f7;
             --accent-red: #ef4444;
             --accent-green: #10b981;
             --text-main: #f8fafc;
@@ -104,6 +105,7 @@
         .btn-blue { background: linear-gradient(135deg, var(--accent-blue), #1d4ed8); color: #fff; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.35); }
         .btn-green { background: linear-gradient(135deg, var(--accent-green), #047857); color: #fff; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.35); }
         .btn-red { background: linear-gradient(135deg, var(--accent-red), #991b1b); color: #fff; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.35); }
+        .btn-purple { background: linear-gradient(135deg, var(--accent-purple), #7e22ce); color: #fff; box-shadow: 0 4px 15px rgba(168, 85, 247, 0.35); }
 
         .badge-pill {
             background: rgba(59, 130, 246, 0.14); border: 1px solid rgba(59, 130, 246, 0.35);
@@ -158,19 +160,26 @@
             background: var(--bg-input); border: 1px solid var(--border-color); color: var(--accent-cyan);
             padding: 5px 10px; border-radius: 8px; font-size: 10px; font-weight: 800; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;
         }
+
+        /* Predict Market Specific CSS */
+        .predict-card { background: linear-gradient(135deg, rgba(16, 18, 28, 0.95), rgba(24, 18, 38, 0.96)); border: 1px solid rgba(168, 85, 247, 0.25); border-radius: 16px; padding: 14px; margin-bottom: 12px; }
+        .market-outcomes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+        .outcome-btn { background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 10px; padding: 10px; text-align: center; cursor: pointer; transition: all 0.15s; }
+        .outcome-btn:hover { border-color: var(--accent-purple); }
+        .outcome-btn.selected { background: rgba(168, 85, 247, 0.2); border-color: var(--accent-purple); }
     </style>
 </head>
 <body>
 
     <!-- Intro & First-Time Wallet Setup Wizard -->
     <div id="intro-screen">
-        <div style="padding-top: 10px; font-weight: 900; color: var(--accent-blue); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE & SNIPER TERMINAL</div>
+        <div style="padding-top: 10px; font-weight: 900; color: var(--accent-blue); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE & PREDICT TERMINAL</div>
         
         <div class="intro-content" id="walletSetupStep1">
             <div class="intro-logo-moon">🐱</div>
             <div style="font-size: 22px; font-weight: 900; color: #fff;">WELCOME TO KOTE</div>
             <p style="font-size: 12px; color: var(--text-muted); line-height: 1.5; max-width: 310px;">
-                Generating your secure, non-custodial TON sniper wallet for instant zero-confirmation trading.
+                Generating your secure, non-custodial TON sniper wallet for instant zero-confirmation trading & predictions.
             </p>
             <button class="btn-action btn-blue" onclick="generateNewWallet()" style="max-width: 290px; margin-top: 6px;">🔐 Generate My Wallet</button>
         </div>
@@ -219,6 +228,29 @@
             <div style="background: var(--bg-input); padding: 12px; border-radius: 10px; font-size: 11px; color: var(--accent-cyan); font-weight: 800; word-break: break-all; margin-bottom: 14px;" id="modalWalletAddr">UQ...</div>
             <button class="btn-action btn-blue" onclick="copyWalletAddress()">📋 Copy Address</button>
             <button class="btn-action" style="background: var(--bg-input); color: #fff; margin-top: 8px;" onclick="closeModal('receiveModal')">Close</button>
+        </div>
+    </div>
+
+    <!-- Predict Bet Modal -->
+    <div class="modal-overlay" id="predictModal">
+        <div class="modal-card">
+            <div style="font-size: 14px; font-weight: 900; margin-bottom: 8px; color: #fff;" id="modalMarketTitle">Predict Market</div>
+            <div style="font-size: 11px; color: var(--accent-purple); font-weight: 800; margin-bottom: 12px;" id="modalSelectedOutcome">Outcome: YES</div>
+            
+            <div class="input-group">
+                <label>WAGER AMOUNT ($GRAM)</label>
+                <input type="number" id="predictWagerInput" value="10" placeholder="10">
+            </div>
+
+            <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 12px; display: flex; justify-content: space-between;">
+                <span>Your Wallet Balance:</span>
+                <strong style="color: var(--accent-cyan);" id="predictModalBalance">0.00 GRAM</strong>
+            </div>
+
+            <div style="display: flex; gap: 8px;">
+                <button class="btn-action btn-purple" style="flex: 1;" onclick="confirmPredictionWager()">🔮 Place Prediction</button>
+                <button class="btn-action" style="background: var(--bg-input); color: #fff; flex: 1;" onclick="closeModal('predictModal')">Cancel</button>
+            </div>
         </div>
     </div>
 
@@ -387,9 +419,8 @@
                 </div>
             </section>
 
-            <!-- 2. GRAM MEMES PAGE (SEPARATED INTO DEDUST & STON.FI SECTIONS) -->
+            <!-- 2. GRAM MEMES PAGE -->
             <section id="page-gram-memes" class="page">
-                <!-- Separate Block 1: DeDust Tokens -->
                 <div class="card">
                     <div class="card-header">
                         <span class="card-title">💧 DeDust Token Pools</span>
@@ -406,7 +437,6 @@
                     </div>
                 </div>
 
-                <!-- Separate Block 2: STON.fi Tokens -->
                 <div class="card">
                     <div class="card-header">
                         <span class="card-title">🟣 STON.fi Token Pools</span>
@@ -424,7 +454,7 @@
                 </div>
             </section>
 
-            <!-- 3. TOPBLAST PAGE (UNTOUCHED) -->
+            <!-- 3. TOPBLAST PAGE -->
             <section id="page-topblast" class="page">
                 <div class="card">
                     <div class="card-header">
@@ -443,7 +473,25 @@
                 </div>
             </section>
 
-            <!-- 4. PORTFOLIO PAGE -->
+            <!-- 4. KOTE PREDICT PAGE (NEW POLYMARKET STYLE) -->
+            <section id="page-predict" class="page">
+                <div class="card" style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.2), rgba(16, 18, 28, 0.95)); border-color: rgba(168, 85, 247, 0.4);">
+                    <div class="card-header"><span class="card-title" style="color: #c084fc;">🔮 KOTE PREDICT MARKETS</span></div>
+                    <div style="font-size: 13px; font-weight: 800; color: #fff;">Polymarket-style decentralized wagers using $GRAM</div>
+                    <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Predict crypto prices, sports scores, and global events. Winning pots are split pro-rata among winning cut shares. Pots are funded entirely by real user wagers.</div>
+                </div>
+
+                <div id="predictMarketsContainer"></div>
+
+                <div class="card">
+                    <div class="card-header"><span class="card-title">📜 Your Active Prediction Bets</span></div>
+                    <div id="userPredictBetsList" style="font-size: 12px; color: var(--text-muted);">
+                        No active prediction bets placed yet. Choose a market above to wager $GRAM!
+                    </div>
+                </div>
+            </section>
+
+            <!-- 5. PORTFOLIO PAGE -->
             <section id="page-portfolio" class="page">
                 <div class="card" style="background: linear-gradient(135deg, rgba(30, 58, 138, 0.45), rgba(16, 18, 28, 0.90));">
                     <div class="card-header">
@@ -461,7 +509,7 @@
                 </div>
             </section>
 
-            <!-- 5. PROFILE PAGE -->
+            <!-- 6. PROFILE PAGE -->
             <section id="page-profile" class="page">
                 <div class="card">
                     <div class="card-header"><span class="card-title">🔐 Real Sniper Wallet & Balance</span></div>
@@ -517,6 +565,7 @@
             <button class="nav-tab active" onclick="switchPage('sniper', this)">⚡<span>Snipe</span></button>
             <button class="nav-tab" onclick="switchPage('gram-memes', this)">🐸<span>Memes</span></button>
             <button class="nav-tab" onclick="switchPage('topblast', this)">🚀<span>Topblast</span></button>
+            <button class="nav-tab" onclick="switchPage('predict', this)">🔮<span>Predict</span></button>
             <button class="nav-tab" onclick="switchPage('portfolio', this)">💼<span>Portfolio</span></button>
             <button class="nav-tab" onclick="switchPage('profile', this)">👤<span>Profile</span></button>
         </nav>
@@ -528,41 +577,30 @@
             "EQAmWanX8ohlsG6qBpfL2ritCQ7tr7MlJpEK64Khm-O4742K", "EQA6G0uVERDZTkLNa0drWBna1F5TSbogy7UXEWU5ERHz4uJL",
             "EQAmZFuDbV0Ze8yR3lh3v0n8FISN-s3Yi7M8URCT--qc_t8x", "EQAmsYIAadPQrEn-wZrRKwqhnReLDOeKl9T70umuk0MA1ULW",
             "EQBvYQ3TyUYTjQxZa6UPbjwVzjnC5U3PRiXhpIu-HPMYMtTX", "EQAmvp1Vrr0zY2--STdH-0X_mP5iCD61p2vNVJYwHlgBni2C",
-            "EQAO_tYpLbPq-GOXegYTYtFaQ0tMkxLBxzYF8cUCGGWAj_aA", "EQA61O71y4I8oZDXRvMOrHtub2vxcPI54f1oGA_e4h0JL64L",
-            "EQAmewWMVccMpcKtgLUjcvkwGVSnzYIar2w39D-W_-Jp1U_V", "EQAmbXjiqLPXW16g3PXdMRzLKyprUvx8K2pwenW4kTj17vHk",
-            "EQAmTUciPykaNw5bZ9DlYXzpB9vFjUZOd5re_TiCHbaYmzvU", "EQAmT22Q2aPyLeTPmkzbCC0oDoOsLxTjSbR2XvWltb49FsuV",
-            "EQAmaMdwCmpZNJSRfvbNZDu1HkjFbw2VtvvI1FDKvLJMgyXE", "EQAmB_sndV45N-cmgT2tihQOcaf4EgT3nhhsvYeJ4UnICc0A"
+            "EQAO_tYpLbPq-GOXegYTYtFaQ0tMkxLBxzYF8cUCGGWAj_aA", "EQA61O71y4I8oZDXRvMOrHtub2vxcPI54f1oGA_e4h0JL64L"
         ];
 
         const DEDUST_CAs = [
-            "EQC47093oX5Xhb0xuk2lCr2RhS8rj-vul61u4W2UH5ORmG_O",
-            "EQDcm06RlreuMurm-yik9WbL6kI617B77OrSRF_ZjoCYFuny",
-            "EQARJg4uWJ4nZXz19g5pG1Q9Z2x5zH7j7c9L5l8Z0Z5Z0Z5Z",
-            "EQAvB1oX55J4z19g5pG1Q9Z2x5zH7j7c9L5l8Z0Z5Z0Z5Z1",
-            "EQADd2oX55J4z19g5pG1Q9Z2x5zH7j7c9L5l8Z0Z5Z0Z5Z2",
-            "EQA6G0uVERDZTkLNa0drWBna1F5TSbogy7UXEWU5ERHz4uJL",
-            "EQAmZFuDbV0Ze8yR3lh3v0n8FISN-s3Yi7M8URCT--qc_t8x",
-            "EQAmsYIAadPQrEn-wZrRKwqhnReLDOeKl9T70umuk0MA1ULW",
-            "EQBvYQ3TyUYTjQxZa6UPbjwVzjnC5U3PRiXhpIu-HPMYMtTX",
-            "EQAmvp1Vrr0zY2--STdH-0X_mP5iCD61p2vNVJYwHlgBni2C",
-            "EQAO_tYpLbPq-GOXegYTYtFaQ0tMkxLBxzYF8cUCGGWAj_aA",
-            "EQA61O71y4I8oZDXRvMOrHtub2vxcPI54f1oGA_e4h0JL64L"
+            "EQC47093oX5Xhb0xuk2lCr2RhS8rj-vul61u4W2UH5ORmG_O", "EQDcm06RlreuMurm-yik9WbL6kI617B77OrSRF_ZjoCYFuny",
+            "EQARJg4uWJ4nZXz19g5pG1Q9Z2x5zH7j7c9L5l8Z0Z5Z0Z5Z", "EQAvB1oX55J4z19g5pG1Q9Z2x5zH7j7c9L5l8Z0Z5Z0Z5Z1"
         ];
 
         const STONFI_CAs = [
-            "EQAnWanX8ohlsG6qBpfL2ritCQ7tr7MlJpEK64Khm-O4742K",
-            "EQA6_KTcZORIevd4zw9GJGmpaWKrzdixod8J1fWfm4r7YxZm",
-            "EQAmmPdBvJMe00ZVck3_oQL46HPov6RMGoPW2ex-7kjI0Il1",
-            "EQAmuf2yZ6vUjhKViYT-IYWNFEgrO3W47o-w9-15q_iD4A5D",
-            "EQAOp_GJvXdf-KOyrzwXV5Uf0Pzbsc5QXLRPwPc6dj1YnhPb",
-            "EQAOLGOVGr1z7Je3tn-1fKEIXmUYTduh2hnYzxBmhzFqDgIu",
-            "EQAmdLjlODBRz5Wyn04SeH_kx1V__X-ZSCwjRFnyYQnHkRdb",
-            "EQAm-H72S6NMaO3KEP7jFXPnupsgO0s-mggOKW89l098lL57",
-            "EQA6P6O_XDH0VNFedCZuopL7e8UdSqH9YEcC2bwzSjtYyuI4",
-            "EQAmBV5LVsfKTUdhQQIz3jOePtuA9BJLq7C1Rui082v0aVF3",
-            "EQAmiAVqNkNobs8CXbt38JlNFlXJ0eztRlsP3Z27YF2DMvKr",
-            "EQA6b9p3ILwLkcKiOra-Be1XjZRtQWE5MPBpjZLtuGRxlS9Y"
+            "EQAnWanX8ohlsG6qBpfL2ritCQ7tr7MlJpEK64Khm-O4742K", "EQA6_KTcZORIevd4zw9GJGmpaWKrzdixod8J1fWfm4r7YxZm",
+            "EQAmmPdBvJMe00ZVck3_oQL46HPov6RMGoPW2ex-7kjI0Il1", "EQAmuf2yZ6vUjhKViYT-IYWNFEgrO3W47o-w9-15q_iD4A5D"
         ];
+
+        // Polymarket Style Prediction Markets
+        let predictMarkets = [
+            { id: 1, title: "Will TON price exceed $10 in 30 days?", category: "Crypto", pool: 0.00, yesShare: 52, noShare: 48, betsCount: 0 },
+            { id: 2, title: "Will Bitcoin hit a new All-Time High this month?", category: "Crypto", pool: 0.00, yesShare: 78, noShare: 22, betsCount: 0 },
+            { id: 3, title: "Will Manchester United win their next Premier League match?", category: "Football", pool: 0.00, yesShare: 45, noShare: 55, betsCount: 0 },
+            { id: 4, title: "Will GTA VI release date be officially delayed past Q4?", category: "Gaming", pool: 0.00, yesShare: 30, noShare: 70, betsCount: 0 }
+        ];
+
+        let userPredictionBets = [];
+        let activePredictMarket = null;
+        let activePredictOutcome = null;
 
         const WORD_LIST = ["alpha","brave","crypto","delta","echo","falcon","gamma","hyper","iron","jade","kote","lunar","matrix","nova","omega","pulse","quantum","rocket","sniper","titan","ultra","vortex","whale","xenon","yield","zenith","orbit","prism","spark","surge","token","vault","apex","beacon","cyber","dynasty","eclipse","flux","gravity","horizon","ignite","jaguar","kinetic","nexus","phantom","relic","starlight","temple","vector"];
         
@@ -597,14 +635,16 @@
                 positions: openPositions, 
                 balance: walletGramBalance,
                 refUsers: referredUsers,
-                refFees: referredFeesEarned
+                refFees: referredFeesEarned,
+                markets: predictMarkets,
+                userBets: userPredictionBets
             };
-            localStorage.setItem("kote_terminal_state_v11", JSON.stringify(stateObj));
+            localStorage.setItem("kote_terminal_state_v12", JSON.stringify(stateObj));
         }
 
         function loadAppState() {
             try {
-                const raw = localStorage.getItem("kote_terminal_state_v11");
+                const raw = localStorage.getItem("kote_terminal_state_v12");
                 if (raw) {
                     const parsed = JSON.parse(raw);
                     if (parsed.wallet) userWallet = parsed.wallet;
@@ -612,6 +652,8 @@
                     if (typeof parsed.balance === 'number') walletGramBalance = parsed.balance;
                     if (typeof parsed.refUsers === 'number') referredUsers = parsed.refUsers;
                     if (typeof parsed.refFees === 'number') referredFeesEarned = parsed.refFees;
+                    if (Array.isArray(parsed.markets)) predictMarkets = parsed.markets;
+                    if (Array.isArray(parsed.userBets)) userPredictionBets = parsed.userBets;
                 }
             } catch(e) {}
         }
@@ -619,12 +661,9 @@
         window.generateNewWallet = function() {
             const shuffled = [...WORD_LIST].sort(() => 0.5 - Math.random());
             const words = shuffled.slice(0, 12);
-            
             const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
             let randAddr = "UQ";
-            for (let i = 0; i < 46; i++) {
-                randAddr += chars.charAt(Math.floor(Math.random() * chars.length));
-            }
+            for (let i = 0; i < 46; i++) randAddr += chars.charAt(Math.floor(Math.random() * chars.length));
             userWallet = { address: randAddr, seedPhrase: words.join(" "), createdAt: new Date().toISOString() };
             walletGramBalance = 0.00;
             saveAppState();
@@ -642,7 +681,7 @@
             if (confirm("⚠️ WARNING: Reset or delete your sniper wallet? Make sure you backed up your 12-word recovery phrase!")) {
                 userWallet = null;
                 walletGramBalance = 0.00;
-                localStorage.removeItem("kote_terminal_state_v11");
+                localStorage.removeItem("kote_terminal_state_v12");
                 location.reload();
             }
         };
@@ -679,6 +718,7 @@
             document.getElementById('modalWalletAddr').innerText = userWallet.address;
             document.getElementById('profileGramBalance').innerText = `${walletGramBalance.toFixed(2)} GRAM`;
             document.getElementById('tradePageGramBalance').innerText = `${walletGramBalance.toFixed(2)} GRAM`;
+            document.getElementById('predictModalBalance').innerText = `${walletGramBalance.toFixed(2)} GRAM`;
             
             document.getElementById('referredUsersCount').innerText = referredUsers;
             document.getElementById('referredFeesEarned').innerText = `${referredFeesEarned.toFixed(2)} GRAM`;
@@ -724,6 +764,93 @@
             document.getElementById('sendAmount').value = '';
         };
 
+        // --- KOTE PREDICT FUNCTIONS ---
+        window.openPredictModal = function(marketId, outcome) {
+            if (!userWallet) return alert("Please create or unlock your wallet first in your Profile tab!");
+            activePredictMarket = predictMarkets.find(m => m.id === marketId);
+            activePredictOutcome = outcome;
+            if (!activePredictMarket) return;
+
+            document.getElementById('modalMarketTitle').innerText = activePredictMarket.title;
+            document.getElementById('modalSelectedOutcome').innerText = `Wager Outcome: ${outcome.toUpperCase()} (${outcome === 'yes' ? activePredictMarket.yesShare : activePredictMarket.noShare}% share)`;
+            document.getElementById('predictWagerInput').value = 10;
+            updateWalletUI();
+            openModal('predictModal');
+        };
+
+        window.confirmPredictionWager = function() {
+            const wager = parseFloat(document.getElementById('predictWagerInput').value);
+            if (!wager || wager <= 0 || wager > walletGramBalance) return alert("Invalid wager amount or insufficient wallet balance.");
+
+            walletGramBalance -= wager;
+            activePredictMarket.pool += wager;
+            activePredictMarket.betsCount += 1;
+
+            userPredictionBets.unshift({
+                id: Date.now(),
+                marketTitle: activePredictMarket.title,
+                outcome: activePredictOutcome.toUpperCase(),
+                wager: wager,
+                timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            });
+
+            saveAppState();
+            updateWalletUI();
+            renderPredictMarkets();
+            renderUserPredictions();
+            closeModal('predictModal');
+            alert(`🔮 Successfully placed wager of ${wager} GRAM on "${activePredictOutcome.toUpperCase()}" for:\n"${activePredictMarket.title}"`);
+        };
+
+        function renderPredictMarkets() {
+            const container = document.getElementById('predictMarketsContainer');
+            if (!container) return;
+
+            container.innerHTML = predictMarkets.map(m => `
+                <div class="predict-card">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                        <span class="badge-pill" style="color: var(--accent-purple); border-color: rgba(168, 85, 247, 0.4);">${m.category}</span>
+                        <span style="font-size: 11px; font-weight: 800; color: var(--accent-cyan);">Pot: ${m.pool.toFixed(2)} GRAM</span>
+                    </div>
+                    <div style="font-size: 14px; font-weight: 900; color: #fff; margin-bottom: 10px;">${m.title}</div>
+                    <div class="market-outcomes">
+                        <div class="outcome-btn" onclick="openPredictModal(${m.id}, 'yes')">
+                            <div style="font-size: 10px; color: var(--text-muted); font-weight: 700;">YES (${m.yesShare}%)</div>
+                            <div style="font-size: 12px; font-weight: 900; color: var(--accent-green); margin-top: 2px;">Bet YES</div>
+                        </div>
+                        <div class="outcome-btn" onclick="openPredictModal(${m.id}, 'no')">
+                            <div style="font-size: 10px; color: var(--text-muted); font-weight: 700;">NO (${m.noShare}%)</div>
+                            <div style="font-size: 12px; font-weight: 900; color: var(--accent-red); margin-top: 2px;">Bet NO</div>
+                        </div>
+                    </div>
+                </div>
+            `).join("");
+        }
+
+        function renderUserPredictions() {
+            const container = document.getElementById('userPredictBetsList');
+            if (!container) return;
+
+            if (userPredictionBets.length === 0) {
+                container.innerHTML = `<div style="color: var(--text-muted); font-size: 12px; text-align: center; padding: 10px;">No active prediction bets placed yet. Choose a market above to wager $GRAM!</div>`;
+                return;
+            }
+
+            container.innerHTML = userPredictionBets.map(bet => `
+                <div style="background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 10px; padding: 10px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <div style="font-size: 12px; font-weight: 900; color: #fff; margin-bottom: 2px;">${bet.marketTitle}</div>
+                        <div style="font-size: 10px; color: var(--text-muted);">Side: <b style="color: ${bet.outcome === 'YES' ? 'var(--accent-green)' : 'var(--accent-red)'}">${bet.outcome}</b> | Placed: ${bet.timestamp}</div>
+                    </div>
+                    <div style="text-align: right;">
+                        <div style="font-size: 13px; font-weight: 900; color: var(--accent-cyan);">${bet.wager} GRAM</div>
+                        <div style="font-size: 9px; color: var(--accent-purple);">Pro-rata Cut Active</div>
+                    </div>
+                </div>
+            `).join("");
+        }
+
+        // --- CHART & LIVE M-CAP TRACKING ---
         let tvChart = null;
         let candleSeries = null;
         let maSeries = null;
@@ -845,6 +972,8 @@
             renderTopblastPaginationPage();
             renderDedustPaginationPage();
             renderStonfiPaginationPage();
+            renderPredictMarkets();
+            renderUserPredictions();
         }
 
         async function renderDedustPaginationPage() {
@@ -1464,7 +1593,7 @@
             }
             if (navBtn) navBtn.classList.add('active');
             if (pageId === 'sniper') initRealChart();
-            if (pageId === 'gram-memes' || pageId === 'topblast') setTimeout(renderTopblastAndMemesUI, 50);
+            if (pageId === 'gram-memes' || pageId === 'topblast' || pageId === 'predict') setTimeout(renderTopblastAndMemesUI, 50);
         };
 
         window.copyReferralLink = function() {
@@ -1476,6 +1605,8 @@
         window.addEventListener('DOMContentLoaded', () => {
             loadAppState();
             renderPortfolio();
+            renderPredictMarkets();
+            renderUserPredictions();
 
             if (!userWallet) {
                 document.getElementById('intro-screen').classList.add('active');
