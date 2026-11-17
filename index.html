@@ -401,7 +401,7 @@
         }
 
         function saveAppState() {
-            localStorage.setItem("kote_live_state_v3", JSON.stringify({
+            localStorage.setItem("kote_live_state_v4", JSON.stringify({
                 markets: predictMarkets,
                 userBets: userPredictionBets
             }));
@@ -409,7 +409,7 @@
 
         function loadAppState() {
             try {
-                const raw = localStorage.getItem("kote_live_state_v3");
+                const raw = localStorage.getItem("kote_live_state_v4");
                 if (raw) {
                     const parsed = JSON.parse(raw);
                     if (Array.isArray(parsed.markets)) predictMarkets = parsed.markets;
@@ -472,11 +472,16 @@
             navigator.clipboard.writeText(inAppWallet.address).then(() => alert("📋 Wallet address copied!"));
         };
 
-        // --- FETCH REAL JETTON BALANCES VIA TONAPI (TONVIEWER INDEXER) ---
+        // --- FETCH REAL JETTON BALANCES VIA TONAPI + CORS PROXY ---
         window.refreshInAppBalance = async function(silent = false) {
             if (!inAppWallet) return;
             try {
-                const res = await fetch(`https://tonapi.io/v2/accounts/${inAppWallet.address}/jettons`);
+                const apiUrl = `https://tonapi.io/v2/accounts/${inAppWallet.address}/jettons`;
+                const proxiedUrl = `https://corsproxy.io/?${encodeURIComponent(apiUrl)}`;
+                
+                const res = await fetch(proxiedUrl);
+                if (!res.ok) throw new Error("Failed to reach TonAPI indexer");
+                
                 const data = await res.json();
                 
                 walletGramBalance = 0;
@@ -519,10 +524,10 @@
 
                 updateWalletUI();
                 updateEstTokens();
-                if (!silent) alert(`✅ Synced with Tonviewer Indexer!\n$GRAM Balance: ${walletGramBalance.toFixed(2)} GRAM`);
+                if (!silent) alert(`✅ Successfully Synced!\n$GRAM Balance: ${walletGramBalance.toFixed(2)} GRAM`);
             } catch (e) {
                 console.error("TonAPI sync error:", e);
-                if (!silent) alert("Failed to fetch balance from TonAPI network.");
+                if (!silent) alert("Sync error. Please check your network connection and try again.");
             }
         };
 
