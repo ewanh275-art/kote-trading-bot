@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kote Trade & Predict Terminal</title>
+    <title>Kote Live Terminal</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
     <script type="module">
@@ -123,23 +123,16 @@
     <!-- Send / Withdraw Modal -->
     <div class="modal-overlay" id="sendModal">
         <div class="modal-card">
-            <div style="font-size: 14px; font-weight: 900; margin-bottom: 12px; color: #fff;">📤 Transfer Assets On-Chain</div>
-            <div class="input-group">
-                <label>ASSET TO SEND</label>
-                <select id="sendAssetType" style="width: 100%; background: none; border: none; color: var(--accent-cyan); font-size: 13px; font-weight: 800; outline: none;">
-                    <option value="GRAM" style="background: #131520;">$GRAM (Jetton)</option>
-                    <option value="TON" style="background: #131520;">TON (Native Gas)</option>
-                </select>
-            </div>
+            <div style="font-size: 14px; font-weight: 900; margin-bottom: 12px; color: #fff;">📤 Send $GRAM On-Chain</div>
             <div class="input-group">
                 <label>RECIPIENT TON ADDRESS (UQ... / EQ...)</label>
                 <input type="text" id="sendRecipient" placeholder="UQ...">
             </div>
             <div class="input-group">
-                <label>AMOUNT</label>
+                <label>AMOUNT ($GRAM)</label>
                 <input type="number" id="sendAmount" placeholder="0.0">
             </div>
-            <div style="font-size: 10px; color: var(--text-muted); margin-bottom: 10px;">Requires ~0.05 TON in native balance to cover network forward gas fees.</div>
+            <div style="font-size: 10px; color: var(--text-muted); margin-bottom: 10px;">Requires a tiny amount of native TON in the wallet for network gas.</div>
             <div style="display: flex; gap: 8px; margin-top: 12px;">
                 <button class="btn-action btn-blue" onclick="executeInAppSend()">Confirm Broadcast</button>
                 <button class="btn-action" style="background: var(--bg-input); color: #fff;" onclick="closeModal('sendModal')">Cancel</button>
@@ -332,8 +325,7 @@
                     <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); padding: 12px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
                         <div>
                             <div style="font-size: 10px; color: var(--text-muted);">$GRAM JETTON BALANCE</div>
-                            <div style="font-size: 20px; font-weight: 900; color: var(--accent-green); margin-top: 2px;" id="profileGramBalance">0.00 GRAM</div>
-                            <div style="font-size: 11px; color: var(--accent-cyan); font-weight: 800; margin-top: 2px;" id="profileTonGasBalance">Gas: 0.00 TON</div>
+                            <div style="font-size: 22px; font-weight: 900; color: var(--accent-green); margin-top: 2px;" id="profileGramBalance">0.00 GRAM</div>
                         </div>
                         <button class="btn-action btn-blue" style="width: auto; padding: 8px 12px; font-size: 11px;" onclick="refreshInAppBalance()">🔄 Refresh</button>
                     </div>
@@ -344,7 +336,7 @@
                     </div>
 
                     <div style="font-size: 10px; color: var(--text-muted); margin-bottom: 10px; line-height: 1.4;">
-                        💡 <b>Important:</b> Send both <b>$GRAM</b> (for sniping) and at least <b>0.15 TON</b> (for blockchain network gas fees) to this address.
+                        💡 <b>Tip:</b> Your $GRAM balance will automatically populate here once the network indexer processes your transfer.
                     </div>
 
                     <div id="walletActionsContainer" style="display: flex; flex-direction: column; gap: 8px;">
@@ -368,10 +360,8 @@
     </div>
 
     <script>
-        // Official TON Mainnet $GRAM Jetton Master Address
         const GRAM_MASTER_CA = "EQC47093oX5Xhb0xuk2lCr2RhS8rj-vul61u4W2UH5ORmG_O";
         const TREASURY_WALLET = "UQAC-pXNqjUJ0u1wBkLPiDkLVMZkWYXWvNQuH5Mtx_tPdsGV";
-        const STONFI_ROUTER_V1 = "EQB3ncyBUTjZUA5EnFKR5_EnOMI9V1tTEAAPaiU71gc4TiUt";
 
         let predictMarkets = [
             { id: 1, title: "Will TON exceed $10 within 30 days?", category: "Crypto", deadline: "30 Days", pool: 0, yesShare: 50, noShare: 50 },
@@ -383,7 +373,6 @@
         let activePredictOutcome = null;
 
         let inAppWallet = null;
-        let walletTonBalance = 0.00;
         let walletGramBalance = 0.00;
         let userGramJettonWalletAddr = null;
         let gramPriceUsd = 0.00;
@@ -412,7 +401,7 @@
         }
 
         function saveAppState() {
-            localStorage.setItem("kote_live_state_v1", JSON.stringify({
+            localStorage.setItem("kote_live_state_v2", JSON.stringify({
                 markets: predictMarkets,
                 userBets: userPredictionBets
             }));
@@ -420,7 +409,7 @@
 
         function loadAppState() {
             try {
-                const raw = localStorage.getItem("kote_live_state_v1");
+                const raw = localStorage.getItem("kote_live_state_v2");
                 if (raw) {
                     const parsed = JSON.parse(raw);
                     if (Array.isArray(parsed.markets)) predictMarkets = parsed.markets;
@@ -431,7 +420,6 @@
             } catch(e) {}
         }
 
-        // --- IN-APP CRYPTOGRAPHIC WALLET FUNCTIONS ---
         window.createInAppWallet = async function() {
             if (!window.TonCrypto || !window.TonCore) {
                 return alert("TON cryptographic libraries are still loading. Wait 2 seconds and try again.");
@@ -459,10 +447,9 @@
         };
 
         window.destroyInAppWallet = function() {
-            if (confirm("Are you sure? Without your 12-word seed phrase, any $GRAM or TON inside this wallet will be permanently inaccessible.")) {
+            if (confirm("Are you sure? Without your seed phrase, any funds inside will be inaccessible.")) {
                 localStorage.removeItem("kote_inapp_sniper_wallet");
                 inAppWallet = null;
-                walletTonBalance = 0;
                 walletGramBalance = 0;
                 userGramJettonWalletAddr = null;
                 updateWalletUI();
@@ -485,16 +472,10 @@
             navigator.clipboard.writeText(inAppWallet.address).then(() => alert("📋 Wallet address copied!"));
         };
 
-        // --- REAL-TIME ON-CHAIN BALANCE FETCH (TON + $GRAM JETTON) ---
+        // --- FETCH REAL JETTON BALANCES VIA TON CENTER V3 INDEXER ---
         window.refreshInAppBalance = async function(silent = false) {
             if (!inAppWallet) return;
             try {
-                // 1. Fetch Native TON Gas Balance via TON Center v2 HTTP API
-                const tonRes = await fetch(`https://toncenter.com/api/v2/getAddressBalance?address=${inAppWallet.address}`);
-                const tonData = await tonRes.json();
-                walletTonBalance = (tonData.ok && tonData.result) ? Number(tonData.result) / 1e9 : 0;
-
-                // 2. Fetch Real Jetton Balances ($GRAM and all tokens) via TON Center v3 Indexer
                 const jettonRes = await fetch(`https://toncenter.com/api/v3/jetton/wallets?owner_address=${inAppWallet.address}&limit=50`);
                 const jettonData = await jettonRes.json();
                 
@@ -521,7 +502,6 @@
                     }
                 }
 
-                // Fetch live $GRAM USD price from GeckoTerminal
                 const gramPoolRes = await fetch(`https://api.geckoterminal.com/api/v2/networks/ton/tokens/${GRAM_MASTER_CA}/pools?page=1`);
                 if (gramPoolRes.ok) {
                     const gpJson = await gramPoolRes.json();
@@ -530,10 +510,10 @@
 
                 updateWalletUI();
                 updateEstTokens();
-                if (!silent) alert(`✅ Synced with TON Mainnet!\n$GRAM: ${walletGramBalance.toFixed(2)}\nGas TON: ${walletTonBalance.toFixed(4)}`);
+                if (!silent) alert(`✅ Synced! $GRAM Balance: ${walletGramBalance.toFixed(2)} GRAM`);
             } catch (e) {
                 console.error("Mainnet sync error:", e);
-                if (!silent) alert("Network rate-limit hit on public RPC. Wait 3 seconds and tap Refresh again.");
+                if (!silent) alert("Network rate-limit hit. Wait 3 seconds and tap Refresh again.");
             }
         };
 
@@ -542,7 +522,6 @@
                 document.getElementById('topbarWalletPill').innerText = `💼 No Wallet`;
                 document.getElementById('profileWalletAddress').value = "Not Generated Yet";
                 document.getElementById('profileGramBalance').innerText = `0.00 GRAM`;
-                document.getElementById('profileTonGasBalance').innerText = `Gas: 0.00 TON`;
                 document.getElementById('tradePageGramBalance').innerText = `0.00 GRAM`;
                 document.getElementById('predictModalBalance').innerText = `0.00 GRAM`;
                 return;
@@ -552,7 +531,6 @@
             document.getElementById('topbarWalletPill').innerText = `💼 ${shortAddr}`;
             document.getElementById('profileWalletAddress').value = inAppWallet.address;
             document.getElementById('profileGramBalance').innerText = `${walletGramBalance.toFixed(2)} GRAM`;
-            document.getElementById('profileTonGasBalance').innerText = `Gas: ${walletTonBalance.toFixed(4)} TON`;
             document.getElementById('tradePageGramBalance').innerText = `${walletGramBalance.toFixed(2)} GRAM`;
             document.getElementById('predictModalBalance').innerText = `${walletGramBalance.toFixed(2)} GRAM`;
         }
@@ -560,7 +538,6 @@
         window.openModal = function(modalId) { document.getElementById(modalId).style.display = 'flex'; };
         window.closeModal = function(modalId) { document.getElementById(modalId).style.display = 'none'; };
 
-        // --- REAL ON-CHAIN JETTON & TON TRANSFER ---
         async function broadcastJettonTransfer(jettonWalletAddress, destinationAddress, amountJettons, forwardTonAmount = "0.05", forwardPayloadCell = null) {
             const client = new window.TonCore.TonClient({ endpoint: "https://toncenter.com/api/v2/jsonRPC" });
             const secretKeyBuffer = Uint8Array.from(inAppWallet.secretKey);
@@ -568,7 +545,6 @@
             const wallet = window.TonCore.WalletContractV4.create({ workchain: 0, publicKey: keyPair.publicKey });
             const contract = client.open(wallet);
 
-            // Standard TEP-74 Jetton Transfer Payload (op = 0xf8a7ea5)
             const bodyBuilder = window.TonCore.beginCell()
                 .storeUint(0xf8a7ea5, 32)
                 .storeUint(0, 64)
@@ -602,51 +578,26 @@
         }
 
         window.executeInAppSend = async function() {
-            if (!inAppWallet) return alert("No active in-app wallet.");
-            const asset = document.getElementById('sendAssetType').value;
+            if (!inAppWallet) return alert("No active wallet.");
             const recipient = document.getElementById('sendRecipient').value.trim();
             const amt = parseFloat(document.getElementById('sendAmount').value);
 
             if (!recipient || recipient.length < 30) return alert("Enter a valid TON address.");
-            if (!amt || amt <= 0) return alert("Enter a valid amount.");
+            if (!amt || amt <= 0 || amt > walletGramBalance) return alert("Invalid amount or insufficient $GRAM balance.");
+            if (!userGramJettonWalletAddr) return alert("Jetton wallet contract not resolved.");
 
             try {
-                if (asset === "TON") {
-                    if (amt + 0.02 > walletTonBalance) return alert("Insufficient TON balance for transfer + gas.");
-                    const client = new window.TonCore.TonClient({ endpoint: "https://toncenter.com/api/v2/jsonRPC" });
-                    const secretKeyBuffer = Uint8Array.from(inAppWallet.secretKey);
-                    const keyPair = await window.TonCrypto.mnemonicToPrivateKey(inAppWallet.mnemonic.split(" "));
-                    const wallet = window.TonCore.WalletContractV4.create({ workchain: 0, publicKey: keyPair.publicKey });
-                    const contract = client.open(wallet);
-                    const seqno = await contract.getSeqno();
-
-                    await contract.send(contract.createTransfer({
-                        seqno,
-                        secretKey: secretKeyBuffer,
-                        messages: [window.TonCore.internal({
-                            to: recipient,
-                            value: window.TonCore.toNano(amt.toString()),
-                            bounce: false,
-                            body: "Kote Terminal Transfer"
-                        })]
-                    }));
-                } else {
-                    if (amt > walletGramBalance) return alert("Insufficient $GRAM balance.");
-                    if (!userGramJettonWalletAddr) return alert("$GRAM Jetton wallet contract not indexed yet.");
-                    if (walletTonBalance < 0.08) return alert("You need at least 0.08 native TON in your wallet to pay gas for Jetton transfers.");
-                    await broadcastJettonTransfer(userGramJettonWalletAddr, recipient, amt, "0.02", null);
-                }
-
+                await broadcastJettonTransfer(userGramJettonWalletAddr, recipient, amt, "0.02", null);
                 closeModal('sendModal');
-                alert(`✅ Transaction broadcasted on-chain! Refreshing balance in 5 seconds...`);
+                alert(`✅ $GRAM transfer broadcasted! Syncing balance in 5 seconds...`);
                 setTimeout(() => refreshInAppBalance(true), 5000);
             } catch (err) {
                 console.error("Broadcast error:", err);
-                alert("Broadcast failed: " + (err.message || "Check gas balance and address."));
+                alert("Broadcast failed: " + (err.message || "Check network connection."));
             }
         };
 
-        // --- REAL-TIME GECKOTERMINAL DATA & CHARTING (NO SIMULATED DATA) ---
+        // --- GECKOTERMINAL CHARTING ---
         let tvChart = null;
         let candleSeries = null;
 
@@ -675,9 +626,7 @@
             currentActiveTimeframe = tf;
             document.querySelectorAll('.tf-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            if (currentTradeToken.poolAddress) {
-                loadLiveOhlcvCandles(currentTradeToken.poolAddress, tf);
-            }
+            if (currentTradeToken.poolAddress) loadLiveOhlcvCandles(currentTradeToken.poolAddress, tf);
         };
 
         window.loadLiveTokenData = async function() {
@@ -690,13 +639,13 @@
 
             try {
                 const res = await fetch(`https://api.geckoterminal.com/api/v2/networks/ton/tokens/${ca}/pools?page=1`);
-                if (!res.ok) throw new Error("Pool not found on GeckoTerminal");
+                if (!res.ok) throw new Error("Pool not found");
                 const json = await res.json();
                 const topPoolObj = json.data?.[0];
 
                 if (!topPoolObj) {
                     document.getElementById('tokenHeaderName').innerText = "No Active DEX Pool";
-                    document.getElementById('chartStatusOverlay').innerText = "No live liquidity pool found for this CA.";
+                    document.getElementById('chartStatusOverlay').innerText = "No liquidity pool found.";
                     if (candleSeries) candleSeries.setData([]);
                     return;
                 }
@@ -710,7 +659,6 @@
                 const poolName = attr.name || "TON Jetton";
                 const symbol = poolName.split('/')[0].trim();
 
-                currentCirculatingSupply = price > 0 && mcapVal > 0 ? mcapVal / price : 0;
                 currentTradeToken = { ca, name: poolName, symbol, price, mcap: `$${formatCompactNumber(mcapVal)}`, poolAddress };
 
                 document.getElementById('tokenHeaderName').innerText = poolName;
@@ -723,9 +671,8 @@
                 updateEstTokens();
                 await loadLiveOhlcvCandles(poolAddress, currentActiveTimeframe);
             } catch (e) {
-                console.error("Live token fetch error:", e);
                 document.getElementById('tokenHeaderName').innerText = "Token Not Indexed";
-                document.getElementById('chartStatusOverlay').innerText = "Unable to load live pool data.";
+                document.getElementById('chartStatusOverlay').innerText = "Unable to load pool.";
                 if (candleSeries) candleSeries.setData([]);
             }
         };
@@ -743,7 +690,7 @@
                 if (rawList.length === 0) {
                     candleSeries.setData([]);
                     document.getElementById('chartStatusOverlay').style.display = "block";
-                    document.getElementById('chartStatusOverlay').innerText = "No live candle history available yet.";
+                    document.getElementById('chartStatusOverlay').innerText = "No candle history available.";
                     return;
                 }
 
@@ -761,7 +708,7 @@
             } catch (e) {
                 candleSeries.setData([]);
                 document.getElementById('chartStatusOverlay').style.display = "block";
-                document.getElementById('chartStatusOverlay').innerText = "Failed to load live OHLCV candles.";
+                document.getElementById('chartStatusOverlay').innerText = "Failed to load candles.";
             }
         }
 
@@ -808,88 +755,53 @@
             btn.classList.add('active');
         };
 
-        // --- REAL ON-CHAIN STON.FI JETTON SWAP EXECUTION ---
         window.executeLiveOnChainSnipe = async function() {
-            if (!inAppWallet) return alert("Create or load your in-app wallet in Profile first.");
-            if (walletTonBalance < 0.22) return alert("Insufficient gas: You need at least 0.22 native TON to execute a STON.fi DEX swap.");
+            if (!inAppWallet) return alert("Create or load your wallet in Profile first.");
+            if (currentGramAmount <= 0 || currentGramAmount > walletGramBalance) {
+                return alert("Insufficient $GRAM balance in your wallet.");
+            }
+            if (!userGramJettonWalletAddr) return alert("Jetton wallet contract not indexed yet. Hit Refresh.");
 
             try {
-                if (currentTradeMode === 'buy') {
-                    if (currentGramAmount <= 0 || currentGramAmount > walletGramBalance) {
-                        return alert("Insufficient $GRAM balance in your wallet.");
-                    }
-                    if (!userGramJettonWalletAddr) {
-                        return alert("Your $GRAM Jetton wallet contract could not be resolved. Hit Refresh in Profile.");
-                    }
+                const stonSimulate = await fetch(`https://api.ston.fi/v1/swap/simulate?offer_address=${GRAM_MASTER_CA}&ask_address=${currentTradeToken.ca}&units=${Math.floor(currentGramAmount * 1e9)}&slippage_tolerance=${currentSlippageVal / 100}`, { method: 'POST' });
+                const simData = await stonSimulate.json();
 
-                    // Resolve Router's Jetton Wallet address for the target token via STON.fi API
-                    const stonSimulate = await fetch(`https://api.ston.fi/v1/swap/simulate?offer_address=${GRAM_MASTER_CA}&ask_address=${currentTradeToken.ca}&units=${Math.floor(currentGramAmount * 1e9)}&slippage_tolerance=${currentSlippageVal / 100}`, { method: 'POST' });
-                    const simData = await stonSimulate.json();
-
-                    if (!simData.router_address || !simData.ask_jetton_wallet) {
-                        return alert("No direct $GRAM liquidity route found on STON.fi for this token pair.");
-                    }
-
-                    // Build STON.fi v1 Swap Forward Payload (op = 0x25938561)
-                    const swapPayload = window.TonCore.beginCell()
-                        .storeUint(0x25938561, 32)
-                        .storeAddress(window.TonCore.Address.parse(simData.ask_jetton_wallet))
-                        .storeCoins(BigInt(simData.min_ask_units || 1))
-                        .storeAddress(window.TonCore.Address.parse(inAppWallet.address))
-                        .storeBit(0)
-                        .endCell();
-
-                    await broadcastJettonTransfer(userGramJettonWalletAddr, simData.router_address, currentGramAmount, "0.18", swapPayload);
-                    alert(`⚡ Live $GRAM -> ${currentTradeToken.symbol} Swap Broadcasted to TON Mainnet!\nSyncing balances in 8 seconds...`);
-                    setTimeout(() => { refreshInAppBalance(true); refreshLivePortfolio(); }, 8000);
-                } else {
-                    const holding = liveHoldings.find(h => {
-                        try { return h.jettonMasterRaw === window.TonCore.Address.parse(currentTradeToken.ca).toRawString(); } catch(e) { return false; }
-                    });
-                    if (!holding || holding.balance <= 0) return alert(`You hold 0 ${currentTradeToken.symbol} on-chain to sell.`);
-
-                    const sellUnits = Math.floor(holding.balance * 1e9);
-                    const stonSimulate = await fetch(`https://api.ston.fi/v1/swap/simulate?offer_address=${currentTradeToken.ca}&ask_address=${GRAM_MASTER_CA}&units=${sellUnits}&slippage_tolerance=${currentSlippageVal / 100}`, { method: 'POST' });
-                    const simData = await stonSimulate.json();
-
-                    if (!simData.router_address || !simData.ask_jetton_wallet) {
-                        return alert("No direct sell route to $GRAM found on STON.fi.");
-                    }
-
-                    const swapPayload = window.TonCore.beginCell()
-                        .storeUint(0x25938561, 32)
-                        .storeAddress(window.TonCore.Address.parse(simData.ask_jetton_wallet))
-                        .storeCoins(BigInt(simData.min_ask_units || 1))
-                        .storeAddress(window.TonCore.Address.parse(inAppWallet.address))
-                        .storeBit(0)
-                        .endCell();
-
-                    await broadcastJettonTransfer(holding.jettonWallet, simData.router_address, holding.balance, "0.18", swapPayload);
-                    alert(`💰 Live Sell Order Broadcasted! Syncing balances in 8 seconds...`);
-                    setTimeout(() => { refreshInAppBalance(true); refreshLivePortfolio(); }, 8000);
+                if (!simData.router_address || !simData.ask_jetton_wallet) {
+                    return alert("No direct liquidity route found on STON.fi for this token pair.");
                 }
+
+                const swapPayload = window.TonCore.beginCell()
+                    .storeUint(0x25938561, 32)
+                    .storeAddress(window.TonCore.Address.parse(simData.ask_jetton_wallet))
+                    .storeCoins(BigInt(simData.min_ask_units || 1))
+                    .storeAddress(window.TonCore.Address.parse(inAppWallet.address))
+                    .storeBit(0)
+                    .endCell();
+
+                await broadcastJettonTransfer(userGramJettonWalletAddr, simData.router_address, currentGramAmount, "0.18", swapPayload);
+                alert(`⚡ Live Swap Broadcasted! Syncing balances in 8 seconds...`);
+                setTimeout(() => { refreshInAppBalance(true); refreshLivePortfolio(); }, 8000);
             } catch (err) {
                 console.error("DEX Swap error:", err);
-                alert("Swap failed: " + (err.message || "Verify liquidity route and gas balance."));
+                alert("Swap failed: " + (err.message || "Verify liquidity route."));
             }
         };
 
-        // --- LIVE ON-CHAIN PORTFOLIO SYNC ---
         window.refreshLivePortfolio = async function() {
             const container = document.getElementById('activePositionsContainer');
             const totalUsdEl = document.getElementById('portfolioTotalValueUsd');
 
             if (!inAppWallet) {
-                container.innerHTML = `<div class="card" style="text-align: center; padding: 24px 14px; color: var(--text-muted); font-size: 12px;">Generate your sniper wallet in Profile first.</div>`;
+                container.innerHTML = `<div class="card" style="text-align: center; padding: 24px 14px; color: var(--text-muted); font-size: 12px;">Generate your wallet in Profile first.</div>`;
                 return;
             }
 
-            container.innerHTML = `<div class="card" style="text-align: center; padding: 20px; color: var(--accent-cyan); font-size: 12px;">⏳ Querying TON Mainnet Jetton contracts & live GeckoTerminal prices...</div>`;
+            container.innerHTML = `<div class="card" style="text-align: center; padding: 20px; color: var(--accent-cyan); font-size: 12px;">⏳ Querying TON Mainnet Jettons & GeckoTerminal prices...</div>`;
             await refreshInAppBalance(true);
 
             if (liveHoldings.length === 0) {
                 totalUsdEl.innerText = "$0.00 USD";
-                container.innerHTML = `<div class="card" style="text-align: center; padding: 24px 14px; color: var(--text-muted); font-size: 12px;">No on-chain Jetton balances found in this wallet yet.</div>`;
+                container.innerHTML = `<div class="card" style="text-align: center; padding: 24px 14px; color: var(--text-muted); font-size: 12px;">No on-chain Jetton balances found.</div>`;
                 return;
             }
 
@@ -921,14 +833,13 @@
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                             <div>
                                 <div style="font-size: 14px; font-weight: 900; color: #fff;">${tokenName}</div>
-                                <div style="font-size: 10px; color: var(--text-muted);">On-Chain Balance: <b>${item.balance.toLocaleString(undefined, { maximumFractionDigits: 4 })}</b></div>
+                                <div style="font-size: 10px; color: var(--text-muted);">Balance: <b>${item.balance.toLocaleString()}</b></div>
                             </div>
                             <div style="text-align: right;">
                                 <div style="font-size: 14px; font-weight: 900; color: var(--accent-green);">$${usdValue.toFixed(2)} USD</div>
                                 <div style="font-size: 10px; color: var(--accent-cyan);">Price: $${livePrice < 0.01 ? livePrice.toFixed(6) : livePrice.toFixed(4)}</div>
                             </div>
                         </div>
-                        <button class="btn-action btn-blue" style="padding: 8px; font-size: 11px;" onclick="loadHoldingInSniper('${friendlyMaster}')">📊 Open Live Chart & Trade</button>
                     </div>
                 `;
             }
@@ -937,15 +848,8 @@
             container.innerHTML = cardsHtml;
         };
 
-        window.loadHoldingInSniper = function(ca) {
-            switchPage('sniper', document.querySelectorAll('.nav-tab')[0]);
-            document.getElementById('caInput').value = ca;
-            loadLiveTokenData();
-        };
-
-        // --- REAL ON-CHAIN PREDICT WAGERS ---
         window.openPredictModal = function(marketId, outcome) {
-            if (!inAppWallet) return alert("Please generate an in-app sniper wallet first!");
+            if (!inAppWallet) return alert("Generate an in-app sniper wallet first!");
             activePredictMarket = predictMarkets.find(m => m.id === marketId);
             activePredictOutcome = outcome;
             if (!activePredictMarket) return;
@@ -959,11 +863,9 @@
         window.confirmOnChainPredictionWager = async function() {
             const wager = parseFloat(document.getElementById('predictWagerInput').value);
             if (!wager || wager <= 0 || wager > walletGramBalance) return alert("Insufficient $GRAM balance.");
-            if (!userGramJettonWalletAddr) return alert("$GRAM Jetton wallet not resolved.");
-            if (walletTonBalance < 0.08) return alert("Need at least 0.08 native TON for network gas fees.");
+            if (!userGramJettonWalletAddr) return alert("Jetton wallet not resolved.");
 
             try {
-                // Broadcast real $GRAM wager on-chain to protocol escrow/treasury
                 await broadcastJettonTransfer(userGramJettonWalletAddr, TREASURY_WALLET, wager, "0.02", null);
 
                 activePredictMarket.pool += wager * 0.90;
@@ -979,10 +881,10 @@
                 renderPredictMarkets();
                 renderUserPredictions();
                 closeModal('predictModal');
-                alert(`🔮 On-Chain $GRAM Wager Broadcasted! Syncing balance in 5s...`);
+                alert(`🔮 Wager Broadcasted! Syncing balance in 5s...`);
                 setTimeout(() => refreshInAppBalance(true), 5000);
             } catch (e) {
-                alert("On-chain wager failed: " + (e.message || "Check gas balance."));
+                alert("Wager failed: " + (e.message || "Check connection."));
             }
         };
 
@@ -994,7 +896,7 @@
                 <div class="predict-card">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                         <span class="badge-pill" style="color: var(--accent-purple); border-color: rgba(168, 85, 247, 0.4);">${m.category} • ${m.deadline}</span>
-                        <span style="font-size: 11px; font-weight: 800; color: var(--accent-cyan);">On-Chain Pot: ${m.pool.toFixed(2)} GRAM</span>
+                        <span style="font-size: 11px; font-weight: 800; color: var(--accent-cyan);">Pot: ${m.pool.toFixed(2)} GRAM</span>
                     </div>
                     <div style="font-size: 14px; font-weight: 900; color: #fff; margin-bottom: 10px;">${m.title}</div>
                     <div class="market-outcomes">
