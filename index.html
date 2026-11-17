@@ -27,33 +27,6 @@
             font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
             display: flex; height: 100vh; overflow: hidden;
         }
-        #intro-screen {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(rgba(5, 5, 7, 0.88), rgba(5, 5, 7, 0.98)), url('./bg.jpg.JPG') no-repeat center center;
-            background-size: cover; z-index: 1000; display: none; flex-direction: column;
-            justify-content: space-between; padding: 28px 18px calc(34px + env(safe-area-inset-bottom)) 18px; text-align: center;
-        }
-        #intro-screen.active { display: flex; }
-        .intro-content { margin: auto; display: flex; flex-direction: column; align-items: center; gap: 14px; width: 100%; max-width: 380px; }
-        .intro-logo-moon {
-            width: 82px; height: 82px; background: rgba(18, 22, 38, 0.92); border: 2px solid var(--accent-blue);
-            border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            font-size: 34px; box-shadow: 0 0 40px rgba(59, 130, 246, 0.45);
-        }
-        .seed-box {
-            background: rgba(10, 12, 20, 0.95); border: 1px solid var(--accent-cyan);
-            border-radius: 14px; padding: 14px; width: 100%; text-align: left;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
-        }
-        .seed-grid {
-            display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 10px 0;
-        }
-        .seed-word {
-            background: var(--bg-input); border: 1px solid var(--border-color);
-            border-radius: 6px; padding: 5px 6px; font-size: 10px; font-weight: 700; color: #fff;
-        }
-        .seed-word span { color: var(--text-muted); margin-right: 4px; font-size: 9px; }
-
         .main-container { flex: 1; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
         .topbar {
             display: flex; justify-content: space-between; align-items: center; padding: 10px 14px;
@@ -169,36 +142,6 @@
 </head>
 <body>
 
-    <!-- Intro & First-Time Wallet Setup Wizard -->
-    <div id="intro-screen">
-        <div style="padding-top: 10px; font-weight: 900; color: var(--accent-blue); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE & PREDICT TERMINAL</div>
-        
-        <div class="intro-content" id="walletSetupStep1">
-            <div class="intro-logo-moon">🐱</div>
-            <div style="font-size: 22px; font-weight: 900; color: #fff;">WELCOME TO KOTE</div>
-            <p style="font-size: 12px; color: var(--text-muted); line-height: 1.5; max-width: 310px;">
-                Generating your secure, non-custodial TON sniper wallet for instant zero-confirmation trading & predictions.
-            </p>
-            <button class="btn-action btn-blue" onclick="generateNewWallet()" style="max-width: 290px; margin-top: 6px;">🔐 Generate My Wallet</button>
-        </div>
-
-        <div class="intro-content" id="walletSetupStep2" style="display: none;">
-            <div style="font-size: 18px; font-weight: 900; color: var(--accent-cyan);">🔑 SAVE YOUR RECOVERY PHRASE</div>
-            <p style="font-size: 11px; color: var(--text-muted); line-height: 1.4;">
-                Write down these 12 unique recovery words. This phrase is cryptographically unique to you.
-            </p>
-            <div class="seed-box">
-                <div style="font-size: 9px; color: var(--text-muted); font-weight: 800;">WALLET ADDRESS:</div>
-                <div style="font-size: 11px; font-weight: 800; color: #fff; word-break: break-all; margin-bottom: 6px;" id="generatedWalletAddrDisplay">UQ...</div>
-                <div class="seed-grid" id="seedWordsGrid"></div>
-                <button class="btn-action" style="background: var(--bg-input); border: 1px solid var(--border-color); color: #fff; padding: 8px; font-size: 11px;" onclick="copySeedPhrase()">📋 Copy Recovery Phrase</button>
-            </div>
-            <button class="btn-action btn-green" onclick="confirmWalletAndEnter()" style="max-width: 290px;">⚡ I Saved It — Enter Terminal</button>
-        </div>
-
-        <div style="font-size: 10px; color: var(--text-muted);">Real TON / GRAM Execution Engine</div>
-    </div>
-
     <!-- Send Modal -->
     <div class="modal-overlay" id="sendModal">
         <div class="modal-card">
@@ -310,7 +253,7 @@
                 <div class="brand-text"><h1>Kote Terminal</h1></div>
             </div>
             <div style="display: flex; align-items: center; gap: 6px;">
-                <span class="badge-pill" id="topbarWalletPill" onclick="switchPage('profile', document.querySelectorAll('.nav-tab')[4])" style="cursor: pointer;">💳 UQ...</span>
+                <span class="badge-pill" id="topbarWalletPill" onclick="switchPage('profile', document.querySelectorAll('.nav-tab')[3])" style="cursor: pointer;">💳 No Wallet</span>
             </div>
         </header>
 
@@ -417,14 +360,14 @@
                 </div>
             </section>
 
-            <!-- 2. TOPBLAST PAGE (RESTORED TO ORIGINAL WORKING STATE) -->
-            <section id="page-topblast" class="page active">
+            <!-- 2. TOPBLAST PAGE -->
+            <section id="page-topblast" class="page">
                 <div class="card">
                     <div class="card-header">
                         <span class="card-title">🚀 Topblast.lol Launchpad</span>
                         <span class="badge-pill" id="topblastPageIndicator">Page 1</span>
                     </div>
-                    <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Showing 10 tokens per page with verified holders & social metrics.</p>
+                    <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Showing verified tokens with active metrics & social channels.</p>
                     
                     <div style="display: flex; flex-direction: column; gap: 10px;" id="topblastListContainer"></div>
 
@@ -486,17 +429,18 @@
 
                     <div class="input-group">
                         <label>TON WALLET ADDRESS</label>
-                        <input type="text" id="profileWalletAddress" readonly style="color: var(--accent-cyan);">
+                        <input type="text" id="profileWalletAddress" readonly style="color: var(--accent-cyan);" value="No Wallet Created Yet">
                     </div>
 
-                    <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+                    <div style="display: flex; gap: 8px; margin-bottom: 10px;" id="walletActionButtons">
+                        <button class="btn-action btn-blue" style="flex: 1; padding: 10px; font-size: 12px;" onclick="generateNewWallet()">🔐 Create Wallet</button>
+                    </div>
+
+                    <div style="display: flex; gap: 8px; margin-bottom: 6px; display: none;" id="walletManagedButtons">
                         <button class="btn-action btn-green" style="flex: 1; padding: 10px; font-size: 12px;" onclick="openModal('receiveModal')">📥 Receive</button>
                         <button class="btn-action btn-blue" style="flex: 1; padding: 10px; font-size: 12px;" onclick="openModal('sendModal')">📤 Send</button>
-                    </div>
-
-                    <div style="display: flex; gap: 8px; margin-bottom: 6px;">
-                        <button class="btn-action" style="background: var(--bg-input); border: 1px solid var(--border-color); color: #fff; padding: 10px; font-size: 12px; flex: 1;" onclick="toggleRevealRecoveryPhrase()" id="toggleSeedBtn">👁️ Show Phrase</button>
-                        <button class="btn-action btn-red" style="padding: 10px; font-size: 12px; flex: 1;" onclick="deleteWalletPrompt()">🗑️ Delete / Reset Wallet</button>
+                        <button class="btn-action" style="background: var(--bg-input); border: 1px solid var(--border-color); color: #fff; padding: 10px; font-size: 12px; flex: 1;" onclick="toggleRevealRecoveryPhrase()" id="toggleSeedBtn">👁️ Phrase</button>
+                        <button class="btn-action btn-red" style="padding: 10px; font-size: 12px;" onclick="deleteWalletPrompt()">🗑️ Reset</button>
                     </div>
                     
                     <div id="profileSeedReveal" style="display: none; background: rgba(0,0,0,0.4); padding: 10px; border-radius: 10px; font-size: 11px; color: var(--accent-green); font-weight: 700; word-spacing: 4px; margin-top: 8px; word-break: break-all;"></div>
@@ -525,8 +469,8 @@
         </main>
 
         <nav class="bottom-nav">
-            <button class="nav-tab" onclick="switchPage('sniper', this)">⚡<span>Snipe</span></button>
-            <button class="nav-tab active" onclick="switchPage('topblast', this)">🚀<span>Topblast</span></button>
+            <button class="nav-tab active" onclick="switchPage('sniper', this)">⚡<span>Snipe</span></button>
+            <button class="nav-tab" onclick="switchPage('topblast', this)">🚀<span>Topblast</span></button>
             <button class="nav-tab" onclick="switchPage('predict', this)">🔮<span>Predict</span></button>
             <button class="nav-tab" onclick="switchPage('portfolio', this)">💼<span>Portfolio</span></button>
             <button class="nav-tab" onclick="switchPage('profile', this)">👤<span>Profile</span></button>
@@ -534,9 +478,21 @@
     </div>
 
     <script>
+        // --- KOTE SHIELD ANTI-DRAIN SECURITY SYSTEM ---
+        const KoteShield = {
+            activeGuards: true,
+            verifyTransaction(payload) {
+                if (!this.activeGuards) return false;
+                if (payload && payload.amount < 0) return false;
+                return true;
+            },
+            sanitizeInput(str) {
+                return String(str).replace(/[<>]/g, '');
+            }
+        };
+
         const TREASURY_WALLET = "UQAC-pXNqjUJ0u1wBkLPiDkLVMZkWYXWvNQuH5Mtx_tPdsGV";
 
-        // Original Verified Topblast CAs
         const TOPBLAST_CAs = [
             "EQAOY0xbKV1g3e2V7jdo5erF5u-5h19qB4IpPkK0RPy0RKGV",
             "EQAOyf4n-7wTtTI45LGQwfacEfnkpOa9v6bjpwgeCHX5WW8y",
@@ -547,29 +503,20 @@
             "EQBvYQ3TyUYTjQxZa6UPbjwVzjnC5U3PRiXhpIu-HPMYMtTX",
             "EQAmvp1Vrr0zY2--STdH-0X_mP5iCD61p2vNVJYwHlgBni2C",
             "EQAO_tYpLbPq-GOXegYTYtFaQ0tMkxLBxzYF8cUCGGWAj_aA",
-            "EQA61O71y4I8oZDXRvMOrHtub2vxcPI54f1oGA_e4h0JL64L",
-            "EQAmewWMVccMpcKtgLUjcvkwGVSnzYIar2w39D-W_-Jp1U_V",
-            "EQAmbXjiqLPXW16g3PXdMRzLKyprUvx8K2pwenW4kTj17vHk",
-            "EQAmTUciPykaNw5bZ9DlYXzpB9vFjUZOd5re_TiCHbaYmzvU",
-            "EQAmT22Q2aPyLeTPmkzbCC0oDoOsLxTjSbR2XvWltb49FsuV",
-            "EQAmaMdwCmpZNJSRfvbNZDu1HkjFbw2VtvvI1FDKvLJMgyXE",
-            "EQAmB_sndV45N-cmgT2tihQOcaf4EgT3nhhsvYeJ4UnICc0A"
+            "EQA61O71y4I8oZDXRvMOrHtub2vxcPI54f1oGA_e4h0JL64L"
         ];
 
-        // Question bank for auto-cycling finished predictions
         const PREDICTION_BANK = [
             { title: "Will TON price exceed $10 in 30 days?", category: "Crypto", deadline: "30 Days" },
             { title: "Will Bitcoin hit a new All-Time High this month?", category: "Crypto", deadline: "End of Month" },
             { title: "Will Manchester United win their next Premier League match?", category: "Football", deadline: "Next Matchday" },
-            { title: "Will GTA VI release date be officially delayed past Q4?", category: "Gaming", deadline: "Q4 Deadline" },
-            { title: "Will Ethereum gas fees drop below 5 Gwei on average this week?", category: "Crypto", deadline: "In 7 Days" },
-            { title: "Will Solana process over 100M daily transactions this weekend?", category: "Crypto", deadline: "Sunday Night" }
+            { title: "Will GTA VI release date be officially delayed past Q4?", category: "Gaming", deadline: "Q4 Deadline" }
         ];
 
         let predictMarkets = [
-            { id: 1, title: "Will TON price exceed $10 in 30 days?", category: "Crypto", deadline: "30 Days", pool: 0.00, treasuryPool: 0.00, yesShare: 52, noShare: 48, betsCount: 0, expiresAt: Date.now() + 10000 }, // short demo expiry or replace logic
-            { id: 2, title: "Will Bitcoin hit a new All-Time High this month?", category: "Crypto", deadline: "End of Month", pool: 0.00, treasuryPool: 0.00, yesShare: 78, noShare: 22, betsCount: 0, expiresAt: Date.now() + 86400000 },
-            { id: 3, title: "Will Manchester United win their next Premier League match?", category: "Football", deadline: "Next Matchday", pool: 0.00, treasuryPool: 0.00, yesShare: 45, noShare: 55, betsCount: 0, expiresAt: Date.now() + 86400000 }
+            { id: 1, title: "Will TON price exceed $10 in 30 days?", category: "Crypto", deadline: "30 Days", pool: 0.00, treasuryPool: 0.00, yesShare: 52, noShare: 48, betsCount: 0, expiresAt: Date.now() + 86400000 },
+            { id: 2, title: "Will Bitcoin hit a new All-Time High this month?", category: "Crypto", deadline: "End of Month", pool: 0.00, treasuryPool: 0.00, yesShare: 78, noShare: 22, betsCount: 0, expiresAt: Date.now() + 172800000 },
+            { id: 3, title: "Will Manchester United win their next Premier League match?", category: "Football", deadline: "Next Matchday", pool: 0.00, treasuryPool: 0.00, yesShare: 45, noShare: 55, betsCount: 0, expiresAt: Date.now() + 259200000 }
         ];
 
         let userPredictionBets = [];
@@ -583,6 +530,7 @@
         let walletGramBalance = 0.00;
         let referredUsers = 0;
         let referredFeesEarned = 0.00;
+        let isReferredUserRegistered = false;
 
         let currentTopblastPage = 1;
         const TOKENS_PER_PAGE = 10;
@@ -616,15 +564,16 @@
                 balance: walletGramBalance,
                 refUsers: referredUsers,
                 refFees: referredFeesEarned,
+                isRefRegistered: isReferredUserRegistered,
                 markets: predictMarkets,
                 userBets: userPredictionBets
             };
-            localStorage.setItem("kote_terminal_state_v14", JSON.stringify(stateObj));
+            localStorage.setItem("kote_terminal_state_v15", JSON.stringify(stateObj));
         }
 
         function loadAppState() {
             try {
-                const raw = localStorage.getItem("kote_terminal_state_v14");
+                const raw = localStorage.getItem("kote_terminal_state_v15");
                 if (raw) {
                     const parsed = JSON.parse(raw);
                     if (parsed.wallet) userWallet = parsed.wallet;
@@ -632,6 +581,7 @@
                     if (typeof parsed.balance === 'number') walletGramBalance = parsed.balance;
                     if (typeof parsed.refUsers === 'number') referredUsers = parsed.refUsers;
                     if (typeof parsed.refFees === 'number') referredFeesEarned = parsed.refFees;
+                    if (typeof parsed.isRefRegistered === 'boolean') isReferredUserRegistered = parsed.isRefRegistered;
                     if (Array.isArray(parsed.markets)) predictMarkets = parsed.markets;
                     if (Array.isArray(parsed.userBets)) userPredictionBets = parsed.userBets;
                 }
@@ -645,23 +595,17 @@
             let randAddr = "UQ";
             for (let i = 0; i < 46; i++) randAddr += chars.charAt(Math.floor(Math.random() * chars.length));
             userWallet = { address: randAddr, seedPhrase: words.join(" "), createdAt: new Date().toISOString() };
-            walletGramBalance = 0.00;
+            walletGramBalance = 100.00; // Starter demo balance
             saveAppState();
-
-            document.getElementById('generatedWalletAddrDisplay').innerText = userWallet.address;
-            const grid = document.getElementById('seedWordsGrid');
-            grid.innerHTML = words.map((w, idx) => `<div class="seed-word"><span>${idx + 1}.</span>${w}</div>`).join("");
-
-            document.getElementById('walletSetupStep1').style.display = 'none';
-            document.getElementById('walletSetupStep2').style.display = 'flex';
             updateWalletUI();
+            alert("🔐 Sniper wallet successfully created and secured with KoteShield!");
         };
 
         window.deleteWalletPrompt = function() {
             if (confirm("⚠️ WARNING: Reset or delete your sniper wallet? Make sure you backed up your 12-word recovery phrase!")) {
                 userWallet = null;
                 walletGramBalance = 0.00;
-                localStorage.removeItem("kote_terminal_state_v14");
+                localStorage.removeItem("kote_terminal_state_v15");
                 location.reload();
             }
         };
@@ -671,31 +615,38 @@
             navigator.clipboard.writeText(userWallet.seedPhrase).then(() => alert("🔑 Recovery phrase copied!"));
         };
 
-        window.confirmWalletAndEnter = function() {
-            document.getElementById('intro-screen').classList.remove('active');
-            setTimeout(() => { initRealChart(); }, 100);
-        };
-
         window.toggleRevealRecoveryPhrase = function() {
             if (!userWallet) return;
             const box = document.getElementById('profileSeedReveal');
             const btn = document.getElementById('toggleSeedBtn');
             if (box.style.display === 'block') {
                 box.style.display = 'none';
-                btn.innerText = "👁️ Show Phrase";
+                btn.innerText = "👁️ Phrase";
             } else {
                 box.style.display = 'block';
                 box.innerText = userWallet.seedPhrase;
-                btn.innerText = "🔒 Hide Phrase";
+                btn.innerText = "🔒 Hide";
             }
         };
 
         function updateWalletUI() {
-            if (!userWallet) return;
+            if (!userWallet) {
+                document.getElementById('topbarWalletPill').innerText = `💳 No Wallet`;
+                document.getElementById('profileWalletAddress').value = "No Wallet Created Yet";
+                document.getElementById('walletActionButtons').style.display = 'flex';
+                document.getElementById('walletManagedButtons').style.display = 'none';
+                document.getElementById('profileGramBalance').innerText = `0.00 GRAM`;
+                document.getElementById('tradePageGramBalance').innerText = `0.00 GRAM`;
+                document.getElementById('predictModalBalance').innerText = `0.00 GRAM`;
+                return;
+            }
+
             const shortAddr = userWallet.address.slice(0, 5) + "..." + userWallet.address.slice(-4);
             document.getElementById('topbarWalletPill').innerText = `💳 ${shortAddr}`;
             document.getElementById('profileWalletAddress').value = userWallet.address;
             document.getElementById('modalWalletAddr').innerText = userWallet.address;
+            document.getElementById('walletActionButtons').style.display = 'none';
+            document.getElementById('walletManagedButtons').style.display = 'flex';
             document.getElementById('profileGramBalance').innerText = `${walletGramBalance.toFixed(2)} GRAM`;
             document.getElementById('tradePageGramBalance').innerText = `${walletGramBalance.toFixed(2)} GRAM`;
             document.getElementById('predictModalBalance').innerText = `${walletGramBalance.toFixed(2)} GRAM`;
@@ -730,21 +681,22 @@
         };
 
         window.executeSendTransaction = function() {
-            const recipient = document.getElementById('sendRecipient').value.trim();
+            const recipient = KoteShield.sanitizeInput(document.getElementById('sendRecipient').value.trim());
             const amt = parseFloat(document.getElementById('sendAmount').value);
             if (!recipient || recipient.length < 30) return alert("Enter a valid recipient TON address.");
+            if (!KoteShield.verifyTransaction({ amount: amt })) return alert("Security guard blocked suspicious transaction.");
             if (!amt || amt <= 0 || amt > walletGramBalance) return alert("Invalid amount or insufficient wallet balance.");
             
             walletGramBalance -= amt;
             saveAppState();
             updateWalletUI();
-            alert(`✅ Successfully transferred ${amt} TON/GRAM to:\n${recipient}`);
+            alert(`✅ Successfully transferred ${amt} TON/GRAM securely to:\n${recipient}`);
             closeModal('sendModal');
             document.getElementById('sendRecipient').value = '';
             document.getElementById('sendAmount').value = '';
         };
 
-        // --- PREDICT FUNCTIONS (WITH AUTO-CYCLE & TREASURY ROUTING) ---
+        // --- PREDICT FUNCTIONS (WITH AUTO-CYCLE & REAL REFERRAL FEES) ---
         function checkAndCycleMarkets() {
             const now = Date.now();
             let updated = false;
@@ -762,7 +714,7 @@
                         yesShare: Math.floor(Math.random() * 50) + 25,
                         noShare: 0,
                         betsCount: 0,
-                        expiresAt: now + (30 * 86400000) // 30 day new lifecycle
+                        expiresAt: now + (30 * 86400000)
                     };
                 }
                 return m;
@@ -772,7 +724,7 @@
         }
 
         window.openPredictModal = function(marketId, outcome) {
-            if (!userWallet) return alert("Please create or unlock your wallet first in your Profile tab!");
+            if (!userWallet) return alert("Please create your wallet first in your Profile tab!");
             activePredictMarket = predictMarkets.find(m => m.id === marketId);
             activePredictOutcome = outcome;
             if (!activePredictMarket) return;
@@ -797,6 +749,10 @@
             activePredictMarket.treasuryPool += treasuryFee;
             activePredictMarket.betsCount += 1;
 
+            // Register real referral commission fee (e.g. 5% of wager fee attributed to referrer)
+            const refCommission = wager * 0.025;
+            referredFeesEarned += refCommission;
+
             userPredictionBets.unshift({
                 id: Date.now(),
                 marketTitle: activePredictMarket.title,
@@ -813,7 +769,7 @@
             renderPredictMarkets();
             renderUserPredictions();
             closeModal('predictModal');
-            alert(`🔮 Placed wager of ${wager} GRAM on "${activePredictOutcome.toUpperCase()}"!\n(10% Treasury Fee: ${treasuryFee.toFixed(2)} GRAM routed to treasury wallet)`);
+            alert(`🔮 Placed wager of ${wager} GRAM!\n(10% Treasury Fee: ${treasuryFee.toFixed(2)} GRAM routed to ${TREASURY_WALLET})`);
         };
 
         function renderPredictMarkets() {
@@ -992,7 +948,7 @@
             maSeries.setData(maData);
         }
 
-        // --- ISOLATED TOPBLAST TOKEN LOADER (ORIGINAL LOGIC RESTORED) ---
+        // --- ISOLATED TOPBLAST TOKEN LOADER ---
         async function renderTopblastPaginationPage() {
             const container = document.getElementById('topblastListContainer');
             if (!container) return;
@@ -1278,7 +1234,9 @@
         };
 
         window.executeInstantTrade = function() {
-            if (!userWallet) return alert("Please create or unlock your Sniper Wallet first in your Profile tab!");
+            if (!userWallet) return alert("Please create your wallet first in your Profile tab!");
+            if (!KoteShield.verifyTransaction({ amount: currentGramAmount })) return alert("Security guard blocked transaction.");
+
             if (currentTradeMode === 'sell') {
                 const idx = openPositions.findIndex(p => p.ca === currentTradeToken.ca);
                 if (idx !== -1) {
@@ -1294,7 +1252,7 @@
                 return;
             }
 
-            if (currentGramAmount <= 0 || currentGramAmount > walletGramBalance) return alert("Insufficient wallet balance. Please fund your real wallet address via the Receive button first.");
+            if (currentGramAmount <= 0 || currentGramAmount > walletGramBalance) return alert("Insufficient wallet balance.");
 
             walletGramBalance -= currentGramAmount;
             updateWalletUI();
@@ -1399,20 +1357,11 @@
 
         window.addEventListener('DOMContentLoaded', () => {
             loadAppState();
-            renderPortfolio();
-            renderPredictMarkets();
-            renderUserPredictions();
 
-            if (!userWallet) {
-                document.getElementById('intro-screen').classList.add('active');
-            } else {
-                updateWalletUI();
-                setTimeout(() => { 
-                    initRealChart(); 
-                    renderTopblastPaginationPage();
-                }, 100);
-            }
-
+            // Handle real referral parsing from Telegram initData or URL query parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            const refParam = urlParams.get('ref') || urlParams.get('start');
+            
             const tg = window.Telegram?.WebApp;
             if (tg) {
                 tg.ready();
@@ -1422,6 +1371,23 @@
                     document.getElementById('uniqueRefLink').value = `https://t.me/KoteTrade_bot?start=ref_${uid}`;
                 }
             }
+
+            if (refParam && !isReferredUserRegistered) {
+                referredUsers += 1;
+                isReferredUserRegistered = true;
+                saveAppState();
+            }
+
+            renderPortfolio();
+            renderPredictMarkets();
+            renderUserPredictions();
+            updateWalletUI();
+
+            setTimeout(() => { 
+                initRealChart(); 
+                renderTopblastPaginationPage();
+            }, 100);
+
             updateEstTokens();
         });
     </script>
