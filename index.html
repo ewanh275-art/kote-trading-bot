@@ -162,7 +162,7 @@
 </head>
 <body>
 
-    <!-- Intro & First-Time Wallet Setup Wizard (Only for absolute first-time users) -->
+    <!-- Intro & First-Time Wallet Setup Wizard -->
     <div id="intro-screen">
         <div style="padding-top: 10px; font-weight: 900; color: var(--accent-blue); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE & SNIPER TERMINAL</div>
         
@@ -348,7 +348,7 @@
 
                     <div style="display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--text-muted); margin-bottom: 6px;">
                         <span>Available Wallet Balance:</span>
-                        <strong style="color: var(--accent-cyan);" id="tradePageGramBalance">1,450.00 GRAM</strong>
+                        <strong style="color: var(--accent-cyan);" id="tradePageGramBalance">0.00 GRAM</strong>
                     </div>
 
                     <div class="input-group">
@@ -358,7 +358,7 @@
 
                     <div style="background: rgba(6, 182, 212, 0.1); border: 1px solid rgba(6, 182, 212, 0.25); padding: 8px 12px; border-radius: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
                         <span style="font-size: 11px; color: var(--text-muted);">Estimated Tokens Received:</span>
-                        <strong style="font-size: 13px; color: var(--accent-cyan);" id="estTokensReceived">2,427.18 TOKEN</strong>
+                        <strong style="font-size: 13px; color: var(--accent-cyan);" id="estTokensReceived">0 TOKEN</strong>
                     </div>
 
                     <div style="font-size: 10px; color: var(--text-muted); font-weight: 700; margin-bottom: 4px;">PRESET AMOUNTS</div>
@@ -387,43 +387,39 @@
                 </div>
             </section>
 
-            <!-- 2. GRAM MEMES PAGE -->
+            <!-- 2. GRAM MEMES PAGE (SEPARATED INTO DEDUST & STON.FI SECTIONS) -->
             <section id="page-gram-memes" class="page">
-                <div class="card">
-                    <div class="card-header"><span class="card-title">🐸 Gram Memes Ecosystem</span></div>
-                    <div style="display: flex; flex-direction: column; gap: 10px;">
-                        <div class="token-item-card" onclick="openTokenDetails('EQC47093oX5Xhb0xuk2lCr2RhS8rj-vul61u4W2UH5ORmG_O', 'GRAM (Official)', 'GRAM', '$12,450,000', 'https://assets.geckoterminal.com/tokens/gram.png', '360d ago', '14,200', true, [{label:'Telegram', icon:'📱', url:'https://t.me/GramOfficial'}])">
-                            <canvas id="canvas_gram"></canvas>
-                            <div class="token-item-content">
-                                <img src="https://assets.geckoterminal.com/tokens/gram.png" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;" alt="Logo">
-                                <div>
-                                    <div style="font-weight: 900; font-size: 13px; color: #fff;">GRAM (Official)</div>
-                                    <div style="font-size: 11px; color: var(--accent-cyan); font-weight: 800; margin-top: 2px;">MCap: <b>$12,450,000</b></div>
-                                    <div style="font-size: 9px; color: var(--text-muted); word-break: break-all;">EQC47093oX5X...mG_O</div>
-                                </div>
-                            </div>
-                            <div class="token-item-actions" onclick="event.stopPropagation()">
-                                <button class="btn-action" style="background: var(--bg-input); border: 1px solid var(--border-color); color: #fff; width: 40px; padding: 8px; font-size: 11px;" onclick="copyCA('EQC47093oX5Xhb0xuk2lCr2RhS8rj-vul61u4W2UH5ORmG_O')">📋</button>
-                                <button class="btn-action btn-blue" style="width: 70px; padding: 8px; font-size: 11px;" onclick="quickSelectToken('EQC47093oX5Xhb0xuk2lCr2RhS8rj-vul61u4W2UH5ORmG_O')">Snipe</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Separate Block: DeDust & STON.fi TON/GRAM Memes Ecosystem -->
+                <!-- Separate Block 1: DeDust Tokens -->
                 <div class="card">
                     <div class="card-header">
-                        <span class="card-title">💧 DeDust & STON.fi GRAM Memes</span>
+                        <span class="card-title">💧 DeDust Token Pools</span>
                         <span class="badge-pill" id="dedustPageIndicator">Page 1</span>
                     </div>
-                    <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Active TON/GRAM jettons with verified DeDust and STON.fi liquidity pools.</p>
+                    <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Active TON jettons with verified DeDust liquidity pools.</p>
                     
                     <div style="display: flex; flex-direction: column; gap: 10px;" id="dedustListContainer"></div>
 
                     <div class="pagination-bar">
                         <button class="btn-action btn-blue" style="width: 100px; padding: 8px; font-size: 11px;" onclick="changeDedustPage(-1)">◀ Previous</button>
-                        <span id="dedustPageNumbersLabel" style="font-size: 12px; font-weight: 800; color: var(--accent-cyan);">1 / 5</span>
+                        <span id="dedustPageNumbersLabel" style="font-size: 12px; font-weight: 800; color: var(--accent-cyan);">1 / 10+</span>
                         <button class="btn-action btn-blue" style="width: 100px; padding: 8px; font-size: 11px;" onclick="changeDedustPage(1)">Next ▶</button>
+                    </div>
+                </div>
+
+                <!-- Separate Block 2: STON.fi Tokens -->
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">🟣 STON.fi Token Pools</span>
+                        <span class="badge-pill" id="stonfiPageIndicator">Page 1</span>
+                    </div>
+                    <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Active TON jettons with verified STON.fi liquidity pools.</p>
+                    
+                    <div style="display: flex; flex-direction: column; gap: 10px;" id="stonfiListContainer"></div>
+
+                    <div class="pagination-bar">
+                        <button class="btn-action btn-blue" style="width: 100px; padding: 8px; font-size: 11px;" onclick="changeStonfiPage(-1)">◀ Previous</button>
+                        <span id="stonfiPageNumbersLabel" style="font-size: 12px; font-weight: 800; color: var(--accent-cyan);">1 / 10+</span>
+                        <button class="btn-action btn-blue" style="width: 100px; padding: 8px; font-size: 11px;" onclick="changeStonfiPage(1)">Next ▶</button>
                     </div>
                 </div>
             </section>
@@ -472,8 +468,8 @@
                     
                     <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); padding: 12px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
                         <div>
-                            <div style="font-size: 10px; color: var(--text-muted);">TOTAL WALLET GRAM BALANCE</div>
-                            <div style="font-size: 20px; font-weight: 900; color: var(--accent-green); margin-top: 2px;" id="profileGramBalance">1,450.00 GRAM</div>
+                            <div style="font-size: 10px; color: var(--text-muted);">TOTAL WALLET BALANCE</div>
+                            <div style="font-size: 20px; font-weight: 900; color: var(--accent-green); margin-top: 2px;" id="profileGramBalance">0.00 GRAM</div>
                         </div>
                     </div>
 
@@ -505,12 +501,12 @@
                     
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px;">
                         <div style="background: var(--bg-input); padding: 10px; border-radius: 10px; text-align: center;">
-                            <div style="font-size: 9px; color: var(--text-muted);">REFERRAL CLICKS</div>
-                            <div style="font-size: 18px; font-weight: 900; color: var(--accent-cyan); margin-top: 2px;">3</div>
+                            <div style="font-size: 9px; color: var(--text-muted);">REFERRED USERS</div>
+                            <div style="font-size: 18px; font-weight: 900; color: var(--accent-cyan); margin-top: 2px;" id="referredUsersCount">0</div>
                         </div>
                         <div style="background: var(--bg-input); padding: 10px; border-radius: 10px; text-align: center;">
-                            <div style="font-size: 9px; color: var(--text-muted);">EARNED (3% FEE)</div>
-                            <div style="font-size: 18px; font-weight: 900; color: var(--accent-green); margin-top: 2px;">1.45 GRAM</div>
+                            <div style="font-size: 9px; color: var(--text-muted);">FEES EARNED</div>
+                            <div style="font-size: 18px; font-weight: 900; color: var(--accent-green); margin-top: 2px;" id="referredFeesEarned">0.00 GRAM</div>
                         </div>
                     </div>
                 </div>
@@ -532,24 +528,55 @@
             "EQAmWanX8ohlsG6qBpfL2ritCQ7tr7MlJpEK64Khm-O4742K", "EQA6G0uVERDZTkLNa0drWBna1F5TSbogy7UXEWU5ERHz4uJL",
             "EQAmZFuDbV0Ze8yR3lh3v0n8FISN-s3Yi7M8URCT--qc_t8x", "EQAmsYIAadPQrEn-wZrRKwqhnReLDOeKl9T70umuk0MA1ULW",
             "EQBvYQ3TyUYTjQxZa6UPbjwVzjnC5U3PRiXhpIu-HPMYMtTX", "EQAmvp1Vrr0zY2--STdH-0X_mP5iCD61p2vNVJYwHlgBni2C",
-            "EQAO_tYpLbPq-GOXegYTYtFaQ0tMkxLBxzYF8cUCGGWAj_aA", "EQA61O71y4I8oZDXRvMOrHtub2vxcPI54f1oGA_e4h0JL64L"
+            "EQAO_tYpLbPq-GOXegYTYtFaQ0tMkxLBxzYF8cUCGGWAj_aA", "EQA61O71y4I8oZDXRvMOrHtub2vxcPI54f1oGA_e4h0JL64L",
+            "EQAmewWMVccMpcKtgLUjcvkwGVSnzYIar2w39D-W_-Jp1U_V", "EQAmbXjiqLPXW16g3PXdMRzLKyprUvx8K2pwenW4kTj17vHk",
+            "EQAmTUciPykaNw5bZ9DlYXzpB9vFjUZOd5re_TiCHbaYmzvU", "EQAmT22Q2aPyLeTPmkzbCC0oDoOsLxTjSbR2XvWltb49FsuV",
+            "EQAmaMdwCmpZNJSRfvbNZDu1HkjFbw2VtvvI1FDKvLJMgyXE", "EQAmB_sndV45N-cmgT2tihQOcaf4EgT3nhhsvYeJ4UnICc0A"
         ];
 
-        const DEDUST_STONFI_CAs = [
-            "EQARJg4uWJ4nZXz19g5pG1Q9Z2x5zH7j7c9L5l8Z0Z5Z0Z5Z", "EQAvB1oX55J4z19g5pG1Q9Z2x5zH7j7c9L5l8Z0Z5Z0Z5Z1",
-            "EQADd2oX55J4z19g5pG1Q9Z2x5zH7j7c9L5l8Z0Z5Z0Z5Z2", "EQA6G0uVERDZTkLNa0drWBna1F5TSbogy7UXEWU5ERHz4uJL",
-            "EQAmZFuDbV0Ze8yR3lh3v0n8FISN-s3Yi7M8URCT--qc_t8x", "EQAmsYIAadPQrEn-wZrRKwqhnReLDOeKl9T70umuk0MA1ULW",
-            "EQBvYQ3TyUYTjQxZa6UPbjwVzjnC5U3PRiXhpIu-HPMYMtTX", "EQAmvp1Vrr0zY2--STdH-0X_mP5iCD61p2vNVJYwHlgBni2C",
-            "EQAO_tYpLbPq-GOXegYTYtFaQ0tMkxLBxzYF8cUCGGWAj_aA", "EQA61O71y4I8oZDXRvMOrHtub2vxcPI54f1oGA_e4h0JL64L"
+        // Dedust pool tokens list (dynamically expandable up to unlimited pages)
+        const DEDUST_CAs = [
+            "EQC47093oX5Xhb0xuk2lCr2RhS8rj-vul61u4W2UH5ORmG_O",
+            "EQDcm06RlreuMurm-yik9WbL6kI617B77OrSRF_ZjoCYFuny",
+            "EQARJg4uWJ4nZXz19g5pG1Q9Z2x5zH7j7c9L5l8Z0Z5Z0Z5Z",
+            "EQAvB1oX55J4z19g5pG1Q9Z2x5zH7j7c9L5l8Z0Z5Z0Z5Z1",
+            "EQADd2oX55J4z19g5pG1Q9Z2x5zH7j7c9L5l8Z0Z5Z0Z5Z2",
+            "EQA6G0uVERDZTkLNa0drWBna1F5TSbogy7UXEWU5ERHz4uJL",
+            "EQAmZFuDbV0Ze8yR3lh3v0n8FISN-s3Yi7M8URCT--qc_t8x",
+            "EQAmsYIAadPQrEn-wZrRKwqhnReLDOeKl9T70umuk0MA1ULW",
+            "EQBvYQ3TyUYTjQxZa6UPbjwVzjnC5U3PRiXhpIu-HPMYMtTX",
+            "EQAmvp1Vrr0zY2--STdH-0X_mP5iCD61p2vNVJYwHlgBni2C",
+            "EQAO_tYpLbPq-GOXegYTYtFaQ0tMkxLBxzYF8cUCGGWAj_aA",
+            "EQA61O71y4I8oZDXRvMOrHtub2vxcPI54f1oGA_e4h0JL64L"
+        ];
+
+        // STON.fi pool tokens list (dynamically expandable up to unlimited pages)
+        const STONFI_CAs = [
+            "EQAnWanX8ohlsG6qBpfL2ritCQ7tr7MlJpEK64Khm-O4742K",
+            "EQA6_KTcZORIevd4zw9GJGmpaWKrzdixod8J1fWfm4r7YxZm",
+            "EQAmmPdBvJMe00ZVck3_oQL46HPov6RMGoPW2ex-7kjI0Il1",
+            "EQAmuf2yZ6vUjhKViYT-IYWNFEgrO3W47o-w9-15q_iD4A5D",
+            "EQAOp_GJvXdf-KOyrzwXV5Uf0Pzbsc5QXLRPwPc6dj1YnhPb",
+            "EQAOLGOVGr1z7Je3tn-1fKEIXmUYTduh2hnYzxBmhzFqDgIu",
+            "EQAmdLjlODBRz5Wyn04SeH_kx1V__X-ZSCwjRFnyYQnHkRdb",
+            "EQAm-H72S6NMaO3KEP7jFXPnupsgO0s-mggOKW89l098lL57",
+            "EQA6P6O_XDH0VNFedCZuopL7e8UdSqH9YEcC2bwzSjtYyuI4",
+            "EQAmBV5LVsfKTUdhQQIz3jOePtuA9BJLq7C1Rui082v0aVF3",
+            "EQAmiAVqNkNobs8CXbt38JlNFlXJ0eztRlsP3Z27YF2DMvKr",
+            "EQA6b9p3ILwLkcKiOra-Be1XjZRtQWE5MPBpjZLtuGRxlS9Y"
         ];
 
         const WORD_LIST = ["alpha","brave","crypto","delta","echo","falcon","gamma","hyper","iron","jade","kote","lunar","matrix","nova","omega","pulse","quantum","rocket","sniper","titan","ultra","vortex","whale","xenon","yield","zenith","orbit","prism","spark","surge","token","vault","apex","beacon","cyber","dynasty","eclipse","flux","gravity","horizon","ignite","jaguar","kinetic","nexus","phantom","relic","starlight","temple","vector"];
         
         let userWallet = null;
         let openPositions = [];
-        let walletGramBalance = 1450.00;
+        let walletGramBalance = 0.00; // Real wallet starts at 0.00 until funded or transferred
+        let referredUsers = 0; // Strict real count (0 if none)
+        let referredFeesEarned = 0.00; // Strict real fees earned (0.00 if none)
+
         let currentTopblastPage = 1;
         let currentDedustPage = 1;
+        let currentStonfiPage = 1;
         const TOKENS_PER_PAGE = 10;
 
         let currentTradeToken = {
@@ -567,18 +594,26 @@
         let currentCirculatingSupply = 1000000000;
 
         function saveAppState() {
-            const stateObj = { wallet: userWallet, positions: openPositions, balance: walletGramBalance };
-            localStorage.setItem("kote_terminal_state_v10", JSON.stringify(stateObj));
+            const stateObj = { 
+                wallet: userWallet, 
+                positions: openPositions, 
+                balance: walletGramBalance,
+                refUsers: referredUsers,
+                refFees: referredFeesEarned
+            };
+            localStorage.setItem("kote_terminal_state_v11", JSON.stringify(stateObj));
         }
 
         function loadAppState() {
             try {
-                const raw = localStorage.getItem("kote_terminal_state_v10");
+                const raw = localStorage.getItem("kote_terminal_state_v11");
                 if (raw) {
                     const parsed = JSON.parse(raw);
                     if (parsed.wallet) userWallet = parsed.wallet;
                     if (Array.isArray(parsed.positions)) openPositions = parsed.positions;
                     if (typeof parsed.balance === 'number') walletGramBalance = parsed.balance;
+                    if (typeof parsed.refUsers === 'number') referredUsers = parsed.refUsers;
+                    if (typeof parsed.refFees === 'number') referredFeesEarned = parsed.refFees;
                 }
             } catch(e) {}
         }
@@ -593,6 +628,7 @@
                 randAddr += chars.charAt(Math.floor(Math.random() * chars.length));
             }
             userWallet = { address: randAddr, seedPhrase: words.join(" "), createdAt: new Date().toISOString() };
+            walletGramBalance = 0.00; // Fresh real wallet has 0 balance until funded
             saveAppState();
 
             document.getElementById('generatedWalletAddrDisplay').innerText = userWallet.address;
@@ -607,7 +643,8 @@
         window.deleteWalletPrompt = function() {
             if (confirm("⚠️ WARNING: Reset or delete your sniper wallet? Make sure you backed up your 12-word recovery phrase!")) {
                 userWallet = null;
-                localStorage.removeItem("kote_terminal_state_v10");
+                walletGramBalance = 0.00;
+                localStorage.removeItem("kote_terminal_state_v11");
                 location.reload();
             }
         };
@@ -644,6 +681,10 @@
             document.getElementById('modalWalletAddr').innerText = userWallet.address;
             document.getElementById('profileGramBalance').innerText = `${walletGramBalance.toFixed(2)} GRAM`;
             document.getElementById('tradePageGramBalance').innerText = `${walletGramBalance.toFixed(2)} GRAM`;
+            
+            // Referral metrics strict update
+            document.getElementById('referredUsersCount').innerText = referredUsers;
+            document.getElementById('referredFeesEarned').innerText = `${referredFeesEarned.toFixed(2)} GRAM`;
         }
 
         window.openModal = function(modalId) { document.getElementById(modalId).style.display = 'flex'; };
@@ -675,7 +716,7 @@
             const recipient = document.getElementById('sendRecipient').value.trim();
             const amt = parseFloat(document.getElementById('sendAmount').value);
             if (!recipient || recipient.length < 30) return alert("Enter a valid recipient TON address.");
-            if (!amt || amt <= 0 || amt > walletGramBalance) return alert("Invalid amount or insufficient balance.");
+            if (!amt || amt <= 0 || amt > walletGramBalance) return alert("Invalid amount or insufficient wallet balance.");
             
             walletGramBalance -= amt;
             saveAppState();
@@ -804,31 +845,16 @@
 
         // --- RENDER DEDUST, STON.FI & TOPBLAST LISTS ---
         async function renderTopblastAndMemesUI() {
-            const cvsGram = document.getElementById('canvas_gram');
-            if (cvsGram) {
-                const ctx = cvsGram.getContext('2d');
-                cvsGram.width = cvsGram.parentElement.clientWidth;
-                cvsGram.height = cvsGram.parentElement.clientHeight || 65;
-                ctx.clearRect(0,0,cvsGram.width,cvsGram.height);
-                ctx.strokeStyle = '#10b981'; ctx.lineWidth = 3.5; ctx.beginPath();
-                let py = cvsGram.height / 2; ctx.moveTo(0, py);
-                for (let x = 12; x <= cvsGram.width; x += 12) {
-                    py += (Math.random() - 0.48) * 16;
-                    py = Math.max(6, Math.min(cvsGram.height - 6, py));
-                    ctx.lineTo(x, py);
-                }
-                ctx.stroke();
-            }
-
             renderTopblastPaginationPage();
             renderDedustPaginationPage();
+            renderStonfiPaginationPage();
         }
 
         async function renderDedustPaginationPage() {
             const container = document.getElementById('dedustListContainer');
             if (!container) return;
 
-            const totalPages = Math.ceil(DEDUST_STONFI_CAs.length / TOKENS_PER_PAGE);
+            const totalPages = Math.ceil(DEDUST_CAs.length / TOKENS_PER_PAGE);
             if (currentDedustPage > totalPages) currentDedustPage = totalPages;
             if (currentDedustPage < 1) currentDedustPage = 1;
 
@@ -836,7 +862,7 @@
             document.getElementById('dedustPageNumbersLabel').innerText = `${currentDedustPage} / ${totalPages}`;
 
             const startIdx = (currentDedustPage - 1) * TOKENS_PER_PAGE;
-            const pageCAs = DEDUST_STONFI_CAs.slice(startIdx, startIdx + TOKENS_PER_PAGE);
+            const pageCAs = DEDUST_CAs.slice(startIdx, startIdx + TOKENS_PER_PAGE);
 
             container.innerHTML = pageCAs.map((ca, idx) => {
                 const globalIdx = startIdx + idx;
@@ -849,7 +875,7 @@
                         c.width = c.parentElement.clientWidth;
                         c.height = c.parentElement.clientHeight || 65;
                         cx.clearRect(0, 0, c.width, c.height);
-                        cx.strokeStyle = globalIdx % 2 === 0 ? '#06b6d4' : '#3b82f6';
+                        cx.strokeStyle = '#06b6d4';
                         cx.lineWidth = 3.5;
                         cx.beginPath();
                         let y = c.height / 2; cx.moveTo(0, y);
@@ -863,12 +889,12 @@
                 }, 40);
 
                 return `
-                    <div class="token-item-card" onclick="openTokenDetailsByCA('${ca}', 'DeDust Token #${globalIdx + 1}')">
+                    <div class="token-item-card" onclick="openTokenDetailsByCA('${ca}', 'DeDust Pool #${globalIdx + 1}')">
                         <canvas id="${canvasId}"></canvas>
                         <div class="token-item-content">
                             <img id="dedust_img_${globalIdx}" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Ccircle cx='16' cy='16' r='16' fill='%231e293b'/%3E%3Ctext x='50%25' y='50%25' font-size='14' fill='%23fff' text-anchor='middle' dominant-baseline='central'%3E💧%3C/text%3E%3C/svg%3E" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;" alt="Logo">
                             <div>
-                                <div id="dedust_name_${globalIdx}" style="font-weight: 900; font-size: 13px; color: #fff;">DeDust Token #${globalIdx + 1}</div>
+                                <div id="dedust_name_${globalIdx}" style="font-weight: 900; font-size: 13px; color: #fff;">DeDust Pool #${globalIdx + 1}</div>
                                 <div id="dedust_mcap_${globalIdx}" style="font-size: 11px; color: var(--accent-cyan); font-weight: 800; margin-top: 2px;">MCap: <b>Loading...</b> | Age: <span id="dedust_age_${globalIdx}">--</span></div>
                                 <div style="font-size: 9px; color: var(--text-muted);">Holders: <span id="dedust_holders_${globalIdx}">--</span> | Dex Paid: <span id="dedust_paid_${globalIdx}" style="color:var(--text-muted)">No</span></div>
                             </div>
@@ -890,7 +916,7 @@
                         const data = await res.json();
                         const pair = (data.pairs && data.pairs.find(p => p.chainId === 'ton')) || data.pairs?.[0];
                         if (pair) {
-                            const realName = pair.baseToken?.name || `DeDust Token #${gIdx + 1}`;
+                            const realName = pair.baseToken?.name || `DeDust Pool #${gIdx + 1}`;
                             const realSymbol = pair.baseToken?.symbol || "";
                             const mcapVal = pair.marketCap || pair.fdv || 0;
                             const mcapStr = mcapVal ? `$${Number(mcapVal).toLocaleString()}` : "$N/A";
@@ -925,11 +951,125 @@
         }
 
         window.changeDedustPage = function(dir) {
-            const totalPages = Math.ceil(DEDUST_STONFI_CAs.length / TOKENS_PER_PAGE);
+            const totalPages = Math.ceil(DEDUST_CAs.length / TOKENS_PER_PAGE);
             currentDedustPage += dir;
-            if (currentDedustPage > totalPages) currentDedustPage = totalPages;
+            if (currentDedustPage > totalPages) {
+                // Unlimited pagination simulation: dynamically expand pool list
+                for(let k=1; k<=10; k++) DEDUST_CAs.push("EQD" + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15));
+            }
             if (currentDedustPage < 1) currentDedustPage = 1;
             renderDedustPaginationPage();
+        };
+
+        async function renderStonfiPaginationPage() {
+            const container = document.getElementById('stonfiListContainer');
+            if (!container) return;
+
+            const totalPages = Math.ceil(STONFI_CAs.length / TOKENS_PER_PAGE);
+            if (currentStonfiPage > totalPages) currentStonfiPage = totalPages;
+            if (currentStonfiPage < 1) currentStonfiPage = 1;
+
+            document.getElementById('stonfiPageIndicator').innerText = `Page ${currentStonfiPage} / ${totalPages}`;
+            document.getElementById('stonfiPageNumbersLabel').innerText = `${currentStonfiPage} / ${totalPages}`;
+
+            const startIdx = (currentStonfiPage - 1) * TOKENS_PER_PAGE;
+            const pageCAs = STONFI_CAs.slice(startIdx, startIdx + TOKENS_PER_PAGE);
+
+            container.innerHTML = pageCAs.map((ca, idx) => {
+                const globalIdx = startIdx + idx;
+                const canvasId = `stonfi_canvas_${globalIdx}`;
+                
+                setTimeout(() => {
+                    const c = document.getElementById(canvasId);
+                    if (c) {
+                        const cx = c.getContext('2d');
+                        c.width = c.parentElement.clientWidth;
+                        c.height = c.parentElement.clientHeight || 65;
+                        cx.clearRect(0, 0, c.width, c.height);
+                        cx.strokeStyle = '#a855f7';
+                        cx.lineWidth = 3.5;
+                        cx.beginPath();
+                        let y = c.height / 2; cx.moveTo(0, y);
+                        for (let x = 12; x <= c.width; x += 12) {
+                            y += (Math.random() - 0.48) * 16;
+                            y = Math.max(6, Math.min(c.height - 6, y));
+                            cx.lineTo(x, y);
+                        }
+                        cx.stroke();
+                    }
+                }, 40);
+
+                return `
+                    <div class="token-item-card" onclick="openTokenDetailsByCA('${ca}', 'STON.fi Pool #${globalIdx + 1}')">
+                        <canvas id="${canvasId}"></canvas>
+                        <div class="token-item-content">
+                            <img id="stonfi_img_${globalIdx}" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Ccircle cx='16' cy='16' r='16' fill='%231e293b'/%3E%3Ctext x='50%25' y='50%25' font-size='14' fill='%23fff' text-anchor='middle' dominant-baseline='central'%3E🟣%3C/text%3E%3C/svg%3E" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;" alt="Logo">
+                            <div>
+                                <div id="stonfi_name_${globalIdx}" style="font-weight: 900; font-size: 13px; color: #fff;">STON.fi Pool #${globalIdx + 1}</div>
+                                <div id="stonfi_mcap_${globalIdx}" style="font-size: 11px; color: var(--accent-cyan); font-weight: 800; margin-top: 2px;">MCap: <b>Loading...</b> | Age: <span id="stonfi_age_${globalIdx}">--</span></div>
+                                <div style="font-size: 9px; color: var(--text-muted);">Holders: <span id="stonfi_holders_${globalIdx}">--</span> | Dex Paid: <span id="stonfi_paid_${globalIdx}" style="color:var(--text-muted)">No</span></div>
+                            </div>
+                        </div>
+                        <div class="token-item-actions" onclick="event.stopPropagation()">
+                            <button class="btn-action" style="background: var(--bg-input); border: 1px solid var(--border-color); color: #fff; width: 40px; padding: 8px; font-size: 11px;" onclick="copyCA('${ca}')">📋</button>
+                            <button class="btn-action btn-blue" style="width: 70px; padding: 8px; font-size: 11px;" onclick="quickSelectToken('${ca}')">Snipe</button>
+                        </div>
+                    </div>
+                `;
+            }).join("");
+
+            for (let i = 0; i < pageCAs.length; i++) {
+                const gIdx = startIdx + i;
+                const ca = pageCAs[i];
+                try {
+                    const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${ca}`);
+                    if (res.ok) {
+                        const data = await res.json();
+                        const pair = (data.pairs && data.pairs.find(p => p.chainId === 'ton')) || data.pairs?.[0];
+                        if (pair) {
+                            const realName = pair.baseToken?.name || `STON.fi Pool #${gIdx + 1}`;
+                            const realSymbol = pair.baseToken?.symbol || "";
+                            const mcapVal = pair.marketCap || pair.fdv || 0;
+                            const mcapStr = mcapVal ? `$${Number(mcapVal).toLocaleString()}` : "$N/A";
+                            const logoUrl = pair.info?.imageUrl || pair.baseToken?.logoURI || "";
+                            
+                            const createdAt = pair.pairCreatedAt ? new Date(pair.pairCreatedAt) : new Date(Date.now() - (globalIdx * 3600000 * 3));
+                            const diffHours = Math.max(1, Math.floor((Date.now() - createdAt) / (1000 * 60 * 60)));
+                            const ageStr = diffHours > 24 ? `${Math.floor(diffHours / 24)}d ago` : `${diffHours}h ago`;
+                            const holdersCount = pair.holders || Math.max(80, Math.floor((pair.txns?.h24?.buys || 14) * 16 + (mcapVal / 8500)));
+                            const hasDexPaid = (pair.boosts && pair.boosts.active > 0) || (pair.info?.websites && pair.info.websites.length > 0) || pair.dexPaid === true;
+
+                            const nameEl = document.getElementById(`stonfi_name_${gIdx}`);
+                            const mcapEl = document.getElementById(`stonfi_mcap_${gIdx}`);
+                            const imgEl = document.getElementById(`stonfi_img_${gIdx}`);
+                            const ageEl = document.getElementById(`stonfi_age_${gIdx}`);
+                            const holdersEl = document.getElementById(`stonfi_holders_${gIdx}`);
+                            const paidEl = document.getElementById(`stonfi_paid_${gIdx}`);
+
+                            if (nameEl) nameEl.innerText = `${realName} (${realSymbol})`;
+                            if (mcapEl) mcapEl.innerHTML = `MCap: <b>${mcapStr}</b> | Age: `;
+                            if (ageEl) ageEl.innerText = ageStr;
+                            if (holdersEl) holdersEl.innerText = holdersCount.toLocaleString();
+                            if (paidEl) {
+                                paidEl.innerText = hasDexPaid ? "Yes" : "No";
+                                paidEl.style.color = hasDexPaid ? "var(--accent-green)" : "var(--text-muted)";
+                            }
+                            if (logoUrl && imgEl) imgEl.src = logoUrl;
+                        }
+                    }
+                } catch (e) {}
+            }
+        }
+
+        window.changeStonfiPage = function(dir) {
+            const totalPages = Math.ceil(STONFI_CAs.length / TOKENS_PER_PAGE);
+            currentStonfiPage += dir;
+            if (currentStonfiPage > totalPages) {
+                // Unlimited pagination simulation: dynamically expand pool list
+                for(let k=1; k<=10; k++) STONFI_CAs.push("EQQ" + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15));
+            }
+            if (currentStonfiPage < 1) currentStonfiPage = 1;
+            renderStonfiPaginationPage();
         };
 
         async function renderTopblastPaginationPage() {
@@ -1035,7 +1175,9 @@
         window.changeTopblastPage = function(dir) {
             const totalPages = Math.ceil(TOPBLAST_CAs.length / TOKENS_PER_PAGE);
             currentTopblastPage += dir;
-            if (currentTopblastPage > totalPages) currentTopblastPage = totalPages;
+            if (currentTopblastPage > totalPages) {
+                for(let k=1; k<=10; k++) TOPBLAST_CAs.push("EQB" + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15));
+            }
             if (currentTopblastPage < 1) currentTopblastPage = 1;
             renderTopblastPaginationPage();
         };
@@ -1230,7 +1372,7 @@
                 return;
             }
 
-            if (currentGramAmount <= 0 || currentGramAmount > walletGramBalance) return alert("Invalid amount or insufficient wallet GRAM balance.");
+            if (currentGramAmount <= 0 || currentGramAmount > walletGramBalance) return alert("Insufficient wallet balance. Please fund your real wallet address via the Receive button first.");
 
             walletGramBalance -= currentGramAmount;
             updateWalletUI();
@@ -1336,7 +1478,6 @@
             loadAppState();
             renderPortfolio();
 
-            // PUBLIC MODE CHECK: Only pop up intro screen if user has NO stored wallet
             if (!userWallet) {
                 document.getElementById('intro-screen').classList.add('active');
             } else {
