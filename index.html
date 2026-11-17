@@ -6,8 +6,13 @@
     <title>Kote Trade & Predict Terminal</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
-    <!-- TON Connect UI CDN Script -->
-    <script src="https://cdn.jsdelivr.net/npm/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
+    <!-- TON Cryptographic Libraries for In-App Wallets via ESM -->
+    <script type="module">
+        import { mnemonicNew, mnemonicToPrivateKey } from 'https://esm.sh/@ton/crypto';
+        import { WalletContractV4, TonClient, internal } from 'https://esm.sh/@ton/ton';
+        window.TonCrypto = { mnemonicNew, mnemonicToPrivateKey };
+        window.TonCore = { WalletContractV4, TonClient, internal };
+    </script>
     <style>
         :root {
             --bg-base: #050507;
@@ -108,9 +113,7 @@
             max-height: 85vh; overflow-y: auto;
         }
 
-        .social-links-row {
-            display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px;
-        }
+        .social-links-row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
         .social-pill {
             background: var(--bg-input); border: 1px solid var(--border-color); color: var(--accent-cyan);
             padding: 5px 10px; border-radius: 8px; font-size: 10px; font-weight: 800; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;
@@ -123,6 +126,36 @@
     </style>
 </head>
 <body>
+
+    <!-- Send Modal -->
+    <div class="modal-overlay" id="sendModal">
+        <div class="modal-card">
+            <div style="font-size: 14px; font-weight: 900; margin-bottom: 12px; color: #fff;">📤 Send TON from In-App Wallet</div>
+            <div class="input-group">
+                <label>RECIPIENT ADDRESS (UQ...)</label>
+                <input type="text" id="sendRecipient" placeholder="UQ...">
+            </div>
+            <div class="input-group">
+                <label>AMOUNT (TON)</label>
+                <input type="number" id="sendAmount" placeholder="0.0">
+            </div>
+            <div style="display: flex; gap: 8px; margin-top: 12px;">
+                <button class="btn-action btn-blue" onclick="executeInAppSend()">Confirm Send</button>
+                <button class="btn-action" style="background: var(--bg-input); color: #fff;" onclick="closeModal('sendModal')">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Seed Backup Modal -->
+    <div class="modal-overlay" id="seedModal">
+        <div class="modal-card">
+            <div style="font-size: 14px; font-weight: 900; margin-bottom: 8px; color: var(--accent-red);">⚠️ Backup Your Seed Phrase</div>
+            <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 12px;">Save these 12 words securely. If you clear your cache or switch devices, you will lose funds permanently if you haven't saved this backup.</p>
+            <div style="background: var(--bg-input); padding: 12px; border-radius: 10px; font-size: 12px; color: #fff; font-weight: 800; word-break: break-all; line-height: 1.6; margin-bottom: 14px;" id="modalSeedText">--</div>
+            <button class="btn-action btn-blue" onclick="copySeedPhrase()">📋 Copy Seed Phrase</button>
+            <button class="btn-action" style="background: var(--bg-input); color: #fff; margin-top: 8px;" onclick="closeModal('seedModal')">Close</button>
+        </div>
+    </div>
 
     <!-- Token Details Modal -->
     <div class="modal-overlay" id="tokenDetailModal">
@@ -182,8 +215,7 @@
                 <div class="brand-text"><h1>Kote Terminal</h1></div>
             </div>
             <div style="display: flex; align-items: center; gap: 6px;">
-                <!-- TON Connect Widget Root Button -->
-                <div id="tonConnectButtonContainer"></div>
+                <span class="badge-pill" id="topbarWalletPill" onclick="switchPage('profile', document.querySelectorAll('.nav-tab')[3])" style="cursor: pointer;">💼 No Wallet</span>
             </div>
         </header>
 
@@ -250,13 +282,13 @@
                     </div>
 
                     <div style="display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--text-muted); margin-bottom: 6px;">
-                        <span>Connected Wallet Balance:</span>
+                        <span>In-App Sniper Wallet Balance:</span>
                         <strong style="color: var(--accent-cyan);" id="tradePageGramBalance">0.00 TON</strong>
                     </div>
 
                     <div class="input-group">
                         <label id="amountLabel">AMOUNT (TON)</label>
-                        <input type="number" id="gramAmountInput" value="10" oninput="updateGramAmount(this.value)">
+                        <input type="number" id="gramAmountInput" value="1" oninput="updateGramAmount(this.value)">
                     </div>
 
                     <div style="background: rgba(6, 182, 212, 0.1); border: 1px solid rgba(6, 182, 212, 0.25); padding: 8px 12px; border-radius: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
@@ -266,10 +298,10 @@
 
                     <div style="font-size: 10px; color: var(--text-muted); font-weight: 700; margin-bottom: 4px;">PRESET AMOUNTS</div>
                     <div class="preset-grid">
-                        <button class="preset-btn" onclick="selectPreset(1, this)">1 TON</button>
+                        <button class="preset-btn" onclick="selectPreset(0.5, this)">0.5 TON</button>
+                        <button class="preset-btn active" onclick="selectPreset(1, this)">1 TON</button>
+                        <button class="preset-btn" onclick="selectPreset(2.5, this)">2.5 TON</button>
                         <button class="preset-btn" onclick="selectPreset(5, this)">5 TON</button>
-                        <button class="preset-btn active" onclick="selectPreset(10, this)">10 TON</button>
-                        <button class="preset-btn" onclick="selectPreset(25, this)">25 TON</button>
                     </div>
 
                     <div style="margin-top: 8px;">
@@ -283,7 +315,7 @@
                         </div>
                     </div>
 
-                    <button class="btn-action btn-green" id="executeTradeBtn" style="margin-top: 10px;" onclick="executeLiveSwapOnChain()">⚡ Instant On-Chain Snipe Buy (10 TON)</button>
+                    <button class="btn-action btn-green" id="executeTradeBtn" style="margin-top: 10px;" onclick="executeInAppSnipeSwap()">⚡ Instant In-App Snipe Buy (1 TON)</button>
                 </div>
             </section>
 
@@ -291,8 +323,8 @@
             <section id="page-predict" class="page">
                 <div class="card" style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.2), rgba(16, 18, 28, 0.95)); border-color: rgba(168, 85, 247, 0.4);">
                     <div class="card-header"><span class="card-title" style="color: #c084fc;">🔮 KOTE PREDICT MARKETS</span></div>
-                    <div style="font-size: 13px; font-weight: 800; color: #fff;">Peer prediction wagers using TON</div>
-                    <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Predict crypto prices, sports scores, and events. Winning pots are split pro-rata among winning shares (minus a 10% treasury allocation sent to <code style="font-size:9px; color:var(--accent-cyan)">UQAC-pXNqjUJ0u1wBkLPiDkLVMZkWYXWvNQuH5Mtx_tPdsGV</code>). Finished questions auto-cycle with new ones!</div>
+                    <div style="font-size: 13px; font-weight: 800; color: #fff;">Peer prediction wagers using in-app sniper wallet</div>
+                    <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Predict crypto prices, sports scores, and events. Winning pots are split pro-rata among winning shares (minus a 10% treasury allocation sent to <code style="font-size:9px; color:var(--accent-cyan)">UQAC-pXNqjUJ0u1wBkLPiDkLVMZkWYXWvNQuH5Mtx_tPdsGV</code>).</div>
                 </div>
 
                 <div id="predictMarketsContainer"></div>
@@ -322,26 +354,52 @@
                     </div>
                 </div>
             </section>
+
+            <!-- 4. PROFILE / IN-APP WALLET PAGE -->
+            <section id="page-profile" class="page">
+                <div class="card">
+                    <div class="card-header"><span class="card-title">🔐 In-App Non-Custodial Sniper Wallet</span></div>
+                    
+                    <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); padding: 12px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <div style="font-size: 10px; color: var(--text-muted);">WALLET BALANCE</div>
+                            <div style="font-size: 20px; font-weight: 900; color: var(--accent-green); margin-top: 2px;" id="profileTonBalance">0.00 TON</div>
+                        </div>
+                        <button class="btn-action btn-blue" style="width: auto; padding: 8px 12px; font-size: 11px;" onclick="refreshInAppBalance()">🔄 Refresh</button>
+                    </div>
+
+                    <div class="input-group">
+                        <label>IN-APP SNIPER WALLET ADDRESS</label>
+                        <input type="text" id="profileWalletAddress" readonly style="color: var(--accent-cyan);" value="Not Generated Yet">
+                    </div>
+
+                    <div id="walletActionsContainer" style="display: flex; flex-direction: column; gap: 8px;">
+                        <button class="btn-action btn-green" onclick="createInAppWallet()">✨ Generate New Sniper Wallet</button>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="btn-action btn-blue" style="flex: 1; padding: 10px; font-size: 12px;" onclick="openModal('sendModal')">📤 Send / Withdraw</button>
+                            <button class="btn-action btn-purple" style="flex: 1; padding: 10px; font-size: 12px;" onclick="viewSeedPhrase()">🔑 Backup Seed</button>
+                        </div>
+                        <button class="btn-action btn-red" style="padding: 10px; font-size: 12px;" onclick="destroyInAppWallet()">🗑️ Remove / Reset Wallet</button>
+                    </div>
+                </div>
+            </section>
         </main>
 
         <nav class="bottom-nav">
             <button class="nav-tab active" onclick="switchPage('sniper', this)">⚡<span>Snipe</span></button>
             <button class="nav-tab" onclick="switchPage('predict', this)">🔮<span>Predict</span></button>
             <button class="nav-tab" onclick="switchPage('portfolio', this)">💼<span>Portfolio</span></button>
+            <button class="nav-tab" onclick="switchPage('profile', this)">👤<span>Profile</span></button>
         </nav>
     </div>
 
     <script>
-        // --- KOTE SHIELD ANTI-DRAIN SECURITY SYSTEM ---
         const KoteShield = {
             activeGuards: true,
             verifyTransaction(payload) {
                 if (!this.activeGuards) return false;
                 if (payload && payload.amount < 0) return false;
                 return true;
-            },
-            sanitizeInput(str) {
-                return String(str).replace(/[<>]/g, '');
             }
         };
 
@@ -361,12 +419,8 @@
         ];
 
         let userPredictionBets = [];
-        let activePredictMarket = null;
-        let activePredictOutcome = null;
-
-        let tonConnectUI = null;
-        let userWallet = null;
         let openPositions = [];
+        let inAppWallet = null;
         let walletTonBalance = 0.00;
 
         let currentTradeToken = {
@@ -398,12 +452,12 @@
                 markets: predictMarkets,
                 userBets: userPredictionBets
             };
-            localStorage.setItem("kote_terminal_state_v21", JSON.stringify(stateObj));
+            localStorage.setItem("kote_terminal_state_v22", JSON.stringify(stateObj));
         }
 
         function loadAppState() {
             try {
-                const raw = localStorage.getItem("kote_terminal_state_v21");
+                const raw = localStorage.getItem("kote_terminal_state_v22");
                 if (raw) {
                     const parsed = JSON.parse(raw);
                     if (Array.isArray(parsed.positions)) openPositions = parsed.positions;
@@ -411,14 +465,87 @@
                     if (Array.isArray(parsed.markets)) predictMarkets = parsed.markets;
                     if (Array.isArray(parsed.userBets)) userPredictionBets = parsed.userBets;
                 }
+                const storedWallet = localStorage.getItem("kote_inapp_sniper_wallet");
+                if (storedWallet) {
+                    inAppWallet = JSON.parse(storedWallet);
+                }
             } catch(e) {}
         }
 
+        // --- IN-APP CRYPTOGRAPHIC WALLET FUNCTIONS ---
+        window.createInAppWallet = async function() {
+            if (!window.TonCrypto || !window.TonCore) {
+                return alert("TON crypto libraries still loading. Please wait a second and try again.");
+            }
+            try {
+                const mnemonic = await window.TonCrypto.mnemonicNew(12);
+                const keyPair = await window.TonCrypto.mnemonicToPrivateKey(mnemonic);
+                const wallet = window.TonCore.WalletContractV4.create({ workchain: 0, publicKey: keyPair.publicKey });
+                const addressStr = wallet.address.toString({ bounceable: false });
+
+                inAppWallet = {
+                    address: addressStr,
+                    mnemonic: mnemonic.join(" "),
+                    secretKey: Array.from(keyPair.secretKey)
+                };
+
+                localStorage.setItem("kote_inapp_sniper_wallet", JSON.stringify(inAppWallet));
+                updateWalletUI();
+                alert(`✨ In-App Sniper Wallet Created!\nAddress: ${addressStr}\n\nMake sure to backup your seed phrase in Profile!`);
+            } catch (err) {
+                console.error("Wallet creation error:", err);
+                alert("Failed to generate in-app wallet.");
+            }
+        };
+
+        window.destroyInAppWallet = function() {
+            if (confirm("Are you sure? Ensure you have backed up your 12-word seed phrase or you will lose access to funds in this wallet.")) {
+                localStorage.removeItem("kote_inapp_sniper_wallet");
+                inAppWallet = null;
+                walletTonBalance = 0.00;
+                updateWalletUI();
+                alert("In-app wallet removed from local storage.");
+            }
+        };
+
+        window.viewSeedPhrase = function() {
+            if (!inAppWallet) return alert("No active in-app wallet created yet.");
+            document.getElementById('modalSeedText').innerText = inAppWallet.mnemonic;
+            openModal('seedModal');
+        };
+
+        window.copySeedPhrase = function() {
+            if (!inAppWallet) return;
+            navigator.clipboard.writeText(inAppWallet.mnemonic).then(() => alert("📋 Seed phrase copied to clipboard!"));
+        };
+
+        window.refreshInAppBalance = async function() {
+            if (!inAppWallet) return alert("No active wallet.");
+            try {
+                const client = new window.TonCore.TonClient({ endpoint: "https://toncenter.com/api/v2/jsonRPC" });
+                const balanceNano = await client.getBalance(window.TonCore.Address.parse(inAppWallet.address));
+                walletTonBalance = Number(balanceNano) / 1e9;
+                updateWalletUI();
+                alert(`Balance updated: ${walletTonBalance.toFixed(2)} TON`);
+            } catch (e) {
+                console.error("Balance fetch error:", e);
+                alert("Could not fetch balance from network.");
+            }
+        };
+
         function updateWalletUI() {
-            if (!userWallet || !userWallet.connected) {
+            if (!inAppWallet) {
+                document.getElementById('topbarWalletPill').innerText = `💼 No Wallet`;
+                document.getElementById('profileWalletAddress').value = "Not Generated Yet";
+                document.getElementById('profileTonBalance').innerText = `0.00 TON`;
                 document.getElementById('tradePageGramBalance').innerText = `0.00 TON`;
                 return;
             }
+
+            const shortAddr = inAppWallet.address.slice(0, 5) + "..." + inAppWallet.address.slice(-4);
+            document.getElementById('topbarWalletPill').innerText = `💼 ${shortAddr}`;
+            document.getElementById('profileWalletAddress').value = inAppWallet.address;
+            document.getElementById('profileTonBalance').innerText = `${walletTonBalance.toFixed(2)} TON`;
             document.getElementById('tradePageGramBalance').innerText = `${walletTonBalance.toFixed(2)} TON`;
         }
 
@@ -439,6 +566,46 @@
             if (activeModalToken?.ca) {
                 closeModal('tokenDetailModal');
                 quickSelectToken(activeModalToken.ca);
+            }
+        };
+
+        window.executeInAppSend = async function() {
+            if (!inAppWallet) return alert("No active in-app wallet.");
+            const recipient = document.getElementById('sendRecipient').value.trim();
+            const amt = parseFloat(document.getElementById('sendAmount').value);
+            if (!recipient || recipient.length < 30) return alert("Enter valid recipient address.");
+            if (!amt || amt <= 0 || amt > walletTonBalance) return alert("Invalid amount or insufficient balance.");
+
+            try {
+                const client = new window.TonCore.TonClient({ endpoint: "https://toncenter.com/api/v2/jsonRPC" });
+                const secretKeyBuffer = Buffer.from(inAppWallet.secretKey);
+                const keyPair = await window.TonCrypto.mnemonicToPrivateKey(inAppWallet.mnemonic.split(" "));
+                const wallet = window.TonCore.WalletContractV4.create({ workchain: 0, publicKey: keyPair.publicKey });
+                const contract = client.open(wallet);
+
+                const seqno = await contract.getSeqno();
+                const transfer = contract.createTransfer({
+                    seqno,
+                    secretKey: secretKeyBuffer,
+                    messages: [
+                        window.TonCore.internal({
+                            to: recipient,
+                            value: BigInt(Math.floor(amt * 1e9)),
+                            bounce: false,
+                            body: "Kote Terminal Transfer"
+                        })
+                    ]
+                });
+
+                await contract.send(transfer);
+                walletTonBalance -= amt;
+                saveAppState();
+                updateWalletUI();
+                alert(`✅ Successfully transferred ${amt} TON on-chain!`);
+                closeModal('sendModal');
+            } catch (err) {
+                console.error("Transfer error:", err);
+                alert("Transfer failed. Ensure your wallet has enough TON for network gas fees.");
             }
         };
 
@@ -470,11 +637,10 @@
         }
 
         window.openPredictModal = function(marketId, outcome) {
-            if (!userWallet || !userWallet.connected) return alert("Please connect your wallet via TON Connect first!");
-            activePredictMarket = predictMarkets.find(m => m.id === marketId);
-            activePredictOutcome = outcome;
-            if (!activePredictMarket) return;
-            alert(`Wager outcome selected: ${outcome.toUpperCase()} for "${activePredictMarket.title}"`);
+            if (!inAppWallet) return alert("Please generate an in-app sniper wallet first!");
+            const market = predictMarkets.find(m => m.id === marketId);
+            if (!market) return;
+            alert(`Wager outcome selected: ${outcome.toUpperCase()} for "${market.title}"`);
         };
 
         function renderPredictMarkets() {
@@ -703,7 +869,7 @@
         }
 
         let currentTradeMode = 'buy';
-        let currentTonAmount = 10;
+        let currentTonAmount = 1;
 
         window.setTradeMode = function(mode, btn) {
             currentTradeMode = mode;
@@ -711,7 +877,7 @@
             btn.classList.add('active');
             const execBtn = document.getElementById('executeTradeBtn');
             execBtn.className = mode === 'buy' ? 'btn-action btn-green' : 'btn-action btn-red';
-            execBtn.innerText = mode === 'buy' ? `⚡ Instant On-Chain Snipe Buy (${currentTonAmount} TON)` : `⚡ Instant Sell (${currentTonAmount} TON)`;
+            execBtn.innerText = mode === 'buy' ? `⚡ Instant In-App Snipe Buy (${currentTonAmount} TON)` : `⚡ Instant Sell (${currentTonAmount} TON)`;
         };
 
         window.selectPreset = function(amt, btn) {
@@ -725,7 +891,7 @@
         window.updateGramAmount = function(val) {
             currentTonAmount = parseFloat(val) || 0;
             const execBtn = document.getElementById('executeTradeBtn');
-            execBtn.innerText = currentTradeMode === 'buy' ? `⚡ Instant On-Chain Snipe Buy (${currentTonAmount} TON)` : `⚡ Instant Sell (${currentTonAmount} TON)`;
+            execBtn.innerText = currentTradeMode === 'buy' ? `⚡ Instant In-App Snipe Buy (${currentTonAmount} TON)` : `⚡ Instant Sell (${currentTonAmount} TON)`;
             updateEstTokens();
         };
 
@@ -741,13 +907,16 @@
             if (!isNaN(parsed) && parsed > 0) currentSlippageVal = parsed;
         };
 
-        // --- REAL ON-CHAIN SWAP EXECUTION VIA TON CONNECT ---
-        window.executeLiveSwapOnChain = async function() {
-            if (!userWallet || !userWallet.connected) {
-                return alert("Please connect your Tonkeeper wallet using the top right button first!");
+        // --- IN-APP ON-CHAIN SNIPE SWAP EXECUTION ---
+        window.executeInAppSnipeSwap = async function() {
+            if (!inAppWallet) {
+                return alert("Please generate an in-app sniper wallet first in the Profile tab!");
             }
             if (!KoteShield.verifyTransaction({ amount: currentTonAmount })) {
                 return alert("Security guard blocked transaction.");
+            }
+            if (currentTonAmount > walletTonBalance) {
+                return alert("Insufficient TON balance in your in-app wallet.");
             }
 
             if (currentTradeMode === 'sell') {
@@ -766,31 +935,38 @@
             }
 
             try {
-                const amountInNano = BigInt(Math.floor(currentTonAmount * 1e9)).toString(); // 1 TON = 10^9 nanotons
+                const client = new window.TonCore.TonClient({ endpoint: "https://toncenter.com/api/v2/jsonRPC" });
+                const secretKeyBuffer = Buffer.from(inAppWallet.secretKey);
+                const keyPair = await window.TonCrypto.mnemonicToPrivateKey(inAppWallet.mnemonic.split(" "));
+                const wallet = window.TonCore.WalletContractV4.create({ workchain: 0, publicKey: keyPair.publicKey });
+                const contract = client.open(wallet);
 
                 const stonApiUrl = encodeURIComponent(`https://api.ston.fi/v1/routers`);
                 const routerRes = await fetch(`https://corsproxy.io/?${stonApiUrl}`);
                 const routerData = await routerRes.json();
                 const routerAddress = routerData[0]?.router_address || "EQC33ANHUzFA5S_FqgJq_86vBqA_vN8b0ZzK0QY5vN8b0ZzK";
 
-                const transaction = {
-                    validUntil: Math.floor(Date.now() / 1000) + 300,
+                const seqno = await contract.getSeqno();
+                const transfer = contract.createTransfer({
+                    seqno,
+                    secretKey: secretKeyBuffer,
                     messages: [
-                        {
-                            address: routerAddress,
-                            amount: amountInNano,
-                        }
+                        window.TonCore.internal({
+                            to: routerAddress,
+                            value: BigInt(Math.floor(currentTonAmount * 1e9)),
+                            bounce: false,
+                            body: "Kote Snipe Swap"
+                        })
                     ]
-                };
+                });
 
-                const result = await tonConnectUI.sendTransaction(transaction);
-                
+                await contract.send(transfer);
                 walletTonBalance = Math.max(0, walletTonBalance - currentTonAmount);
                 const estTokens = currentTradeToken.price > 0 ? (currentTonAmount * 0.39) / currentTradeToken.price : 0;
                 
                 openPositions.unshift({
                     id: Date.now(), 
-                    source: 'ON-CHAIN SWAP', 
+                    source: 'IN-APP SNIPE', 
                     ca: currentTradeToken.ca, 
                     name: currentTradeToken.name, 
                     symbol: currentTradeToken.symbol, 
@@ -799,18 +975,17 @@
                     amountTon: currentTonAmount, 
                     tokensHeld: estTokens, 
                     slippage: currentSlippageVal,
-                    boc: result.boc ? result.boc.slice(0, 16) + '...' : 'Broadcasted',
                     timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                 });
 
                 saveAppState();
                 updateWalletUI();
                 renderPortfolio();
-                alert(`⚡ On-Chain Swap Executed Successfully!\nToken: ${currentTradeToken.name}\nBOC Hash: ${result.boc ? result.boc.slice(0, 16) : 'Confirmed'}`);
+                alert(`⚡ In-App On-Chain Snipe Executed Successfully!\nToken: ${currentTradeToken.name}`);
 
             } catch (error) {
-                console.error("Swap execution failed:", error);
-                alert("Transaction failed or was cancelled in your connected wallet.");
+                console.error("Snipe execution failed:", error);
+                alert("Transaction failed. Ensure your in-app wallet has enough TON for transaction gas fees.");
             }
         };
 
@@ -886,28 +1061,17 @@
             if (navBtn) navBtn.classList.add('active');
             if (pageId === 'sniper') initRealChart();
             if (pageId === 'predict') { renderPredictMarkets(); renderUserPredictions(); }
+            if (pageId === 'profile') updateWalletUI();
         };
 
         window.addEventListener('DOMContentLoaded', () => {
             loadAppState();
 
-            // Initialize TON Connect UI in header
-            tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
-                manifestUrl: window.location.origin + '/tonconnect-manifest.json',
-                buttonRootId: 'tonConnectButtonContainer'
-            });
-
-            tonConnectUI.onStatusChange(walletInfo => {
-                if (walletInfo) {
-                    userWallet = { address: walletInfo.account.address, connected: true };
-                    walletTonBalance = 50.00; // Live wallet balance buffer simulation
-                    updateWalletUI();
-                } else {
-                    userWallet = null;
-                    walletTonBalance = 0.00;
-                    updateWalletUI();
-                }
-            });
+            const tg = window.Telegram?.WebApp;
+            if (tg) {
+                tg.ready();
+                tg.expand();
+            }
 
             renderPortfolio();
             renderPredictMarkets();
