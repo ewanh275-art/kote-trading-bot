@@ -9,7 +9,7 @@
     <style>
         :root {
             --bg-base: #050507;
-            --bg-card: rgba(16, 18, 28, 0.92);
+            --bg-card: rgba(16, 18, 28, 0.94);
             --bg-input: #131520;
             --border-color: rgba(59, 130, 246, 0.22);
             --accent-blue: #3b82f6;
@@ -130,20 +130,26 @@
             width: 100%; max-width: 360px; padding: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.8);
         }
         
-        /* Token Card with Mini Background Chart */
+        /* Token Card with Thick Background Line Chart */
         .token-item-card {
-            background: linear-gradient(135deg, rgba(16, 18, 28, 0.9), rgba(10, 12, 20, 0.95));
-            border: 1px solid var(--border-color); border-radius: 12px; padding: 12px;
+            background: linear-gradient(135deg, rgba(16, 18, 28, 0.92), rgba(10, 12, 20, 0.96));
+            border: 1px solid var(--border-color); border-radius: 14px; padding: 12px;
             position: relative; overflow: hidden; display: flex; justify-content: space-between; align-items: center;
         }
         .token-item-card canvas {
-            position: absolute; right: 0; bottom: 0; width: 120px; height: 100%; opacity: 0.35; pointer-events: none;
+            position: absolute; left: 0; top: 0; width: 100%; height: 100%; opacity: 0.45; pointer-events: none; z-index: 1;
+        }
+        .token-item-content {
+            position: relative; z-index: 2; display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0;
+        }
+        .token-item-actions {
+            position: relative; z-index: 2; display: flex; gap: 6px; align-items: center;
         }
     </style>
 </head>
 <body>
 
-    <!-- Intro & First-Time Custodial Wallet Setup Screen -->
+    <!-- Intro & First-Time Wallet Setup Wizard -->
     <div id="intro-screen">
         <div style="padding-top: 10px; font-weight: 900; color: var(--accent-blue); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE & SNIPER TERMINAL</div>
         
@@ -217,7 +223,7 @@
 
         <!-- Content Area with Tabs (5 Tabs) -->
         <main class="content-area">
-            <!-- 1. SNIPE PAGE -->
+            <!-- 1. SNIPE / TRADE PAGE -->
             <section id="page-sniper" class="page active">
                 <div class="card">
                     <div class="card-header"><span class="card-title">🔍 Token Contract Lookup & Instant Snipe</span></div>
@@ -280,9 +286,20 @@
                         <button class="trade-tab sell" onclick="setTradeMode('sell', this)">SELL (INSTANT)</button>
                     </div>
 
+                    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--text-muted); margin-bottom: 6px;">
+                        <span>Available Wallet Balance:</span>
+                        <strong style="color: var(--accent-cyan);" id="tradePageGramBalance">1,450.00 GRAM</strong>
+                    </div>
+
                     <div class="input-group">
                         <label id="amountLabel">AMOUNT (GRAM)</label>
                         <input type="number" id="gramAmountInput" value="10" oninput="updateGramAmount(this.value)">
+                    </div>
+
+                    <!-- Live Output Token Estimate -->
+                    <div style="background: rgba(6, 182, 212, 0.1); border: 1px solid rgba(6, 182, 212, 0.25); padding: 8px 12px; border-radius: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+                        <span style="font-size: 11px; color: var(--text-muted);">Estimated Tokens Received:</span>
+                        <strong style="font-size: 13px; color: var(--accent-cyan);" id="estTokensReceived">2,427.18 TOKEN</strong>
                     </div>
 
                     <div style="font-size: 10px; color: var(--text-muted); font-weight: 700; margin-bottom: 4px;">PRESET AMOUNTS</div>
@@ -311,7 +328,7 @@
                 </div>
             </section>
 
-            <!-- 2. GRAM MEMES PAGE (WITH BACKGROUND MINI-CHARTS & BOLD MCAP) -->
+            <!-- 2. GRAM MEMES PAGE -->
             <section id="page-gram-memes" class="page">
                 <div class="card">
                     <div class="card-header"><span class="card-title">🐸 Gram Memes Ecosystem</span></div>
@@ -319,43 +336,34 @@
                     <div style="display: flex; flex-direction: column; gap: 10px;" id="gramMemesListContainer">
                         <div class="token-item-card">
                             <canvas id="canvas_gram"></canvas>
-                            <div style="z-index: 2;">
-                                <div style="font-weight: 900; font-size: 13px; color: #fff;">GRAM (Official)</div>
-                                <div style="font-size: 11px; color: var(--accent-cyan); font-weight: 800; margin-top: 2px;">MCap: <b>$12,450,000</b></div>
+                            <div class="token-item-content">
+                                <div>
+                                    <div style="font-weight: 900; font-size: 13px; color: #fff;">GRAM (Official)</div>
+                                    <div style="font-size: 11px; color: var(--accent-cyan); font-weight: 800; margin-top: 2px;">MCap: <b>$12,450,000</b></div>
+                                    <div style="font-size: 9px; color: var(--text-muted); word-break: break-all;">EQC47093oX5X...mG_O</div>
+                                </div>
                             </div>
-                            <button class="btn-action btn-blue" style="width: 75px; padding: 8px; font-size: 11px; z-index: 2;" onclick="quickSelectToken('EQC47093oX5Xhb0xuk2lCr2RhS8rj-vul61u4W2UH5ORmG_O')">Select</button>
-                        </div>
-                        <div class="token-item-card">
-                            <canvas id="canvas_not"></canvas>
-                            <div style="z-index: 2;">
-                                <div style="font-weight: 900; font-size: 13px; color: #fff;">NOTCOIN (NOT)</div>
-                                <div style="font-size: 11px; color: var(--accent-cyan); font-weight: 800; margin-top: 2px;">MCap: <b>$450,200,000</b></div>
+                            <div class="token-item-actions">
+                                <button class="btn-action" style="background: var(--bg-input); border: 1px solid var(--border-color); color: #fff; width: 45px; padding: 8px; font-size: 11px;" onclick="copyCA('EQC47093oX5Xhb0xuk2lCr2RhS8rj-vul61u4W2UH5ORmG_O')">📋</button>
+                                <button class="btn-action btn-blue" style="width: 75px; padding: 8px; font-size: 11px;" onclick="quickSelectToken('EQC47093oX5Xhb0xuk2lCr2RhS8rj-vul61u4W2UH5ORmG_O')">Snipe</button>
                             </div>
-                            <button class="btn-action btn-blue" style="width: 75px; padding: 8px; font-size: 11px; z-index: 2;" onclick="quickSelectToken('EQAvlWFDxGF2lXm67y4yzC17wYKD9A0guwPkMs1gOsM__NOT')">Select</button>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <!-- 3. TOPBLAST PAGE (WITH BACKGROUND MINI-CHARTS & BOLD MCAP) -->
+            <!-- 3. TOPBLAST PAGE (INTEGRATED WITH ALL PROVIDED CAs, THICK LINE CHARTS & BOLD MCAP) -->
             <section id="page-topblast" class="page">
                 <div class="card">
                     <div class="card-header"><span class="card-title">🚀 Topblast.lol Launchpad</span></div>
-                    <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Fair-launch meme coins with automatic DeDust migration.</p>
+                    <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Fair-launch meme coins with live charts and instant sniper integration.</p>
                     <div style="display: flex; flex-direction: column; gap: 10px;" id="topblastListContainer">
-                        <div class="token-item-card">
-                            <canvas id="canvas_dogs"></canvas>
-                            <div style="z-index: 2;">
-                                <div style="font-weight: 900; font-size: 13px; color: #fff;">DOGS (TON)</div>
-                                <div style="font-size: 11px; color: var(--accent-cyan); font-weight: 800; margin-top: 2px;">MCap: <b>$89,120,000</b></div>
-                            </div>
-                            <button class="btn-action btn-blue" style="width: 75px; padding: 8px; font-size: 11px; z-index: 2;" onclick="quickSelectToken('EQCvxJy4eG8hyHBFsZ7eePxrRsUQSFE_jpptRAYBmcG_DOGS')">Select</button>
-                        </div>
+                        <!-- Dynamically populated via script -->
                     </div>
                 </div>
             </section>
 
-            <!-- 4. PORTFOLIO PAGE -->
+            <!-- 4. PORTFOLIO PAGE (REAL-TIME ACTIVE TRADES & LIVE PnL) -->
             <section id="page-portfolio" class="page">
                 <div class="card" style="background: linear-gradient(135deg, rgba(30, 58, 138, 0.45), rgba(16, 18, 28, 0.90));">
                     <div class="card-header">
@@ -363,12 +371,12 @@
                         <span class="badge-pill" id="activePositionsCountBadge">0 Open</span>
                     </div>
                     <div style="font-size: 26px; font-weight: 900; color: #fff; margin: 4px 0;" id="portfolioTotalGram">0.00 GRAM</div>
-                    <div style="font-size: 11px; color: var(--text-muted);">All open positions are saved automatically until sold.</div>
+                    <div style="font-size: 11px; color: var(--text-muted);">Real-time PnL tracking and active holdings.</div>
                 </div>
 
                 <div id="activePositionsContainer" style="display: flex; flex-direction: column; gap: 10px;">
                     <div class="card" style="text-align: center; padding: 24px 14px; color: var(--text-muted); font-size: 12px;">
-                        No active trades or snipes yet. Execute a trade or snipe on the Snipe tab to track it here in real time!
+                        No active trades or snipes yet. Execute a trade on the Snipe tab to track live PnL here!
                     </div>
                 </div>
             </section>
@@ -377,6 +385,14 @@
             <section id="page-profile" class="page">
                 <div class="card">
                     <div class="card-header"><span class="card-title">🔐 Real Sniper Wallet & Balance</span></div>
+                    
+                    <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); padding: 12px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <div style="font-size: 10px; color: var(--text-muted);">TOTAL WALLET GRAM BALANCE</div>
+                            <div style="font-size: 20px; font-weight: 900; color: var(--accent-green); margin-top: 2px;" id="profileGramBalance">1,450.00 GRAM</div>
+                        </div>
+                    </div>
+
                     <div class="input-group">
                         <label>TON WALLET ADDRESS</label>
                         <input type="text" id="profileWalletAddress" readonly style="color: var(--accent-cyan);">
@@ -429,11 +445,132 @@
     </div>
 
     <script>
-        // --- 1. PERSISTENT STORAGE & UNIQUE CRYPTOGRAPHIC WALLET GENERATION ---
-        const WORD_LIST = ["alpha","brave","crypto","delta","echo","falcon","gamma","hyper","iron","jade","kote","lunar","matrix","nova","omega","pulse","quantum","rocket","sniper","titan","ultra","vortex","whale","xenon","yield","zenith","orbit","prism","spark","surge","token","vault","apex","beacon","cyber","dynasty","eclipse","flux","gravity","horizon","ignite","jaguar","kinetic","nexus","phantom","relic","starlight","temple","vector","zenith"];
+        // --- 1. TOPBLAST CAs INTEGRATION ARRAY ---
+        const TOPBLAST_CAs = [
+            "EQAOY0xbKV1g3e2V7jdo5erF5u-5h19qB4IpPkK0RPy0RKGV",
+            "EQAOyf4n-7wTtTI45LGQwfacEfnkpOa9v6bjpwgeCHX5WW8y",
+            "EQAmWanX8ohlsG6qBpfL2ritCQ7tr7MlJpEK64Khm-O4742K",
+            "EQA6G0uVERDZTkLNa0drWBna1F5TSbogy7UXEWU5ERHz4uJL",
+            "EQAmZFuDbV0Ze8yR3lh3v0n8FISN-s3Yi7M8URCT--qc_t8x",
+            "EQAmsYIAadPQrEn-wZrRKwqhnReLDOeKl9T70umuk0MA1ULW",
+            "EQBvYQ3TyUYTjQxZa6UPbjwVzjnC5U3PRiXhpIu-HPMYMtTX",
+            "EQAmvp1Vrr0zY2--STdH-0X_mP5iCD61p2vNVJYwHlgBni2C",
+            "EQAO_tYpLbPq-GOXegYTYtFaQ0tMkxLBxzYF8cUCGGWAj_aA",
+            "EQA61O71y4I8oZDXRvMOrHtub2vxcPI54f1oGA_e4h0JL64L",
+            "EQAmewWMVccMpcKtgLUjcvkwGVSnzYIar2w39D-W_-Jp1U_V",
+            "EQAmbXjiqLPXW16g3PXdMRzLKyprUvx8K2pwenW4kTj17vHk",
+            "EQAmTUciPykaNw5bZ9DlYXzpB9vFjUZOd5re_TiCHbaYmzvU",
+            "EQAmT22Q2aPyLeTPmkzbCC0oDoOsLxTjSbR2XvWltb49FsuV",
+            "EQAmaMdwCmpZNJSRfvbNZDu1HkjFbw2VtvvI1FDKvLJMgyXE",
+            "EQAmB_sndV45N-cmgT2tihQOcaf4EgT3nhhsvYeJ4UnICc0A",
+            "EQA69XQSXbB6zXv36mTFaiazCBSuLj_zT6tH44m6ohvjGv02",
+            "EQAOp85i7pf7tyV0cyJBxULyTP3dXJCvPZYOQ0OVOk1HGr-d",
+            "EQAOHBcxj6v444-9OQfgD0blgRSJd3YpFgrKzM7o3rgKQXjW",
+            "EQAmAb3d7dEP8fMWOf42Jzxu8DyG_fCK9ndfLs1XhjlN5HU9",
+            "EQA6_KTcZORIevd4zw9GJGmpaWKrzdixod8J1fWfm4r7YxZm",
+            "EQAmmPdBvJMe00ZVck3_oQL46HPov6RMGoPW2ex-7kjI0Il1",
+            "EQAmuf2yZ6vUjhKViYT-IYWNFEgrO3W47o-w9-15q_iD4A5D",
+            "EQAOp_GJvXdf-KOyrzwXV5Uf0Pzbsc5QXLRPwPc6dj1YnhPb",
+            "EQAOLGOVGr1z7Je3tn-1fKEIXmUYTduh2hnYzxBmhzFqDgIu",
+            "EQAmdLjlODBRz5Wyn04SeH_kx1V__X-ZSCwjRFnyYQnHkRdb",
+            "EQAm-H72S6NMaO3KEP7jFXPnupsgO0s-mggOKW89l098lL57",
+            "EQA6P6O_XDH0VNFedCZuopL7e8UdSqH9YEcC2bwzSjtYyuI4",
+            "EQAmBV5LVsfKTUdhQQIz3jOePtuA9BJLq7C1Rui082v0aVF3",
+            "EQAmiAVqNkNobs8CXbt38JlNFlXJ0eztRlsP3Z27YF2DMvKr",
+            "EQA6b9p3ILwLkcKiOra-Be1XjZRtQWE5MPBpjZLtuGRxlS9Y",
+            "EQA6COgHs8dr9El9WthdbXpK8toHwkY841QZ3jtxs59be7SQ",
+            "EQAOGTFrLBTBlHE-rk5RQunJDpJ56ynz3cbPvEx-UdySeJEl",
+            "EQAmAMzMHGzw8wmCusbD07lS3AHg9Z3FL51qvfqVjJz2B4cu",
+            "EQA6kIgw_H_dFqgOouoAW9lm0kxnhk_5DSa7pSsu2qcvHdNI",
+            "EQAmsQK_X-PCaD1j1GGbezh9fO2-Ig-S8BtXPQMe6jorcNuH",
+            "EQA6oZqfngpjbXn7SJdBjIYEoOxt_NusP4ULYCVAuQyG65G3",
+            "EQAm3zO8VWQs1--V3rCjiK1DDFdt0WiY7tks7vLI7SOIoFlg",
+            "EQAONWhv3NkoQrJPMvB67_yknWLPxVX8wPefTPV75h7ZmVKO",
+            "EQD2NxxuZXSywKAt2khypQgsjwoSkeFeg6L9tOnLlfMGaxg9",
+            "EQAmQ2hL2H4A95Qq0pYvH9ir6F56PoliZNJbp50KULxiwpEr",
+            "EQAmWdWzG4fuBRy_esum7AnopZaTxcmmH3JooDir9oykGshI",
+            "EQAOGXscdLLxePpymILh_bu6hkZgsh-Pwq4B5StFlDjc44IG",
+            "EQA6FNQzTeFvY395QVg5GhKNexiK4hECAmBbfuLY5TXyvCX2",
+            "EQA6iDIR4zMPLF0WphiC3e9TaM77kmZaqg9iMYimrpoXgKmv",
+            "EQA6K2JOf-sZ4iHJp0wbz8fV8xFuCcs3UsoGcw72FDpLbhvJ",
+            "EQAmN9ssxWSo5oQThYrqIAiIKH5I4bgKh396hcRZn3RVgbOt",
+            "EQAOXbw31WsP3-1YxvL_2XLcDgWnUqeQaK6ckoLujdhRP_VG",
+            "EQAmi9mYcrZE12hjCkkkUZRH8XKfgtn0hwnA4Aq5NPxctBjY",
+            "EQAOjpXNmnSQpKqEj4cUiz_048P-C24MA1JNqD_CPmVAOH0q",
+            "EQAOFLzQQf1V8rHFZglTCCHbY8mXGbZd5NNExqw9-T3OGnqs",
+            "EQA6dF18rzlU_FYMs3Bos-Xy8sfTPLnqrzmmUl2Uac2t1dSc",
+            "EQAmHxZ7muN8QhJ1sqSsxd2Y1NXQrDne5iq1W3OgjYgNT_ry",
+            "EQAmVFff4F53sDQgzCJv1f3LlSofxJgRBEagsAvGocW2HY-2",
+            "EQA66xs9cWmVWFWDwSlwG5e8BS1_Jfb2c2ViWtSxe1nsfdyp",
+            "EQAmmrze1EPTGwIWoVNBNhP_nSOzo-Gjcybm-ssXtn-23WYP",
+            "EQAmyzD9_-5MccsXofbLpsCj40gwOU7WC-8XHwCDww21FVyy",
+            "EQAm5HVkMvZWepsxIEIQfsMln6YJJolGQmJxMLYU5V8h1abL",
+            "EQAm4yyz06js43ANzvjjX-iEXHBpFUCN9I6V1Tiw1FebNlRe",
+            "EQAmUUMHs-IDUoVYbno-j_R4_wc_HDCJ9VbU4OVNthS_Ul9z",
+            "EQAOp1jq28iWiHmZxnCZgfgOBqBE0bbKrcfj6gXgSPplF16l",
+            "EQAmRXESGA2sUc_UPGQ0qTJfOLU25ixfsE7elFwDI2eR3RE_",
+            "EQA6enm16bWjG1eUKI19E3EbWZjlB7r79RmpCTx79PymzgnK",
+            "EQA6KVkWh1na5tA-XPGJsevjmrm90Zq_2pi9ljowDE5o4xaC",
+            "EQAOitDQsM9t5uXYkiDIyFFDE8H2sKLaINcJcxk01q9QmNjV",
+            "EQAmnA14XeBqTRHUqRlaqs_PPAtxBa-HI2d9oqHzdzAaMNUG",
+            "EQA6CjFaclFsDu6Z4gOIZ_9QN_dQ14IQEwAyHL227fDjIe5V",
+            "EQA6Ze_BBi0e-uoOLugKQEIrteRsuLbQFj5S6lhqdnYEVC-0",
+            "EQAmCL42WxSfj-wdvLjlp0v6kPXSZRsxhVl9Xo_wpwnkQmU-",
+            "EQAO9HVPcwuhiYwlOBasnZD8h3yH9mEWAIicwNNh4J0hIdn9",
+            "EQAOQtEkl0ie2-lktarRA5tUS9PL6kueAoKQc3iW1-euno6q",
+            "EQAmKfjNR6png60YE98lcB72Xi6h9_Ksk-YidYvGoJc2Z3pL",
+            "EQAmrHtrkk3Em8RSEqoK50O02C542fk8zdEG18SwU4TRgIp4",
+            "EQA69Mhu92OBCtAse0SJbv3_3VpiVV10d5vLUw_3Bg8Myt_0",
+            "EQAmJaTOz6MeuCPA4fr8ugqgHd4TuO5-U1Fp5JX9HK9RrxZW",
+            "EQAme5Z3_wsVhvSemTvwFToq2AIRz_NSfEdiKOgdI8H11EPh",
+            "EQA6ObSo9TtyE8gU3FA_u3ogAWLBsy0IjoONtCKmbAjBqh8h",
+            "EQA6LOruFA6jUBZh68CXimZfDLdlM7MfdejsuW7EoCTYQuKO",
+            "EQAmUtInjsZtnJRpiOOyHomJiHmt2LTart01igMk0UjjlSPJ",
+            "EQA6a6eVOgR_vJ-s8qAEwE02lSjftPlW11d8AbHAsDx-KjGc",
+            "EQAOQNg9yr0xNNR45Ebm3Sa2f3Wo5-blxlUGKZhI_b2OLF5d",
+            "EQAOyfZUykprWRtjcrU-13bdiqRXMURwdly9M58501fEPxvk",
+            "EQA6ulHH35svS8QQz0l5EetinJLSHAFKHRMJ2E7Ax14Rluc2",
+            "EQAOIPx1dG1wtxlSqB1flW7qZcIc0hp5E1f9KWZi40gNegJS",
+            "EQAOJ4ynsF2ov7C94ogjMZpuvnOx0OZ3hhuK9nBHz3PGH2ad",
+            "EQAO85wCnetsFtuMtVJpxpF-4ycwXqvYQ6MzXpiZ_cjQExcD",
+            "EQAmbbXQG6ECkRX2YmJwi8AzubLS9Sp-V6EUUNhNVEdWc2i-",
+            "EQAmAnqgWPqYZRX8VFPmFkQ4BEG-usOTKJ7dS4iQr5v_ZjeJ",
+            "EQAmaM1juMlEL5F2pJHLrkc4abz-VUUSTzDkj6oYTA0HmYaB",
+            "EQA6sBJlj0HTA0T9zdxm-KmafxqcQyyvFZAdBNMPzk1ekNdc",
+            "EQAmDS3NS9BCLSP4djrt_B8vaSdJvV5JcrL4rMd___BFyVaH",
+            "EQAmos5Eeldo1k5cDSwle5awz-DNwf4zKgtrZ_VwET6lR6k3",
+            "EQAOamg6rT4dxJTB-C4YGDBSW1hus5ZrzcbaGrT8YuXkw8dm",
+            "EQA6wowjTYS2KKL3n3bzaPkbwHPqiwFtAWxiRJtYzYYp3QA-",
+            "EQA6AswoZ18Qp70saYA8hKfpcMuIFd-onNQ2VEQTA62Bw3xR",
+            "EQAmex4HNekmuqwAlYqnUbJCGz5dD9ZxEOBBHlUO7H5yhtTo",
+            "EQAm2powy3WrWeu4m5ndNqQjNCv-1MArFx4xOX9l7pKnbdWs",
+            "EQAmGSxeHgU7zW9RQhMP9r5TNLcwoSkDvsT59-aNxnkVvwI2",
+            "EQA6y83KY0_svjvSiYMBMPQPboGsKTIteXV7uv1-_x7L3hTB",
+            "EQAm8U2jZ0FVd1faCxkicnducEy4d3XL7WyhNgOcwOLNzy5Q",
+            "EQAmNuK8ddxGRwP74Xi-VhLNZWio9w2BoULMkNwX-bXsOkVx",
+            "EQAmQRaCKEitwYQ-LA1YhkkY-Bz6dU4Wrn76zCbDM2IN2fYc",
+            "EQAm_-f_3k-PbmG9IZq8FKjLLhil00bYhs_SD6Ykci3SolP2",
+            "EQAmxecdUiQtFXFRKadKa1mK36Izqb6oMlbYNQTHS7tyDDaw",
+            "EQA6JYz3GuEdMBwrRvYX61FuGna45gUyDBxqseLmumygmHb0",
+            "EQAm9xnWCB0svMoS28516vNmCDKDeRZErZwOEhERiuaFKgVU",
+            "EQBTJ2GdhlB_7nd6S0w7nbD8bipVmO1IRfglTv2CsNIc7ZyC",
+            "EQAmot4vfcPAfi1PF50vPTeDNqJSEmZXd7nBluXlupQEZP0q",
+            "EQA6Snqtu_sG7R9pyGemN9Icx4VSlW3lglMqY-8WHpXHpf-g",
+            "EQAOj_VVK7x0D4QxqHacchILORqFSinJDu9HpGKeuQJ0yGJf",
+            "EQA61kaKxWxag-Z2V6rKjR1KubhFKgjNQ6If0yECqKGdnsHO",
+            "EQAmdIm1kcTi3e4UfDc5LpSJalE7cRkH7I0pLCzXLXOU-UE-",
+            "EQAmOKY65ndud2hRYJm8AjRrY8kXNN3eFIcxQnoYm9Skk707",
+            "EQAm6a2k8YN-2EQ7rUZD673y5kdeu9T1VVQ9Dhw4OZyVvH_h",
+            "EQAmoVE9hop3IF5P8kbw6NGxnEC6PMuLBxvNrIWMzmwD3CAl",
+            "EQAmj_ML4H8vUH1_TZTvJ7psAszc2n5U_v2VU2mHCc-uUR-u"
+        ];
+
+        // --- 2. PERSISTENT STORAGE & WALLET GENERATION ---
+        const WORD_LIST = ["alpha","brave","crypto","delta","echo","falcon","gamma","hyper","iron","jade","kote","lunar","matrix","nova","omega","pulse","quantum","rocket","sniper","titan","ultra","vortex","whale","xenon","yield","zenith","orbit","prism","spark","surge","token","vault","apex","beacon","cyber","dynasty","eclipse","flux","gravity","horizon","ignite","jaguar","kinetic","nexus","phantom","relic","starlight","temple","vector"];
         
         let userWallet = null;
         let openPositions = [];
+        let walletGramBalance = 1450.00;
 
         let currentTradeToken = {
             ca: "EQC47093oX5Xhb0xuk2lCr2RhS8rj-vul61u4W2UH5ORmG_O",
@@ -448,28 +585,23 @@
         let currentSlippageVal = 1.0;
 
         function saveAppState() {
-            const stateObj = { wallet: userWallet, positions: openPositions };
-            localStorage.setItem("kote_terminal_state_v3", JSON.stringify(stateObj));
-            if (window.Telegram?.WebApp?.CloudStorage) {
-                try {
-                    window.Telegram.WebApp.CloudStorage.setItem("kote_positions_v3", JSON.stringify(openPositions));
-                } catch(e) {}
-            }
+            const stateObj = { wallet: userWallet, positions: openPositions, balance: walletGramBalance };
+            localStorage.setItem("kote_terminal_state_v4", JSON.stringify(stateObj));
         }
 
         function loadAppState() {
             try {
-                const raw = localStorage.getItem("kote_terminal_state_v3");
+                const raw = localStorage.getItem("kote_terminal_state_v4");
                 if (raw) {
                     const parsed = JSON.parse(raw);
                     if (parsed.wallet) userWallet = parsed.wallet;
                     if (Array.isArray(parsed.positions)) openPositions = parsed.positions;
+                    if (typeof parsed.balance === 'number') walletGramBalance = parsed.balance;
                 }
             } catch(e) { console.error("State load error:", e); }
         }
 
         window.generateNewWallet = function() {
-            // Cryptographically unique shuffling ensuring never the same phrase
             const shuffled = [...WORD_LIST].sort(() => 0.5 - Math.random());
             const words = shuffled.slice(0, 12);
             
@@ -495,14 +627,13 @@
         };
 
         window.deleteWalletPrompt = function() {
-            // Double confirmation check
             const firstCheck = confirm("⚠️ WARNING: Are you absolutely sure you want to delete your sniper wallet? Make sure you have backed up your 12-word recovery phrase!");
             if (!firstCheck) return;
             
             const secondCheck = confirm("🚨 FINAL CONFIRMATION: Deleting this wallet will wipe access to your funds in this terminal. Proceed with deletion?");
             if (secondCheck) {
                 userWallet = null;
-                localStorage.removeItem("kote_terminal_state_v3");
+                localStorage.removeItem("kote_terminal_state_v4");
                 alert("🗑️ Wallet deleted successfully. Restarting setup wizard...");
                 location.reload();
             }
@@ -540,36 +671,38 @@
             document.getElementById('topbarWalletPill').innerText = `💳 ${shortAddr}`;
             document.getElementById('profileWalletAddress').value = userWallet.address;
             document.getElementById('modalWalletAddr').innerText = userWallet.address;
+            document.getElementById('profileGramBalance').innerText = `${walletGramBalance.toFixed(2)} GRAM`;
+            document.getElementById('tradePageGramBalance').innerText = `${walletGramBalance.toFixed(2)} GRAM`;
         }
 
-        window.openModal = function(modalId) {
-            document.getElementById(modalId).style.display = 'flex';
-        };
-
-        window.closeModal = function(modalId) {
-            document.getElementById(modalId).style.display = 'none';
-        };
+        window.openModal = function(modalId) { document.getElementById(modalId).style.display = 'flex'; };
+        window.closeModal = function(modalId) { document.getElementById(modalId).style.display = 'none'; };
 
         window.copyWalletAddress = function() {
             if (!userWallet) return;
-            navigator.clipboard.writeText(userWallet.address).then(() => {
-                alert("📋 Wallet address copied to clipboard!");
-            });
+            navigator.clipboard.writeText(userWallet.address).then(() => alert("📋 Wallet address copied!"));
+        };
+
+        window.copyCA = function(ca) {
+            navigator.clipboard.writeText(ca).then(() => alert("📋 Contract Address copied to clipboard!"));
         };
 
         window.executeSendTransaction = function() {
             const recipient = document.getElementById('sendRecipient').value.trim();
             const amt = parseFloat(document.getElementById('sendAmount').value);
             if (!recipient || recipient.length < 30) return alert("Enter a valid recipient TON address.");
-            if (!amt || amt <= 0) return alert("Enter a valid amount to send.");
+            if (!amt || amt <= 0 || amt > walletGramBalance) return alert("Invalid amount or insufficient balance.");
             
-            alert(`✅ Successfully sent ${amt} TON/GRAM to:\n${recipient}\nStatus: Broadcasted & Confirmed on TON network.`);
+            walletGramBalance -= amt;
+            saveAppState();
+            updateWalletUI();
+            alert(`✅ Successfully sent ${amt} TON/GRAM to:\n${recipient}`);
             closeModal('sendModal');
             document.getElementById('sendRecipient').value = '';
             document.getElementById('sendAmount').value = '';
         };
 
-        // --- 2. LIGHTWEIGHT CHART WITH GREEN LIVE PRICE SCALE LINE ONLY ---
+        // --- 3. CHART & REAL-TIME ESTIMATES ---
         let tvChart = null;
         let candleSeries = null;
         let maSeries = null;
@@ -581,41 +714,20 @@
             tvChart = LightweightCharts.createChart(container, {
                 width: container.clientWidth,
                 height: 230,
-                layout: {
-                    background: { type: 'solid', color: '#0c0e14' },
-                    textColor: '#94a3b8',
-                    fontSize: 10,
-                },
-                grid: {
-                    vertLines: { color: 'rgba(59, 130, 246, 0.08)' },
-                    horzLines: { color: 'rgba(59, 130, 246, 0.08)' },
-                },
+                layout: { background: { type: 'solid', color: '#0c0e14' }, textColor: '#94a3b8', fontSize: 10 },
+                grid: { vertLines: { color: 'rgba(59, 130, 246, 0.08)' }, horzLines: { color: 'rgba(59, 130, 246, 0.08)' } },
                 crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
                 rightPriceScale: { borderColor: 'rgba(59, 130, 246, 0.2)' },
                 timeScale: { borderColor: 'rgba(59, 130, 246, 0.2)', timeVisible: true },
             });
 
             candleSeries = tvChart.addCandlestickSeries({
-                upColor: '#10b981',
-                downColor: '#ef4444',
-                borderDownColor: '#ef4444',
-                borderUpColor: '#10b981',
-                wickDownColor: '#ef4444',
-                wickUpColor: '#10b981',
+                upColor: '#10b981', downColor: '#ef4444', borderDownColor: '#ef4444', borderUpColor: '#10b981', wickDownColor: '#ef4444', wickUpColor: '#10b981',
             });
-
-            maSeries = tvChart.addLineSeries({
-                color: '#84cc16',
-                lineWidth: 1.5,
-            });
+            maSeries = tvChart.addLineSeries({ color: '#84cc16', lineWidth: 1.5 });
 
             loadRealCandlesForToken(currentTradeToken.ca, currentTradeToken.price, currentActiveTimeframe);
-
-            window.addEventListener('resize', () => {
-                if (tvChart && container) {
-                    tvChart.applyOptions({ width: container.clientWidth });
-                }
-            });
+            window.addEventListener('resize', () => { if (tvChart && container) tvChart.applyOptions({ width: container.clientWidth }); });
         }
 
         window.setTimeframe = function(tf, btn) {
@@ -642,30 +754,21 @@
                             const rawList = ohlcvJson.data?.attributes?.ohlcv_list || [];
                             if (rawList.length > 5) {
                                 const formatted = rawList.reverse().map(item => ({
-                                    time: item[0],
-                                    open: parseFloat(item[1]),
-                                    high: parseFloat(item[2]),
-                                    low: parseFloat(item[3]),
-                                    close: parseFloat(item[4])
+                                    time: item[0], open: parseFloat(item[1]), high: parseFloat(item[2]), low: parseFloat(item[3]), close: parseFloat(item[4])
                                 }));
                                 candleSeries.setData(formatted);
                                 updateMovingAverage(formatted);
                                 tvChart.timeScale().fitContent();
 
-                                // Attach Live Real-Time Price on Green Price Scale Line
-                                const lastClose = formatted[formatted.length - 1].close;
                                 candleSeries.applyOptions({
-                                    priceLineVisible: true,
-                                    priceLineWidth: 2,
-                                    priceLineColor: '#10b981',
-                                    priceLineSource: LightweightCharts.PriceLineSource.LastBar,
+                                    priceLineVisible: true, priceLineWidth: 2, priceLineColor: '#10b981', priceLineSource: LightweightCharts.PriceLineSource.LastBar,
                                 });
                                 return;
                             }
                         }
                     }
                 }
-            } catch (e) { console.log("GeckoTerminal fallback triggered"); }
+            } catch (e) { console.log("GeckoTerminal fallback"); }
 
             const now = Math.floor(Date.now() / 1000);
             const stepSec = tf === '5m' ? 300 : tf === '15m' ? 900 : tf === '30m' ? 1800 : tf === '4h' ? 14400 : tf === '1d' ? 86400 : 3600;
@@ -687,10 +790,7 @@
             tvChart.timeScale().fitContent();
 
             candleSeries.applyOptions({
-                priceLineVisible: true,
-                priceLineWidth: 2,
-                priceLineColor: '#10b981',
-                priceLineSource: LightweightCharts.PriceLineSource.LastBar,
+                priceLineVisible: true, priceLineWidth: 2, priceLineColor: '#10b981', priceLineSource: LightweightCharts.PriceLineSource.LastBar,
             });
         }
 
@@ -706,35 +806,75 @@
             maSeries.setData(maData);
         }
 
-        // --- 3. BACKGROUND MINI-CHARTS FOR MEMES & TOPBLAST ---
-        function renderMiniCanvasCharts() {
-            const configs = [
-                { id: 'canvas_gram', color: '#10b981' },
-                { id: 'canvas_not', color: '#3b82f6' },
-                { id: 'canvas_dogs', color: '#06b6d4' }
-            ];
-            configs.forEach(cfg => {
-                const cvs = document.getElementById(cfg.id);
-                if (!cvs) return;
-                const ctx = cvs.getContext('2d');
-                cvs.width = 120;
-                cvs.height = 55;
-                ctx.clearRect(0, 0, cvs.width, cvs.height);
-                ctx.strokeStyle = cfg.color;
-                ctx.lineWidth = 2;
-                ctx.beginPath();
-                let py = 30 + (Math.random() - 0.5) * 15;
-                ctx.moveTo(0, py);
-                for (let x = 10; x <= cvs.width; x += 10) {
-                    py += (Math.random() - 0.48) * 12;
-                    py = Math.max(8, Math.min(cvs.height - 8, py));
+        // --- 4. RENDER TOPBLAST & GRAM MEME THICK BACKGROUND CHARTS ---
+        function renderTopblastAndMemesUI() {
+            // Gram Memes background canvas
+            const cvsGram = document.getElementById('canvas_gram');
+            if (cvsGram) {
+                const ctx = cvsGram.getContext('2d');
+                cvsGram.width = cvsGram.parentElement.clientWidth;
+                cvsGram.height = cvsGram.parentElement.clientHeight || 65;
+                ctx.clearRect(0,0,cvsGram.width,cvsGram.height);
+                ctx.strokeStyle = '#10b981'; ctx.lineWidth = 3; ctx.beginPath();
+                let py = cvsGram.height / 2; ctx.moveTo(0, py);
+                for (let x = 15; x <= cvsGram.width; x += 15) {
+                    py += (Math.random() - 0.48) * 16;
+                    py = Math.max(6, Math.min(cvsGram.height - 6, py));
                     ctx.lineTo(x, py);
                 }
                 ctx.stroke();
-            });
+            }
+
+            // Topblast list container population
+            const container = document.getElementById('topblastListContainer');
+            if (!container) return;
+
+            container.innerHTML = TOPBLAST_CAs.map((ca, idx) => {
+                const shortCa = ca.slice(0, 6) + "..." + ca.slice(-4);
+                const mockMcap = `$${(85000 + (idx * 142000)).toLocaleString()}`;
+                const canvasId = `tb_canvas_${idx}`;
+                
+                setTimeout(() => {
+                    const c = document.getElementById(canvasId);
+                    if (c) {
+                        const cx = c.getContext('2d');
+                        c.width = c.parentElement.clientWidth;
+                        c.height = c.parentElement.clientHeight || 65;
+                        cx.clearRect(0, 0, c.width, c.height);
+                        cx.strokeStyle = idx % 2 === 0 ? '#10b981' : '#3b82f6';
+                        cx.lineWidth = 3;
+                        cx.beginPath();
+                        let y = c.height / 2; cx.moveTo(0, y);
+                        for (let x = 15; x <= c.width; x += 15) {
+                            y += (Math.random() - 0.48) * 16;
+                            y = Math.max(6, Math.min(c.height - 6, y));
+                            cx.lineTo(x, y);
+                        }
+                        cx.stroke();
+                    }
+                }, 50);
+
+                return `
+                    <div class="token-item-card">
+                        <canvas id="${canvasId}"></canvas>
+                        <div class="token-item-content">
+                            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Ccircle cx='16' cy='16' r='16' fill='%231e293b'/%3E%3Ctext x='50%25' y='50%25' font-size='14' fill='%23fff' text-anchor='middle' dominant-baseline='central'%3E🚀%3C/text%3E%3C/svg%3E" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;" alt="Logo">
+                            <div>
+                                <div style="font-weight: 900; font-size: 13px; color: #fff;">Topblast Token #${idx + 1}</div>
+                                <div style="font-size: 11px; color: var(--accent-cyan); font-weight: 800; margin-top: 2px;">MCap: <b>${mockMcap}</b></div>
+                                <div style="font-size: 9px; color: var(--text-muted); cursor: pointer;" onclick="copyCA('${ca}')">${shortCa} 📋</div>
+                            </div>
+                        </div>
+                        <div class="token-item-actions">
+                            <button class="btn-action" style="background: var(--bg-input); border: 1px solid var(--border-color); color: #fff; width: 40px; padding: 8px; font-size: 11px;" onclick="copyCA('${ca}')">📋</button>
+                            <button class="btn-action btn-blue" style="width: 70px; padding: 8px; font-size: 11px;" onclick="quickSelectToken('${ca}')">Snipe</button>
+                        </div>
+                    </div>
+                `;
+            }).join("");
         }
 
-        // --- 4. TOKEN DATA FETCHING ---
+        // --- 5. TOKEN METRICS & ESTIMATES ---
         window.loadTokenData = async function() {
             const ca = document.getElementById('caInput').value.trim();
             if (!ca) return alert("Please enter a Contract Address (CA)");
@@ -766,6 +906,7 @@
                     if (logo) document.getElementById('tokenLogoImg').src = logo;
 
                     loadRealCandlesForToken(ca, price, currentActiveTimeframe);
+                    updateEstTokens();
                 } else {
                     alert("Token pair not found on DexScreener yet.");
                 }
@@ -781,7 +922,12 @@
             loadTokenData();
         };
 
-        // --- 5. PRESETS, CUSTOM SLIPPAGE & INSTANT EXECUTION ---
+        function updateEstTokens() {
+            const est = currentTradeToken.price > 0 ? (currentGramAmount * 0.39) / currentTradeToken.price : 0;
+            document.getElementById('estTokensReceived').innerText = `${Math.round(est).toLocaleString()} ${currentTradeToken.symbol}`;
+        }
+
+        // --- 6. EXECUTION & REAL-TIME PORTFOLIO PnL ---
         let currentTradeMode = 'buy';
         let currentGramAmount = 10;
 
@@ -806,6 +952,7 @@
             currentGramAmount = parseFloat(val) || 0;
             const execBtn = document.getElementById('executeTradeBtn');
             execBtn.innerText = currentTradeMode === 'buy' ? `⚡ Instant Snipe Buy (${currentGramAmount} GRAM)` : `⚡ Instant Sell (${currentGramAmount} GRAM)`;
+            updateEstTokens();
         };
 
         window.setSlippage = function(s, btn) {
@@ -824,15 +971,14 @@
         };
 
         window.executeInstantTrade = function() {
-            if (!userWallet) {
-                alert("Please create or unlock your Sniper Wallet first!");
-                return;
-            }
+            if (!userWallet) return alert("Please create or unlock your Sniper Wallet first!");
             if (currentTradeMode === 'sell') {
                 const idx = openPositions.findIndex(p => p.ca === currentTradeToken.ca);
                 if (idx !== -1) {
                     const sold = openPositions.splice(idx, 1)[0];
+                    walletGramBalance += sold.amountGram;
                     saveAppState();
+                    updateWalletUI();
                     renderPortfolio();
                     alert(`✅ Sold ${sold.name} (${sold.amountGram} GRAM) instantly!`);
                 } else {
@@ -841,12 +987,16 @@
                 return;
             }
 
-            if (currentGramAmount <= 0) return alert("Enter a valid GRAM amount.");
+            if (currentGramAmount <= 0 || currentGramAmount > walletGramBalance) return alert("Invalid amount or insufficient wallet GRAM balance.");
+
+            walletGramBalance -= currentGramAmount;
+            updateWalletUI();
 
             const existing = openPositions.find(p => p.ca === currentTradeToken.ca);
             if (existing) {
                 existing.amountGram += currentGramAmount;
             } else {
+                const estTokens = currentTradeToken.price > 0 ? (currentGramAmount * 0.39) / currentTradeToken.price : 0;
                 openPositions.unshift({
                     id: Date.now(),
                     source: 'SNIPE',
@@ -856,6 +1006,7 @@
                     logo: currentTradeToken.logo,
                     entryPrice: currentTradeToken.price,
                     amountGram: currentGramAmount,
+                    tokensHeld: estTokens,
                     slippage: currentSlippageVal,
                     timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
                 });
@@ -863,14 +1014,16 @@
 
             saveAppState();
             renderPortfolio();
-            alert(`⚡ Instant Snipe Executed Successfully!\nToken: ${currentTradeToken.name}\nAmount: ${currentGramAmount} GRAM\nSlippage: ${currentSlippageVal}%\nSaved to your Portfolio.`);
+            alert(`⚡ Instant Snipe Executed Successfully!\nToken: ${currentTradeToken.name}\nAmount Spent: ${currentGramAmount} GRAM`);
         };
 
         window.sellPositionById = function(posId) {
             const idx = openPositions.findIndex(p => p.id === posId);
             if (idx !== -1) {
                 const closed = openPositions.splice(idx, 1)[0];
+                walletGramBalance += closed.amountGram;
                 saveAppState();
+                updateWalletUI();
                 renderPortfolio();
                 alert(`💰 Sold 100% of ${closed.name} (${closed.amountGram} GRAM) instantly!`);
             }
@@ -886,34 +1039,49 @@
             totalEl.innerText = `${totalGram.toFixed(2)} GRAM`;
 
             if (openPositions.length === 0) {
-                container.innerHTML = `<div class="card" style="text-align: center; padding: 24px 14px; color: var(--text-muted); font-size: 12px;">No active trades or snipes yet. Execute a trade or snipe on the Snipe tab to track it here in real time!</div>`;
+                container.innerHTML = `<div class="card" style="text-align: center; padding: 24px 14px; color: var(--text-muted); font-size: 12px;">No active trades or snipes yet. Execute a trade or snipe on the Snipe tab to track live PnL here!</div>`;
                 return;
             }
 
-            container.innerHTML = openPositions.map(pos => `
-                <div class="card" style="padding: 12px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                        <div style="display: flex; align-items: center; gap: 8px;">
-                            <img src="${pos.logo || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Ccircle cx='16' cy='16' r='16' fill='%231e293b'/%3E%3Ctext x='50%25' y='50%25' font-size='14' fill='%23fff' text-anchor='middle' dominant-baseline='central'%3E🚀%3C/text%3E%3C/svg%3E"}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;">
-                            <div>
-                                <div style="font-size: 14px; font-weight: 900; color: #fff;">${pos.name} <span class="badge-pill" style="font-size: 8px; padding: 2px 6px;">${pos.source}</span></div>
-                                <div style="font-size: 10px; color: var(--text-muted);">Entry: $${pos.entryPrice < 0.01 ? pos.entryPrice.toFixed(6) : pos.entryPrice.toFixed(4)} • ${pos.timestamp}</div>
+            container.innerHTML = openPositions.map(pos => {
+                // Simulate real-time fluctuating PnL
+                const currentVal = pos.amountGram * (1 + (Math.random() * 0.1 - 0.04));
+                const pnlVal = currentVal - pos.amountGram;
+                const pnlPct = (pnlVal / pos.amountGram) * 100;
+                const pnlColor = pnlVal >= 0 ? 'var(--accent-green)' : 'var(--accent-red)';
+
+                return `
+                    <div class="card" style="padding: 12px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <img src="${pos.logo || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Ccircle cx='16' cy='16' r='16' fill='%231e293b'/%3E%3Ctext x='50%25' y='50%25' font-size='14' fill='%23fff' text-anchor='middle' dominant-baseline='central'%3E🚀%3C/text%3E%3C/svg%3E"}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;">
+                                <div>
+                                    <div style="font-size: 14px; font-weight: 900; color: #fff;">${pos.name} <span class="badge-pill" style="font-size: 8px; padding: 2px 6px;">${pos.symbol}</span></div>
+                                    <div style="font-size: 10px; color: var(--text-muted);">Holding: <b>${Math.round(pos.tokensHeld).toLocaleString()} ${pos.symbol}</b></div>
+                                </div>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="font-size: 14px; font-weight: 900; color: var(--accent-cyan);">${pos.amountGram} GRAM</div>
+                                <div style="font-size: 11px; font-weight: 900; color: ${pnlColor};">PnL: ${pnlVal >= 0 ? '+' : ''}${pnlVal.toFixed(2)} GRAM (${pnlPct.toFixed(2)}%)</div>
                             </div>
                         </div>
-                        <div style="text-align: right;">
-                            <div style="font-size: 14px; font-weight: 900; color: var(--accent-cyan);">${pos.amountGram} GRAM</div>
-                            <div style="font-size: 10px; color: var(--accent-green); font-weight: 700;">Slip: ${pos.slippage}%</div>
+                        <div style="display: flex; gap: 8px;">
+                            <button class="btn-action btn-blue" style="padding: 8px; font-size: 11px;" onclick="quickSelectToken('${pos.ca}')">📊 View Chart</button>
+                            <button class="btn-action btn-red" style="padding: 8px; font-size: 11px;" onclick="sellPositionById(${pos.id})">💰 Sell 100%</button>
                         </div>
                     </div>
-                    <div style="display: flex; gap: 8px;">
-                        <button class="btn-action btn-blue" style="padding: 8px; font-size: 11px;" onclick="quickSelectToken('${pos.ca}')">📊 View Chart</button>
-                        <button class="btn-action btn-red" style="padding: 8px; font-size: 11px;" onclick="sellPositionById(${pos.id})">💰 Sell 100%</button>
-                    </div>
-                </div>
-            `).join("");
+                `;
+            }).join("");
         }
 
-        // --- 6. NAVIGATION & INIT ---
+        // Live real-time portfolio ticker interval
+        setInterval(() => {
+            if (openPositions.length > 0 && document.getElementById('page-portfolio').classList.contains('active')) {
+                renderPortfolio();
+            }
+        }, 3000);
+
+        // --- 7. NAVIGATION & INIT ---
         window.switchPage = function(pageId, navBtn) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
@@ -925,22 +1093,19 @@
             }
             if (navBtn) navBtn.classList.add('active');
             if (pageId === 'sniper') initRealChart();
-            if (pageId === 'gram-memes' || pageId === 'topblast') setTimeout(renderMiniCanvasCharts, 50);
+            if (pageId === 'gram-memes' || pageId === 'topblast') setTimeout(renderTopblastAndMemesUI, 50);
         };
 
         window.copyReferralLink = function() {
             const refInput = document.getElementById('uniqueRefLink');
             refInput.select();
-            navigator.clipboard.writeText(refInput.value).then(() => {
-                alert('📋 Unique @KoteTrade_bot referral link copied!');
-            });
+            navigator.clipboard.writeText(refInput.value).then(() => alert('📋 Unique @KoteTrade_bot referral link copied!'));
         };
 
         window.addEventListener('DOMContentLoaded', () => {
             loadAppState();
             renderPortfolio();
 
-            // First-Time Setup Logic: Only trigger wizard if no wallet has ever been created
             if (!userWallet) {
                 document.getElementById('intro-screen').classList.add('active');
             } else {
@@ -957,6 +1122,7 @@
                     document.getElementById('uniqueRefLink').value = `https://t.me/KoteTrade_bot?start=ref_${uid}`;
                 }
             }
+            updateEstTokens();
         });
     </script>
 </body>
