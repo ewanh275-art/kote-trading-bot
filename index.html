@@ -401,7 +401,7 @@
         }
 
         function saveAppState() {
-            localStorage.setItem("kote_live_state_v4", JSON.stringify({
+            localStorage.setItem("kote_live_state_v5", JSON.stringify({
                 markets: predictMarkets,
                 userBets: userPredictionBets
             }));
@@ -409,7 +409,7 @@
 
         function loadAppState() {
             try {
-                const raw = localStorage.getItem("kote_live_state_v4");
+                const raw = localStorage.getItem("kote_live_state_v5");
                 if (raw) {
                     const parsed = JSON.parse(raw);
                     if (Array.isArray(parsed.markets)) predictMarkets = parsed.markets;
@@ -472,14 +472,20 @@
             navigator.clipboard.writeText(inAppWallet.address).then(() => alert("📋 Wallet address copied!"));
         };
 
-        // --- FETCH REAL JETTON BALANCES VIA TONAPI + CORS PROXY ---
+        // --- FETCH REAL JETTON BALANCES VIA TONAPI (WITH AUTOMATIC CORS FALLBACK) ---
         window.refreshInAppBalance = async function(silent = false) {
             if (!inAppWallet) return;
             try {
                 const apiUrl = `https://tonapi.io/v2/accounts/${inAppWallet.address}/jettons`;
-                const proxiedUrl = `https://corsproxy.io/?${encodeURIComponent(apiUrl)}`;
+                let res;
                 
-                const res = await fetch(proxiedUrl);
+                try {
+                    res = await fetch(apiUrl);
+                } catch (directErr) {
+                    const proxiedUrl = `https://corsproxy.io/?${encodeURIComponent(apiUrl)}`;
+                    res = await fetch(proxiedUrl);
+                }
+
                 if (!res.ok) throw new Error("Failed to reach TonAPI indexer");
                 
                 const data = await res.json();
@@ -527,7 +533,7 @@
                 if (!silent) alert(`✅ Successfully Synced!\n$GRAM Balance: ${walletGramBalance.toFixed(2)} GRAM`);
             } catch (e) {
                 console.error("TonAPI sync error:", e);
-                if (!silent) alert("Sync error. Please check your network connection and try again.");
+                if (!silent) alert("Network timeout. Please wait 3 seconds and tap Refresh again.");
             }
         };
 
