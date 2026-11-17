@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kote Live Terminal</title>
+    <title>Kote Live Terminal - Topblast Edition</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
     <script type="module">
@@ -116,6 +116,15 @@
         .market-outcomes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
         .outcome-btn { background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 10px; padding: 10px; text-align: center; cursor: pointer; transition: all 0.15s; }
         .outcome-btn:hover { border-color: var(--accent-purple); }
+
+        .topblast-item {
+            background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 12px;
+            padding: 10px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;
+            gap: 10px; transition: border-color 0.15s;
+        }
+        .topblast-item:hover { border-color: var(--accent-cyan); }
+        .token-logo { width: 34px; height: 34px; border-radius: 50%; background: #1e2230; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; border: 1px solid var(--border-color); }
+        .token-logo img { width: 100%; height: 100%; object-fit: cover; }
     </style>
 </head>
 <body>
@@ -179,14 +188,37 @@
                 <div class="brand-text"><h1>Kote Live Terminal</h1></div>
             </div>
             <div style="display: flex; align-items: center; gap: 6px;">
-                <span class="badge-pill" id="topbarWalletPill" onclick="switchPage('profile', document.querySelectorAll('.nav-tab')[3])" style="cursor: pointer;">💼 No Wallet</span>
+                <span class="badge-pill" id="topbarWalletPill" onclick="switchPage('profile', document.querySelectorAll('.nav-tab')[4])" style="cursor: pointer;">💼 No Wallet</span>
             </div>
         </header>
 
         <!-- Content Area -->
         <main class="content-area">
-            <!-- 1. SNIPE / TRADE PAGE -->
-            <section id="page-sniper" class="page active">
+            <!-- 1. TOPBLAST LAUNCHPAD TOKENS PAGE -->
+            <section id="page-topblast" class="page active">
+                <div class="card" style="background: linear-gradient(135deg, rgba(6, 182, 212, 0.15), rgba(16, 18, 28, 0.95)); border-color: rgba(6, 182, 212, 0.4);">
+                    <div class="card-header">
+                        <span class="card-title" style="color: var(--accent-cyan);">🚀 Topblast Meme Launchpad Feed</span>
+                        <button class="btn-action btn-blue" style="width: auto; padding: 5px 10px; font-size: 10px;" onclick="loadTopblastTokens()">🔄 Refresh Feed</button>
+                    </div>
+                    <div style="font-size: 13px; font-weight: 800; color: #fff;">Indexed Meme Tokens Launched on Topblast</div>
+                    <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Real-time logos, prices, and market caps fetched via Tonviewer & GeckoTerminal APIs.</div>
+                </div>
+
+                <div class="input-group">
+                    <label>SEARCH TOPBLAST TOKENS</label>
+                    <input type="text" id="topblastSearchInput" placeholder="Filter by name, symbol, or CA..." oninput="filterTopblastTokens()">
+                </div>
+
+                <div id="topblastTokensList">
+                    <div class="card" style="text-align: center; padding: 30px; color: var(--text-muted); font-size: 12px;">
+                        ⏳ Loading Topblast meme token list and indexing prices...
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2. SNIPE / TRADE PAGE -->
+            <section id="page-sniper" class="page">
                 <div class="card">
                     <div class="card-header"><span class="card-title">🔍 Live TON Jetton Lookup & Snipe</span></div>
                     <div style="display: flex; gap: 8px;">
@@ -281,7 +313,7 @@
                 </div>
             </section>
 
-            <!-- 2. KOTE PREDICT PAGE -->
+            <!-- 3. KOTE PREDICT PAGE -->
             <section id="page-predict" class="page">
                 <div class="card" style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.2), rgba(16, 18, 28, 0.95)); border-color: rgba(168, 85, 247, 0.4);">
                     <div class="card-header"><span class="card-title" style="color: #c084fc;">🔮 KOTE PREDICT MARKETS (ON-CHAIN $GRAM)</span></div>
@@ -299,7 +331,7 @@
                 </div>
             </section>
 
-            <!-- 3. PORTFOLIO PAGE -->
+            <!-- 4. PORTFOLIO PAGE -->
             <section id="page-portfolio" class="page">
                 <div class="card" style="background: linear-gradient(135deg, rgba(30, 58, 138, 0.45), rgba(16, 18, 28, 0.90));">
                     <div class="card-header">
@@ -317,7 +349,7 @@
                 </div>
             </section>
 
-            <!-- 4. PROFILE / IN-APP WALLET PAGE -->
+            <!-- 5. PROFILE / IN-APP WALLET PAGE -->
             <section id="page-profile" class="page">
                 <div class="card">
                     <div class="card-header"><span class="card-title">🔐 In-App Non-Custodial Sniper Wallet</span></div>
@@ -352,7 +384,8 @@
         </main>
 
         <nav class="bottom-nav">
-            <button class="nav-tab active" onclick="switchPage('sniper', this)">⚡<span>Snipe</span></button>
+            <button class="nav-tab active" onclick="switchPage('topblast', this)">🚀<span>Topblast</span></button>
+            <button class="nav-tab" onclick="switchPage('sniper', this)">⚡<span>Snipe</span></button>
             <button class="nav-tab" onclick="switchPage('predict', this)">🔮<span>Predict</span></button>
             <button class="nav-tab" onclick="switchPage('portfolio', this)">💼<span>Portfolio</span></button>
             <button class="nav-tab" onclick="switchPage('profile', this)">👤<span>Profile</span></button>
@@ -362,6 +395,35 @@
     <script>
         const GRAM_MASTER_CA = "EQC47093oX5Xhb0xuk2lCr2RhS8rj-vul61u4W2UH5ORmG_O";
         const TREASURY_WALLET = "UQAC-pXNqjUJ0u1wBkLPiDkLVMZkWYXWvNQuH5Mtx_tPdsGV";
+
+        const TOPBLAST_CAs = [
+            "EQAOY0xbKV1g3e2V7jdo5erF5u-5h19qB4IpPkK0RPy0RKGV", "EQAOyf4n-7wTtTI45LGQwfacEfnkpOa9v6bjpwgeCHX5WW8y", "EQAmWanX8ohlsG6qBpfL2ritCQ7tr7MlJpEK64Khm-O4742K", "EQA6G0uVERDZTkLNa0drWBna1F5TSbogy7UXEWU5ERHz4uJL", "EQAmZFuDbV0Ze8yR3lh3v0n8FISN-s3Yi7M8URCT--qc_t8x",
+            "EQAmsYIAadPQrEn-wZrRKwqhnReLDOeKl9T70umuk0MA1ULW", "EQBvYQ3TyUYTjQxZa6UPbjwVzjnC5U3PRiXhpIu-HPMYMtTX", "EQAmvp1Vrr0zY2--STdH-0X_mP5iCD61p2vNVJYwHlgBni2C", "EQAO_tYpLbPq-GOXegYTYtFaQ0tMkxLBxzYF8cUCGGWAj_aA", "EQA61O71y4I8oZDXRvMOrHtub2vxcPI54f1oGA_e4h0JL64L",
+            "EQAmewWMVccMpcKtgLUjcvkwGVSnzYIar2w39D-W_-Jp1U_V", "EQAmbXjiqLPXW16g3PXdMRzLKyprUvx8K2pwenW4kTj17vHk", "EQAmTUciPykaNw5bZ9DlYXzpB9vFjUZOd5re_TiCHbaYmzvU", "EQAmT22Q2aPyLeTPmkzbCC0oDoOsLxTjSbR2XvWltb49FsuV", "EQAmaMdwCmpZNJSRfvbNZDu1HkjFbw2VtvvI1FDKvLJMgyXE",
+            "EQAmB_sndV45N-cmgT2tihQOcaf4EgT3nhhsvYeJ4UnICc0A", "EQA69XQSXbB6zXv36mTFaiazCBSuLj_zT6tH44m6ohvjGv02", "EQAOp85i7pf7tyV0cyJBxULyTP3dXJCvPZYOQ0OVOk1HGr-d", "EQAOHBcxj6v444-9OQfgD0blgRSJd3YpFgrKzM7o3rgKQXjW", "EQAmAb3d7dEP8fMWOf42Jzxu8DyG_fCK9ndfLs1XhjlN5HU9",
+            "EQA6_KTcZORIevd4zw9GJGmpaWKrzdixod8J1fWfm4r7YxZm", "EQAmmPdBvJMe00ZVck3_oQL46HPov6RMGoPW2ex-7kjI0Il1", "EQAmuf2yZ6vUjhKViYT-IYWNFEgrO3W47o-w9-15q_iD4A5D", "EQAOp_GJvXdf-KOyrzwXV5Uf0Pzbsc5QXLRPwPc6dj1YnhPb", "EQAOLGOVGr1z7Je3tn-1fKEIXmUYTduh2hnYzxBmhzFqDgIu",
+            "EQAmdLjlODBRz5Wyn04SeH_kx1V__X-ZSCwjRFnyYQnHkRdb", "EQAm-H72S6NMaO3KEP7jFXPnupsgO0s-mggOKW89l098lL57", "EQA6P6O_XDH0VNFedCZuopL7e8UdSqH9YEcC2bwzSjtYyuI4", "EQAmBV5LVsfKTUdhQQIz3jOePtuA9BJLq7C1Rui082v0aVF3", "EQAmiAVqNkNobs8CXbt38JlNFlXJ0eztRlsP3Z27YF2DMvKr",
+            "EQA6b9p3ILwLkcKiOra-Be1XjZRtQWE5MPBpjZLtuGRxlS9Y", "EQA6COgHs8dr9El9WthdbXpK8toHwkY841QZ3jtxs59be7SQ", "EQAOGTFrLBTBlHE-rk5RQunJDpJ56ynz3cbPvEx-UdySeJEl", "EQAmAMzMHGzw8wmCusbD07lS3AHg9Z3FL51qvfqVjJz2B4cu", "EQA6kIgw_H_dFqgOouoAW9lm0kxnhk_5DSa7pSsu2qcvHdNI",
+            "EQAmsQK_X-PCaD1j1GGbezh9fO2-Ig-S8BtXPQMe6jorcNuH", "EQA6oZqfngpjbXn7SJdBjIYEoOxt_NusP4ULYCVAuQyG65G3", "EQAm3zO8VWQs1--V3rCjiK1DDFdt0WiY7tks7vLI7SOIoFlg", "EQAONWhv3NkoQrJPMvB67_yknWLPxVX8wPefTPV75h7ZmVKO", "EQD2NxxuZXSywKAt2khypQgsjwoSkeFeg6L9tOnLlfMGaxg9",
+            "EQAmQ2hL2H4A95Qq0pYvH9ir6F56PoliZNJbp50KULxiwpEr", "EQAmWdWzG4fuBRy_esum7AnopZaTxcmmH3JooDir9oykGshI", "EQAOGXscdLLxePpymILh_bu6hkZgsh-Pwq4B5StFlDjc44IG", "EQA6FNQzTeFvY395QVg5GhKNexiK4hECAmBbfuLY5TXyvCX2", "EQA6iDIR4zMPLF0WphiC3e9TaM77kmZaqg9iMYimrpoXgKmv",
+            "EQA6K2JOf-sZ4iHJp0wbz8fV8xFuCcs3UsoGcw72FDpLbhvJ", "EQAmN9ssxWSo5oQThYrqIAiIKH5I4bgKh396hcRZn3RVgbOt", "EQAOXbw31WsP3-1YxvL_2XLcDgWnUqeQaK6ckoLujdhRP_VG", "EQAmi9mYcrZE12hjCkkkUZRH8XKfgtn0hwnA4Aq5NPxctBjY", "EQAOjpXNmnSQpKqEj4cUiz_048P-C24MA1JNqD_CPmVAOH0q",
+            "EQAOFLzQQf1V8rHFZglTCCHbY8mXGbZd5NNExqw9-T3OGnqs", "EQA6dF18rzlU_FYMs3Bos-Xy8sfTPLnqrzmmUl2Uac2t1dSc", "EQAmHxZ7muN8QhJ1sqSsxd2Y1NXQrDne5iq1W3OgjYgNT_ry", "EQAmVFff4F53sDQgzCJv1f3LlSofxJgRBEagsAvGocW2HY-2", "EQA66xs9cWmVWFWDwSlwG5e8BS1_Jfb2c2ViWtSxe1nsfdyp",
+            "EQAmmrze1EPTGwIWoVNBNhP_nSOzo-Gjcybm-ssXtn-23WYP", "EQAmyzD9_-5MccsXofbLpsCj40gwOU7WC-8XHwCDww21FVyy", "EQAm5HVkMvZWepsxIEIQfsMln6YJJolGQmJxMLYU5V8h1abL", "EQAm4yyz06js43ANzvjjX-iEXHBpFUCN9I6V1Tiw1FebNlRe", "EQAmUUMHs-IDUoVYbno-j_R4_wc_HDCJ9VbU4OVNthS_Ul9z",
+            "EQAOp1jq28iWiHmZxnCZgfgOBqBE0bbKrcfj6gXgSPplF16l", "EQAmRXESGA2sUc_UPGQ0qTJfOLU25ixfsE7elFwDI2eR3RE_", "EQA6enm16bWjG1eUKI19E3EbWZjlB7r79RmpCTx79PymzgnK", "EQA6KVkWh1na5tA-XPGJsevjmrm90Zq_2pi9ljowDE5o4xaC", "EQAOitDQsM9t5uXYkiDIyFFDE8H2sKLaINcJcxk01q9QmNjV",
+            "EQAmnA14XeBqTRHUqRlaqs_PPAtxBa-HI2d9oqHzdzAaMNUG", "EQA6CjFaclFsDu6Z4gOIZ_9QN_dQ14IQEwAyHL227fDjIe5V", "EQA6Ze_BBi0e-uoOLugKQEIrteRsuLbQFj5S6lhqdnYEVC-0", "EQAmCL42WxSfj-wdvLjlp0v6kPXSZRsxhVl9Xo_wpwnkQmU-", "EQAO9HVPcwuhiYwlOBasnZD8h3yH9mEWAIicwNNh4J0hIdn9",
+            "EQAOQtEkl0ie2-lktarRA5tUS9PL6kueAoKQc3iW1-euno6q", "EQAmKfjNR6png60YE98lcB72Xi6h9_Ksk-YidYvGoJc2Z3pL", "EQAmrHtrkk3Em8RSEqoK50O02C542fk8zdEG18SwU4TRgIp4", "EQA69Mhu92OBCtAse0SJbv3_3VpiVV10d5vLUw_3Bg8Myt_0", "EQAmJaTOz6MeuCPA4fr8ugqgHd4TuO5-U1Fp5JX9HK9RrxZW",
+            "EQAme5Z3_wsVhvSemTvwFToq2AIRz_NSfEdiKOgdI8H11EPh", "EQA6ObSo9TtyE8gU3FA_u3ogAWLBsy0IjoONtCKmbAjBqh8h", "EQA6LOruFA6jUBZh68CXimZfDLdlM7MfdejsuW7EoCTYQuKO", "EQAmUtInjsZtnJRpiOOyHomJiHmt2LTart01igMk0UjjlSPJ", "EQA6a6eVOgR_vJ-s8qAEwE02lSjftPlW11d8AbHAsDx-KjGc",
+            "EQAOQNg9yr0xNNR45Ebm3Sa2f3Wo5-blxlUGKZhI_b2OLF5d", "EQAOyfZUykprWRtjcrU-13bdiqRXMURwdly9M58501fEPxvk", "EQA6ulHH35svS8QQz0l5EetinJLSHAFKHRMJ2E7Ax14Rluc2", "EQAOIPx1dG1wtxlSqB1flW7qZcIc0hp5E1f9KWZi40gNegJS", "EQAOJ4ynsF2ov7C94ogjMZpuvnOx0OZ3hhuK9nBHz3PGH2ad",
+            "EQAO85wCnetsFtuMtVJpxpF-4ycwXqvYQ6MzXpiZ_cjQExcD", "EQAmbbXQG6ECkRX2YmJwi8AzubLS9Sp-V6EUUNhNVEdWc2i-", "EQAmAnqgWPqYZRX8VFPmFkQ4BEG-usOTKJ7dS4iQr5v_ZjeJ", "EQAmaM1juMlEL5F2pJHLrkc4abz-VUUSTzDkj6oYTA0HmYaB", "EQA6sBJlj0HTA0T9zdxm-KmafxqcQyyvFZAdBNMPzk1ekNdc",
+            "EQAmDS3NS9BCLSP4djrt_B8vaSdJvV5JcrL4rMd___BFyVaH", "EQAmos5Eeldo1k5cDSwle5awz-DNwf4zKgtrZ_VwET6lR6k3", "EQAOamg6rT4dxJTB-C4YGDBSW1hus5ZrzcbaGrT8YuXkw8dm", "EQA6wowjTYS2KKL3n3bzaPkbwHPqiwFtAWxiRJtYzYYp3QA-", "EQA6AswoZ18Qp70saYA8hKfpcMuIFd-onNQ2VEQTA62Bw3xR",
+            "EQAmex4HNekmuqwAlYqnUbJCGz5dD9ZxEOBBHlUO7H5yhtTo", "EQAm2powy3WrWeu4m5ndNqQjNCv-1MArFx4xOX9l7pKnbdWs", "EQAmGSxeHgU7zW9RQhMP9r5TNLcwoSkDvsT59-aNxnkVvwI2", "EQA6y83KY0_svjvSiYMBMPQPboGsKTIteXV7uv1-_x7L3hTB", "EQAm8U2jZ0FVd1faCxkicnducEy4d3XL7WyhNgOcwOLNzy5Q",
+            "EQAmNuK8ddxGRwP74Xi-VhLNZWio9w2BoULMkNwX-bXsOkVx", "EQAmQRaCKEitwYQ-LA1YhkkY-Bz6dU4Wrn76zCbDM2IN2fYc", "EQAm_-f_3k-PbmG9IZq8FKjLLhil00bYhs_SD6Ykci3SolP2", "EQAmxecdUiQtFXFRKadKa1mK36Izqb6oMlbYNQTHS7tyDDaw", "EQA6JYz3GuEdMBwrRvYX61FuGna45gUyDBxqseLmumygmHb0",
+            "EQAm9xnWCB0svMoS28516vNmCDKDeRZErZwOEhERiuaFKgVU", "EQBTJ2GdhlB_7nd6S0w7nbD8bipVmO1IRfglTv2CsNIc7ZyC", "EQAmot4vfcPAfi1PF50vPTeDNqJSEmZXd7nBluXlupQEZP0q", "EQA6Snqtu_sG7R9pyGemN9Icx4VSlW3lglMqY-8WHpXHpf-g", "EQAOj_VVK7x0D4QxqHacchILORqFSinJDu9HpGKeuQJ0yGJf",
+            "EQA61kaKxWxag-Z2V6rKjR1KubhFKgjNQ6If0yECqKGdnsHO", "EQAmdIm1kcTi3e4UfDc5LpSJalE7cRkH7I0pLCzXLXOU-UE-", "EQAmOKY65ndud2hRYJm8AjRrY8kXNN3eFIcxQnoYm9Skk707", "EQAm6a2k8YN-2EQ7rUZD673y5kdeu9T1VVQ9Dhw4OZyVvH_h", "EQAmoVE9hop3IF5P8kbw6NGxnEC6PMuLBxvNrIWMzmwD3CAl",
+            "EQAmj_ML4H8vUH1_TZTvJ7psAszc2n5U_v2VU2mHCc-uUR-u"
+        ];
+
+        let cachedTopblastTokens = [];
 
         let predictMarkets = [
             { id: 1, title: "Will TON exceed $10 within 30 days?", category: "Crypto", deadline: "30 Days", pool: 0, yesShare: 50, noShare: 50 },
@@ -389,7 +451,6 @@
 
         let currentActiveTimeframe = '1h';
         let currentSlippageVal = 1.0;
-        let currentCirculatingSupply = 0;
 
         function formatCompactNumber(num) {
             if (!num || isNaN(num)) return "0.00";
@@ -401,7 +462,7 @@
         }
 
         function saveAppState() {
-            localStorage.setItem("kote_live_state_v5", JSON.stringify({
+            localStorage.setItem("kote_live_state_v6", JSON.stringify({
                 markets: predictMarkets,
                 userBets: userPredictionBets
             }));
@@ -409,7 +470,7 @@
 
         function loadAppState() {
             try {
-                const raw = localStorage.getItem("kote_live_state_v5");
+                const raw = localStorage.getItem("kote_live_state_v6");
                 if (raw) {
                     const parsed = JSON.parse(raw);
                     if (Array.isArray(parsed.markets)) predictMarkets = parsed.markets;
@@ -472,22 +533,126 @@
             navigator.clipboard.writeText(inAppWallet.address).then(() => alert("📋 Wallet address copied!"));
         };
 
-        // --- FETCH REAL JETTON BALANCES VIA TONAPI (WITH AUTOMATIC CORS FALLBACK) ---
+        // --- FETCH TOPBLAST TOKENS VIA TONVIEWER (TONAPI) & GECKOTERMINAL ---
+        window.loadTopblastTokens = async function() {
+            const container = document.getElementById('topblastTokensList');
+            if (!container) return;
+
+            container.innerHTML = `<div class="card" style="text-align: center; padding: 30px; color: var(--accent-cyan); font-size: 12px;">⏳ Fetching metadata and live prices for ${TOPBLAST_CAs.length} Topblast tokens...</div>`;
+
+            cachedTopblastTokens = [];
+            let htmlCards = "";
+
+            // Fetch in batches or individual lookup to guarantee reliability
+            for (let i = 0; i < TOPBLAST_CAs.length; i++) {
+                const ca = TOPBLAST_CAs[i];
+                let name = `Topblast #${i + 1}`;
+                let symbol = "MEME";
+                let logo = "";
+                let price = 0;
+                let mcap = 0;
+
+                try {
+                    // Try TonAPI for metadata & logo
+                    const tonApiUrl = `https://tonapi.io/v2/jettons/${ca}`;
+                    let res;
+                    try {
+                        res = await fetch(tonApiUrl);
+                    } catch (e) {
+                        res = await fetch(`https://corsproxy.io/?${encodeURIComponent(tonApiUrl)}`);
+                    }
+
+                    if (res.ok) {
+                        const jData = await res.json();
+                        if (jData.metadata) {
+                            name = jData.metadata.name || name;
+                            symbol = jData.metadata.symbol || symbol;
+                            logo = jData.metadata.image || jData.metadata.uri || "";
+                        }
+                    }
+
+                    // Try GeckoTerminal for price & market cap
+                    const poolRes = await fetch(`https://api.geckoterminal.com/api/v2/networks/ton/tokens/${ca}/pools?page=1`);
+                    if (poolRes.ok) {
+                        const pJson = await poolRes.json();
+                        const attr = pJson.data?.[0]?.attributes;
+                        if (attr) {
+                            price = parseFloat(attr.base_token_price_usd || 0);
+                            mcap = parseFloat(attr.fdv_usd || attr.market_cap_usd || 0);
+                            if (!name || name.startsWith("Topblast")) {
+                                name = attr.name.split('/')[0].trim();
+                            }
+                        }
+                    }
+                } catch (err) {
+                    console.warn(`Error fetching token ${ca}:`, err);
+                }
+
+                cachedTopblastTokens.push({ ca, name, symbol, logo, price, mcap });
+            }
+
+            renderTopblastList(cachedTopblastTokens);
+        };
+
+        function renderTopblastList(tokens) {
+            const container = document.getElementById('topblastTokensList');
+            if (!container) return;
+
+            if (tokens.length === 0) {
+                container.innerHTML = `<div class="card" style="text-align: center; padding: 20px; color: var(--text-muted); font-size: 12px;">No Topblast tokens found.</div>`;
+                return;
+            }
+
+            container.innerHTML = tokens.map(t => `
+                <div class="topblast-item">
+                    <div style="display: flex; align-items: center; gap: 10px; overflow: hidden;">
+                        <div class="token-logo">
+                            ${t.logo ? `<img src="${t.logo}" onerror="this.src=''" alt="">` : `🐱`}
+                        </div>
+                        <div style="overflow: hidden;">
+                            <div style="font-size: 13px; font-weight: 900; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${t.name} <span class="badge-pill" style="font-size: 7px; padding: 1px 4px;">${t.symbol}</span></div>
+                            <div style="font-size: 9px; color: var(--text-muted); font-family: monospace;">${t.ca.slice(0, 6)}...${t.ca.slice(-4)}</div>
+                        </div>
+                    </div>
+                    <div style="text-align: right; flex-shrink: 0; display: flex; align-items: center; gap: 10px;">
+                        <div>
+                            <div style="font-size: 12px; font-weight: 900; color: var(--accent-green);">$${t.price < 0.00001 ? t.price.toExponential(2) : t.price.toFixed(6)}</div>
+                            <div style="font-size: 9px; color: var(--accent-cyan);">MCap: ${t.mcap > 0 ? '$' + formatCompactNumber(t.mcap) : 'N/A'}</div>
+                        </div>
+                        <button class="btn-action btn-blue" style="width: auto; padding: 6px 10px; font-size: 10px;" onclick="snipeTopblastToken('${t.ca}')">⚡ Snipe</button>
+                    </div>
+                </div>
+            `).join("");
+        }
+
+        window.filterTopblastTokens = function() {
+            const query = document.getElementById('topblastSearchInput').value.toLowerCase();
+            const filtered = cachedTopblastTokens.filter(t => 
+                t.name.toLowerCase().includes(query) || 
+                t.symbol.toLowerCase().includes(query) || 
+                t.ca.toLowerCase().includes(query)
+            );
+            renderTopblastList(filtered);
+        };
+
+        window.snipeTopblastToken = function(ca) {
+            document.getElementById('caInput').value = ca;
+            switchPage('sniper', document.querySelectorAll('.nav-tab')[1]);
+            loadLiveTokenData();
+        };
+
         window.refreshInAppBalance = async function(silent = false) {
             if (!inAppWallet) return;
             try {
                 const apiUrl = `https://tonapi.io/v2/accounts/${inAppWallet.address}/jettons`;
                 let res;
-                
                 try {
                     res = await fetch(apiUrl);
                 } catch (directErr) {
-                    const proxiedUrl = `https://corsproxy.io/?${encodeURIComponent(apiUrl)}`;
-                    res = await fetch(proxiedUrl);
+                    res = await fetch(`https://corsproxy.io/?${encodeURIComponent(apiUrl)}`);
                 }
 
                 if (!res.ok) throw new Error("Failed to reach TonAPI indexer");
-                
                 const data = await res.json();
                 
                 walletGramBalance = 0;
@@ -496,7 +661,6 @@
 
                 if (data.balances && Array.isArray(data.balances)) {
                     const normalizedGramMaster = GRAM_MASTER_CA;
-                    
                     for (const item of data.balances) {
                         const dec = item.jetton.decimals || 9;
                         const rawBal = BigInt(item.balance || 0);
@@ -965,6 +1129,9 @@
                 document.querySelector('.content-area').scrollTop = 0;
             }
             if (navBtn) navBtn.classList.add('active');
+            if (pageId === 'topblast') {
+                if (cachedTopblastTokens.length === 0) loadTopblastTokens();
+            }
             if (pageId === 'sniper') initRealChart();
             if (pageId === 'predict') { renderPredictMarkets(); renderUserPredictions(); }
             if (pageId === 'portfolio') refreshLivePortfolio();
@@ -987,6 +1154,7 @@
             setTimeout(() => {
                 initRealChart();
                 loadLiveTokenData();
+                loadTopblastTokens();
                 if (inAppWallet) refreshInAppBalance(true);
             }, 150);
         });
