@@ -93,9 +93,9 @@
             border-top: 1px solid var(--border-color); display: flex; justify-content: space-around;
             padding: 8px 2px 14px 2px; z-index: 30; backdrop-filter: blur(20px);
         }
-        .nav-tab { background: none; border: none; color: var(--text-muted); display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 8.5px; font-weight: 800; cursor: pointer; flex: 1; min-width: 44px; transition: color 0.2s; }
+        .nav-tab { background: none; border: none; color: var(--text-muted); display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 9.5px; font-weight: 800; cursor: pointer; flex: 1; min-width: 44px; transition: color 0.2s; }
         .nav-tab.active { color: var(--accent-blue); }
-        .nav-tab span { font-size: 8.5px; letter-spacing: -0.2px; }
+        .nav-tab span { font-size: 9.5px; letter-spacing: -0.2px; }
 
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -106,26 +106,6 @@
             background: #0f121d; border: 1px solid var(--accent-cyan); border-radius: 18px;
             width: 100%; max-width: 380px; padding: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.8);
             max-height: 85vh; overflow-y: auto;
-        }
-        
-        .token-item-card {
-            background: linear-gradient(135deg, rgba(16, 18, 28, 0.92), rgba(10, 12, 20, 0.96));
-            border: 1px solid var(--border-color); border-radius: 14px; padding: 12px;
-            position: relative; overflow: hidden; display: flex; justify-content: space-between; align-items: center; cursor: pointer;
-        }
-        .token-item-card canvas {
-            position: absolute; left: 0; top: 0; width: 100%; height: 100%; opacity: 0.55; pointer-events: none; z-index: 1;
-        }
-        .token-item-content {
-            position: relative; z-index: 2; display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0;
-        }
-        .token-item-actions {
-            position: relative; z-index: 2; display: flex; gap: 6px; align-items: center;
-        }
-
-        .pagination-bar {
-            display: flex; justify-content: space-between; align-items: center; margin-top: 10px; padding: 6px;
-            background: var(--bg-input); border-radius: 10px; border: 1px solid var(--border-color);
         }
 
         .social-links-row {
@@ -143,59 +123,6 @@
     </style>
 </head>
 <body>
-
-    <!-- Send Modal -->
-    <div class="modal-overlay" id="sendModal">
-        <div class="modal-card">
-            <div style="font-size: 14px; font-weight: 900; margin-bottom: 12px; color: #fff;">📤 Send TON / GRAM</div>
-            <div class="input-group">
-                <label>RECIPIENT TON ADDRESS</label>
-                <input type="text" id="sendRecipient" placeholder="UQ...">
-            </div>
-            <div class="input-group">
-                <label>AMOUNT</label>
-                <input type="number" id="sendAmount" placeholder="0.0">
-            </div>
-            <div style="display: flex; gap: 8px; margin-top: 12px;">
-                <button class="btn-action btn-blue" onclick="executeSendTransaction()">Confirm Send</button>
-                <button class="btn-action" style="background: var(--bg-input); color: #fff;" onclick="closeModal('sendModal')">Cancel</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Receive Modal -->
-    <div class="modal-overlay" id="receiveModal">
-        <div class="modal-card" style="text-align: center;">
-            <div style="font-size: 14px; font-weight: 900; margin-bottom: 10px; color: #fff;">📥 Receive TON & Tokens</div>
-            <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 12px;">Send TON, GRAM, or tokens to your secure on-chain wallet address below:</p>
-            <div style="background: var(--bg-input); padding: 12px; border-radius: 10px; font-size: 11px; color: var(--accent-cyan); font-weight: 800; word-break: break-all; margin-bottom: 14px;" id="modalWalletAddr">UQ...</div>
-            <button class="btn-action btn-blue" onclick="copyWalletAddress()">📋 Copy Address</button>
-            <button class="btn-action" style="background: var(--bg-input); color: #fff; margin-top: 8px;" onclick="closeModal('receiveModal')">Close</button>
-        </div>
-    </div>
-
-    <!-- Predict Bet Modal -->
-    <div class="modal-overlay" id="predictModal">
-        <div class="modal-card">
-            <div style="font-size: 14px; font-weight: 900; margin-bottom: 8px; color: #fff;" id="modalMarketTitle">Predict Market</div>
-            <div style="font-size: 11px; color: var(--accent-purple); font-weight: 800; margin-bottom: 12px;" id="modalSelectedOutcome">Outcome: YES</div>
-            
-            <div class="input-group">
-                <label>WAGER AMOUNT ($GRAM)</label>
-                <input type="number" id="predictWagerInput" value="10" placeholder="10">
-            </div>
-
-            <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 12px; display: flex; justify-content: space-between;">
-                <span>Your Wallet Balance:</span>
-                <strong style="color: var(--accent-cyan);" id="predictModalBalance">0.00 GRAM</strong>
-            </div>
-
-            <div style="display: flex; gap: 8px;">
-                <button class="btn-action btn-purple" style="flex: 1;" onclick="confirmPredictionWager()">🔮 Place Prediction</button>
-                <button class="btn-action" style="background: var(--bg-input); color: #fff; flex: 1;" onclick="closeModal('predictModal')">Cancel</button>
-            </div>
-        </div>
-    </div>
 
     <!-- Token Details Modal -->
     <div class="modal-overlay" id="tokenDetailModal">
@@ -255,7 +182,8 @@
                 <div class="brand-text"><h1>Kote Terminal</h1></div>
             </div>
             <div style="display: flex; align-items: center; gap: 6px;">
-                <span class="badge-pill" id="topbarWalletPill" onclick="switchPage('profile', document.querySelectorAll('.nav-tab')[3])" style="cursor: pointer;">💳 No Wallet</span>
+                <!-- TON Connect Widget Root Button -->
+                <div id="tonConnectButtonContainer"></div>
             </div>
         </header>
 
@@ -322,12 +250,12 @@
                     </div>
 
                     <div style="display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--text-muted); margin-bottom: 6px;">
-                        <span>Available Wallet Balance:</span>
-                        <strong style="color: var(--accent-cyan);" id="tradePageGramBalance">0.00 GRAM</strong>
+                        <span>Connected Wallet Balance:</span>
+                        <strong style="color: var(--accent-cyan);" id="tradePageGramBalance">0.00 TON</strong>
                     </div>
 
                     <div class="input-group">
-                        <label id="amountLabel">AMOUNT (GRAM)</label>
+                        <label id="amountLabel">AMOUNT (TON)</label>
                         <input type="number" id="gramAmountInput" value="10" oninput="updateGramAmount(this.value)">
                     </div>
 
@@ -338,13 +266,10 @@
 
                     <div style="font-size: 10px; color: var(--text-muted); font-weight: 700; margin-bottom: 4px;">PRESET AMOUNTS</div>
                     <div class="preset-grid">
-                        <button class="preset-btn" onclick="selectPreset(1, this)">1 GRAM</button>
-                        <button class="preset-btn" onclick="selectPreset(5, this)">5 GRAM</button>
-                        <button class="preset-btn active" onclick="selectPreset(10, this)">10 GRAM</button>
-                        <button class="preset-btn" onclick="selectPreset(25, this)">25 GRAM</button>
-                        <button class="preset-btn" onclick="selectPreset(50, this)">50 GRAM</button>
-                        <button class="preset-btn" onclick="selectPreset(75, this)">75 GRAM</button>
-                        <button class="preset-btn" onclick="selectPreset(100, this)">100 GRAM</button>
+                        <button class="preset-btn" onclick="selectPreset(1, this)">1 TON</button>
+                        <button class="preset-btn" onclick="selectPreset(5, this)">5 TON</button>
+                        <button class="preset-btn active" onclick="selectPreset(10, this)">10 TON</button>
+                        <button class="preset-btn" onclick="selectPreset(25, this)">25 TON</button>
                     </div>
 
                     <div style="margin-top: 8px;">
@@ -358,34 +283,15 @@
                         </div>
                     </div>
 
-                    <button class="btn-action btn-green" id="executeTradeBtn" style="margin-top: 10px;" onclick="executeLiveSwapOnChain()">⚡ Instant On-Chain Snipe Buy (10 GRAM)</button>
+                    <button class="btn-action btn-green" id="executeTradeBtn" style="margin-top: 10px;" onclick="executeLiveSwapOnChain()">⚡ Instant On-Chain Snipe Buy (10 TON)</button>
                 </div>
             </section>
 
-            <!-- 2. TOPBLAST LAUNCHPAD PAGE -->
-            <section id="page-topblast" class="page">
-                <div class="card">
-                    <div class="card-header">
-                        <span class="card-title">🚀 Topblast.lol Memecoin Launchpad</span>
-                        <span class="badge-pill" id="topblastPageIndicator">Page 1</span>
-                    </div>
-                    <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Verified Topblast bonding-curve tokens on TON with active on-chain liquidity and live metrics.</p>
-                    
-                    <div style="display: flex; flex-direction: column; gap: 10px;" id="topblastListContainer"></div>
-
-                    <div class="pagination-bar">
-                        <button class="btn-action btn-blue" style="width: 100px; padding: 8px; font-size: 11px;" onclick="changeTopblastPage(-1)">◀ Previous</button>
-                        <span id="pageNumbersLabel" style="font-size: 12px; font-weight: 800; color: var(--accent-cyan);">1 / 2</span>
-                        <button class="btn-action btn-blue" style="width: 100px; padding: 8px; font-size: 11px;" onclick="changeTopblastPage(1)">Next ▶</button>
-                    </div>
-                </div>
-            </section>
-
-            <!-- 3. KOTE PREDICT PAGE -->
+            <!-- 2. KOTE PREDICT PAGE -->
             <section id="page-predict" class="page">
                 <div class="card" style="background: linear-gradient(135deg, rgba(168, 85, 247, 0.2), rgba(16, 18, 28, 0.95)); border-color: rgba(168, 85, 247, 0.4);">
                     <div class="card-header"><span class="card-title" style="color: #c084fc;">🔮 KOTE PREDICT MARKETS</span></div>
-                    <div style="font-size: 13px; font-weight: 800; color: #fff;">Peer prediction wagers using $GRAM</div>
+                    <div style="font-size: 13px; font-weight: 800; color: #fff;">Peer prediction wagers using TON</div>
                     <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">Predict crypto prices, sports scores, and events. Winning pots are split pro-rata among winning shares (minus a 10% treasury allocation sent to <code style="font-size:9px; color:var(--accent-cyan)">UQAC-pXNqjUJ0u1wBkLPiDkLVMZkWYXWvNQuH5Mtx_tPdsGV</code>). Finished questions auto-cycle with new ones!</div>
                 </div>
 
@@ -394,19 +300,19 @@
                 <div class="card">
                     <div class="card-header"><span class="card-title">📜 Your Active Prediction Bets</span></div>
                     <div id="userPredictBetsList" style="font-size: 12px; color: var(--text-muted);">
-                        No active prediction bets placed yet. Choose a market above to wager $GRAM!
+                        No active prediction bets placed yet. Choose a market above to wager TON!
                     </div>
                 </div>
             </section>
 
-            <!-- 4. PORTFOLIO PAGE -->
+            <!-- 3. PORTFOLIO PAGE -->
             <section id="page-portfolio" class="page">
                 <div class="card" style="background: linear-gradient(135deg, rgba(30, 58, 138, 0.45), rgba(16, 18, 28, 0.90));">
                     <div class="card-header">
                         <span class="card-title">💼 Active Sniper & Trade Portfolio</span>
                         <span class="badge-pill" id="activePositionsCountBadge">0 Open</span>
                     </div>
-                    <div style="font-size: 26px; font-weight: 900; color: #fff; margin: 4px 0;" id="portfolioTotalGram">0.00 GRAM</div>
+                    <div style="font-size: 26px; font-weight: 900; color: #fff; margin: 4px 0;" id="portfolioTotalGram">0.00 TON</div>
                     <div style="font-size: 11px; color: var(--text-muted);">Real-time PnL tracking and active holdings.</div>
                 </div>
 
@@ -416,62 +322,12 @@
                     </div>
                 </div>
             </section>
-
-            <!-- 5. PROFILE PAGE -->
-            <section id="page-profile" class="page">
-                <div class="card">
-                    <div class="card-header"><span class="card-title">🔐 TON Connect Wallet (Tonkeeper / MyTonWallet)</span></div>
-                    
-                    <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); padding: 12px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
-                        <div>
-                            <div style="font-size: 10px; color: var(--text-muted);">CONNECTED WALLET BALANCE</div>
-                            <div style="font-size: 20px; font-weight: 900; color: var(--accent-green); margin-top: 2px;" id="profileGramBalance">0.00 GRAM</div>
-                        </div>
-                    </div>
-
-                    <div class="input-group">
-                        <label>CONNECTED WALLET ADDRESS</label>
-                        <input type="text" id="profileWalletAddress" readonly style="color: var(--accent-cyan);" value="Not Connected">
-                    </div>
-
-                    <!-- Official TON Connect Container Button -->
-                    <div id="tonConnectButtonContainer" style="margin-bottom: 10px; display: flex; justify-content: center;"></div>
-
-                    <div style="display: flex; gap: 8px; margin-bottom: 6px;" id="walletManagedButtons">
-                        <button class="btn-action btn-green" style="flex: 1; padding: 10px; font-size: 12px;" onclick="openModal('receiveModal')">📥 Receive</button>
-                        <button class="btn-action btn-blue" style="flex: 1; padding: 10px; font-size: 12px;" onclick="openModal('sendModal')">📤 Send</button>
-                        <button class="btn-action btn-red" style="padding: 10px; font-size: 12px;" onclick="disconnectWallet()">🔌 Disconnect</button>
-                    </div>
-                </div>
-
-                <div class="card">
-                    <div class="card-header"><span class="card-title">👤 Referral Program (@KoteTrade_bot)</span></div>
-                    <div class="input-group">
-                        <label>YOUR UNIQUE REFERRAL LINK</label>
-                        <input type="text" id="uniqueRefLink" value="https://t.me/KoteTrade_bot?start=ref_19842510" readonly>
-                    </div>
-                    <button class="btn-action btn-blue" style="padding: 10px; font-size: 12px;" onclick="copyReferralLink()">📋 Copy Unique Referral Link</button>
-                    
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px;">
-                        <div style="background: var(--bg-input); padding: 10px; border-radius: 10px; text-align: center;">
-                            <div style="font-size: 9px; color: var(--text-muted);">REFERRED USERS</div>
-                            <div style="font-size: 18px; font-weight: 900; color: var(--accent-cyan); margin-top: 2px;" id="referredUsersCount">0</div>
-                        </div>
-                        <div style="background: var(--bg-input); padding: 10px; border-radius: 10px; text-align: center;">
-                            <div style="font-size: 9px; color: var(--text-muted);">FEES EARNED</div>
-                            <div style="font-size: 18px; font-weight: 900; color: var(--accent-green); margin-top: 2px;" id="referredFeesEarned">0.00 GRAM</div>
-                        </div>
-                    </div>
-                </div>
-            </section>
         </main>
 
         <nav class="bottom-nav">
             <button class="nav-tab active" onclick="switchPage('sniper', this)">⚡<span>Snipe</span></button>
-            <button class="nav-tab" onclick="switchPage('topblast', this)">🚀<span>Topblast</span></button>
             <button class="nav-tab" onclick="switchPage('predict', this)">🔮<span>Predict</span></button>
             <button class="nav-tab" onclick="switchPage('portfolio', this)">💼<span>Portfolio</span></button>
-            <button class="nav-tab" onclick="switchPage('profile', this)">👤<span>Profile</span></button>
         </nav>
     </div>
 
@@ -490,20 +346,6 @@
         };
 
         const TREASURY_WALLET = "UQAC-pXNqjUJ0u1wBkLPiDkLVMZkWYXWvNQuH5Mtx_tPdsGV";
-
-        // Verified Topblast Memecoin Launchpad Contract Addresses on TON
-        const TOPBLAST_CAs = [
-            "EQAOQNg9yr0xNNR45Ebm3Sa2f3Wo5-blxlUGKZhI_b2OLF5d",
-            "EQC47093oX5Xhb0xuk2lCr2RhS8rj-vul61u4W2UH5ORmG_O",
-            "EQAOyf4n-7wTtTI45LGQwfacEfnkpOa9v6bjpwgeCHX5WW8y",
-            "EQAmWanX8ohlsG6qBpfL2ritCQ7tr7MlJpEK64Khm-O4742K",
-            "EQA6G0uVERDZTkLNa0drWBna1F5TSbogy7UXEWU5ERHz4uJL",
-            "EQAmZFuDbV0Ze8yR3lh3v0n8FISN-s3Yi7M8URCT--qc_t8x",
-            "EQAmsYIAadPQrEn-wZrRKwqhnReLDOeKl9T70umuk0MA1ULW",
-            "EQBvYQ3TyUYTjQxZa6UPbjwVzjnC5U3PRiXhpIu-HPMYMtTX",
-            "EQAmvp1Vrr0zY2--STdH-0X_mP5iCD61p2vNVJYwHlgBni2C",
-            "EQAO_tYpLbPq-GOXegYTYtFaQ0tMkxLBxzYF8cUCGGWAj_aA"
-        ];
 
         const PREDICTION_BANK = [
             { title: "Will TON price exceed $10 in 30 days?", category: "Crypto", deadline: "30 Days" },
@@ -525,13 +367,7 @@
         let tonConnectUI = null;
         let userWallet = null;
         let openPositions = [];
-        let walletGramBalance = 0.00;
-        let referredUsers = 0;
-        let referredFeesEarned = 0.00;
-        let isReferredUserRegistered = false;
-
-        let currentTopblastPage = 1;
-        const TOKENS_PER_PAGE = 10;
+        let walletTonBalance = 0.00;
 
         let currentTradeToken = {
             ca: "EQAmvp1Vrr0zY2--STdH-0X_mP5iCD61p2vNVJYwHlgBni2C",
@@ -558,70 +394,36 @@
         function saveAppState() {
             const stateObj = { 
                 positions: openPositions, 
-                balance: walletGramBalance,
-                refUsers: referredUsers,
-                refFees: referredFeesEarned,
-                isRefRegistered: isReferredUserRegistered,
+                balance: walletTonBalance,
                 markets: predictMarkets,
                 userBets: userPredictionBets
             };
-            localStorage.setItem("kote_terminal_state_v20", JSON.stringify(stateObj));
+            localStorage.setItem("kote_terminal_state_v21", JSON.stringify(stateObj));
         }
 
         function loadAppState() {
             try {
-                const raw = localStorage.getItem("kote_terminal_state_v20");
+                const raw = localStorage.getItem("kote_terminal_state_v21");
                 if (raw) {
                     const parsed = JSON.parse(raw);
                     if (Array.isArray(parsed.positions)) openPositions = parsed.positions;
-                    if (typeof parsed.balance === 'number') walletGramBalance = parsed.balance;
-                    if (typeof parsed.refUsers === 'number') referredUsers = parsed.refUsers;
-                    if (typeof parsed.refFees === 'number') referredFeesEarned = parsed.refFees;
-                    if (typeof parsed.isRefRegistered === 'boolean') isReferredUserRegistered = parsed.isRefRegistered;
+                    if (typeof parsed.balance === 'number') walletTonBalance = parsed.balance;
                     if (Array.isArray(parsed.markets)) predictMarkets = parsed.markets;
                     if (Array.isArray(parsed.userBets)) userPredictionBets = parsed.userBets;
                 }
             } catch(e) {}
         }
 
-        window.disconnectWallet = async function() {
-            if (tonConnectUI) {
-                await tonConnectUI.disconnect();
-                userWallet = null;
-                updateWalletUI();
-                alert("Wallet disconnected.");
-            }
-        };
-
         function updateWalletUI() {
             if (!userWallet || !userWallet.connected) {
-                document.getElementById('topbarWalletPill').innerText = `💳 No Wallet`;
-                document.getElementById('profileWalletAddress').value = "Not Connected";
-                document.getElementById('profileGramBalance').innerText = `0.00 GRAM`;
-                document.getElementById('tradePageGramBalance').innerText = `0.00 GRAM`;
-                document.getElementById('predictModalBalance').innerText = `0.00 GRAM`;
+                document.getElementById('tradePageGramBalance').innerText = `0.00 TON`;
                 return;
             }
-
-            const shortAddr = userWallet.address.slice(0, 5) + "..." + userWallet.address.slice(-4);
-            document.getElementById('topbarWalletPill').innerText = `💳 ${shortAddr}`;
-            document.getElementById('profileWalletAddress').value = userWallet.address;
-            document.getElementById('modalWalletAddr').innerText = userWallet.address;
-            document.getElementById('profileGramBalance').innerText = `${walletGramBalance.toFixed(2)} GRAM`;
-            document.getElementById('tradePageGramBalance').innerText = `${walletGramBalance.toFixed(2)} GRAM`;
-            document.getElementById('predictModalBalance').innerText = `${walletGramBalance.toFixed(2)} GRAM`;
-            
-            document.getElementById('referredUsersCount').innerText = referredUsers;
-            document.getElementById('referredFeesEarned').innerText = `${referredFeesEarned.toFixed(2)} GRAM`;
+            document.getElementById('tradePageGramBalance').innerText = `${walletTonBalance.toFixed(2)} TON`;
         }
 
         window.openModal = function(modalId) { document.getElementById(modalId).style.display = 'flex'; };
         window.closeModal = function(modalId) { document.getElementById(modalId).style.display = 'none'; };
-
-        window.copyWalletAddress = function() {
-            if (!userWallet || !userWallet.address) return;
-            navigator.clipboard.writeText(userWallet.address).then(() => alert("📋 Wallet address copied!"));
-        };
 
         window.copyCA = function(ca) {
             navigator.clipboard.writeText(ca).then(() => alert("📋 Contract Address copied to clipboard!"));
@@ -640,31 +442,7 @@
             }
         };
 
-        window.executeSendTransaction = async function() {
-            if (!userWallet || !userWallet.connected) return alert("Please connect your Tonkeeper wallet first!");
-            const recipient = KoteShield.sanitizeInput(document.getElementById('sendRecipient').value.trim());
-            const amt = parseFloat(document.getElementById('sendAmount').value);
-            if (!recipient || recipient.length < 30) return alert("Enter a valid recipient TON address.");
-            if (!KoteShield.verifyTransaction({ amount: amt })) return alert("Security guard blocked suspicious transaction.");
-            if (!amt || amt <= 0) return alert("Invalid amount.");
-
-            try {
-                const nanoAmount = BigInt(Math.floor(amt * 1e9)).toString();
-                const transaction = {
-                    validUntil: Math.floor(Date.now() / 1000) + 300,
-                    messages: [{ address: recipient, amount: nanoAmount }]
-                };
-                const result = await tonConnectUI.sendTransaction(transaction);
-                alert(`✅ Successfully transferred ${amt} TON on-chain!\nBOC: ${result.boc.slice(0, 16)}...`);
-                closeModal('sendModal');
-                document.getElementById('sendRecipient').value = '';
-                document.getElementById('sendAmount').value = '';
-            } catch (err) {
-                alert("Transaction cancelled or failed in wallet.");
-            }
-        };
-
-        // --- PREDICT FUNCTIONS (WITH AUTO-CYCLE & REAL REFERRAL FEES) ---
+        // --- PREDICT FUNCTIONS ---
         function checkAndCycleMarkets() {
             const now = Date.now();
             let updated = false;
@@ -692,49 +470,11 @@
         }
 
         window.openPredictModal = function(marketId, outcome) {
-            if (!userWallet || !userWallet.connected) return alert("Please connect your Tonkeeper wallet first!");
+            if (!userWallet || !userWallet.connected) return alert("Please connect your wallet via TON Connect first!");
             activePredictMarket = predictMarkets.find(m => m.id === marketId);
             activePredictOutcome = outcome;
             if (!activePredictMarket) return;
-
-            document.getElementById('modalMarketTitle').innerText = activePredictMarket.title;
-            document.getElementById('modalSelectedOutcome').innerText = `Wager Outcome: ${outcome.toUpperCase()} (${outcome === 'yes' ? activePredictMarket.yesShare : activePredictMarket.noShare}% share)`;
-            document.getElementById('predictWagerInput').value = 10;
-            updateWalletUI();
-            openModal('predictModal');
-        };
-
-        window.confirmPredictionWager = function() {
-            const wager = parseFloat(document.getElementById('predictWagerInput').value);
-            if (!wager || wager <= 0 || wager > walletGramBalance) return alert("Invalid wager amount or insufficient balance.");
-
-            walletGramBalance -= wager;
-            const treasuryFee = wager * 0.10;
-            const netWagerToPot = wager * 0.90;
-
-            activePredictMarket.pool += netWagerToPot;
-            activePredictMarket.treasuryPool += treasuryFee;
-            activePredictMarket.betsCount += 1;
-
-            referredFeesEarned += wager * 0.025;
-
-            userPredictionBets.unshift({
-                id: Date.now(),
-                marketTitle: activePredictMarket.title,
-                outcome: activePredictOutcome.toUpperCase(),
-                wager: wager,
-                netWager: netWagerToPot,
-                treasuryCut: treasuryFee,
-                treasuryWallet: TREASURY_WALLET,
-                timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-            });
-
-            saveAppState();
-            updateWalletUI();
-            renderPredictMarkets();
-            renderUserPredictions();
-            closeModal('predictModal');
-            alert(`🔮 Placed wager of ${wager} GRAM!\n(10% Treasury Fee routed to ${TREASURY_WALLET})`);
+            alert(`Wager outcome selected: ${outcome.toUpperCase()} for "${activePredictMarket.title}"`);
         };
 
         function renderPredictMarkets() {
@@ -746,7 +486,7 @@
                 <div class="predict-card">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
                         <span class="badge-pill" style="color: var(--accent-purple); border-color: rgba(168, 85, 247, 0.4);">${m.category} • Deadline: ${m.deadline}</span>
-                        <span style="font-size: 11px; font-weight: 800; color: var(--accent-cyan);">Pot: ${m.pool.toFixed(2)} GRAM</span>
+                        <span style="font-size: 11px; font-weight: 800; color: var(--accent-cyan);">Pot: ${m.pool.toFixed(2)} TON</span>
                     </div>
                     <div style="font-size: 14px; font-weight: 900; color: #fff; margin-bottom: 10px;">${m.title}</div>
                     <div class="market-outcomes">
@@ -768,7 +508,7 @@
             if (!container) return;
 
             if (userPredictionBets.length === 0) {
-                container.innerHTML = `<div style="color: var(--text-muted); font-size: 12px; text-align: center; padding: 10px;">No active prediction bets placed yet. Choose a market above to wager $GRAM!</div>`;
+                container.innerHTML = `<div style="color: var(--text-muted); font-size: 12px; text-align: center; padding: 10px;">No active prediction bets placed yet. Choose a market above to wager TON!</div>`;
                 return;
             }
 
@@ -776,11 +516,7 @@
                 <div style="background: var(--bg-input); border: 1px solid var(--border-color); border-radius: 10px; padding: 10px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center;">
                     <div>
                         <div style="font-size: 12px; font-weight: 900; color: #fff; margin-bottom: 2px;">${bet.marketTitle}</div>
-                        <div style="font-size: 10px; color: var(--text-muted);">Side: <b style="color: ${bet.outcome === 'YES' ? 'var(--accent-green)' : 'var(--accent-red)'}">${bet.outcome}</b> | Wager: ${bet.wager} GRAM</div>
-                    </div>
-                    <div style="text-align: right;">
-                        <div style="font-size: 13px; font-weight: 900; color: var(--accent-cyan);">${bet.netWager.toFixed(2)} GRAM Pot</div>
-                        <div style="font-size: 9px; color: var(--accent-purple);">Pro-rata Cut Active</div>
+                        <div style="font-size: 10px; color: var(--text-muted);">Side: <b style="color: ${bet.outcome === 'YES' ? 'var(--accent-green)' : 'var(--accent-red)'}">${bet.outcome}</b> | Wager: ${bet.wager} TON</div>
                     </div>
                 </div>
             `).join("");
@@ -913,199 +649,6 @@
             maSeries.setData(maData);
         }
 
-        // --- TOPBLAST LAUNCHPAD ENGINE ---
-        async function renderTopblastPaginationPage() {
-            const container = document.getElementById('topblastListContainer');
-            if (!container) return;
-
-            const totalPages = Math.ceil(TOPBLAST_CAs.length / TOKENS_PER_PAGE);
-            if (currentTopblastPage > totalPages) currentTopblastPage = totalPages;
-            if (currentTopblastPage < 1) currentTopblastPage = 1;
-
-            document.getElementById('topblastPageIndicator').innerText = `Page ${currentTopblastPage} / ${totalPages}`;
-            document.getElementById('pageNumbersLabel').innerText = `${currentTopblastPage} / ${totalPages}`;
-
-            const startIdx = (currentTopblastPage - 1) * TOKENS_PER_PAGE;
-            const pageCAs = TOPBLAST_CAs.slice(startIdx, startIdx + TOKENS_PER_PAGE);
-
-            container.innerHTML = pageCAs.map((ca, idx) => {
-                const globalIdx = startIdx + idx;
-                const canvasId = `tb_canvas_${globalIdx}`;
-                
-                setTimeout(() => {
-                    const c = document.getElementById(canvasId);
-                    if (c) {
-                        const cx = c.getContext('2d');
-                        c.width = c.parentElement.clientWidth;
-                        c.height = c.parentElement.clientHeight || 65;
-                        cx.clearRect(0, 0, c.width, c.height);
-                        cx.strokeStyle = globalIdx % 2 === 0 ? '#10b981' : '#3b82f6';
-                        cx.lineWidth = 3.5;
-                        cx.beginPath();
-                        let y = c.height / 2; cx.moveTo(0, y);
-                        for (let x = 12; x <= c.width; x += 12) {
-                            y += (Math.random() - 0.48) * 16;
-                            y = Math.max(6, Math.min(c.height - 6, y));
-                            cx.lineTo(x, y);
-                        }
-                        cx.stroke();
-                    }
-                }, 40);
-
-                return `
-                    <div class="token-item-card" onclick="openTokenDetailsByCA('${ca}', 'Topblast Meme #${globalIdx + 1}')">
-                        <canvas id="${canvasId}"></canvas>
-                        <div class="token-item-content">
-                            <img id="tb_img_${globalIdx}" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Ccircle cx='16' cy='16' r='16' fill='%231e293b'/%3E%3Ctext x='50%25' y='50%25' font-size='14' fill='%23fff' text-anchor='middle' dominant-baseline='central'%3E🚀%3C/text%3E%3C/svg%3E" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover;" alt="Logo">
-                            <div>
-                                <div id="tb_name_${globalIdx}" style="font-weight: 900; font-size: 13px; color: #fff;">Topblast Meme #${globalIdx + 1}</div>
-                                <div id="tb_mcap_${globalIdx}" style="font-size: 11px; color: var(--accent-cyan); font-weight: 800; margin-top: 2px;">MCap: <b>Loading...</b> | Age: <span id="tb_age_${globalIdx}">--</span></div>
-                                <div style="font-size: 9px; color: var(--text-muted);">Holders: <span id="tb_holders_${globalIdx}">--</span> | Dex Paid: <span id="tb_paid_${globalIdx}" style="color:var(--text-muted)">No</span></div>
-                            </div>
-                        </div>
-                        <div class="token-item-actions" onclick="event.stopPropagation()">
-                            <button class="btn-action" style="background: var(--bg-input); border: 1px solid var(--border-color); color: #fff; width: 40px; padding: 8px; font-size: 11px;" onclick="copyCA('${ca}')">📋</button>
-                            <button class="btn-action btn-blue" style="width: 70px; padding: 8px; font-size: 11px;" onclick="quickSelectToken('${ca}')">Snipe</button>
-                        </div>
-                    </div>
-                `;
-            }).join("");
-
-            for (let i = 0; i < pageCAs.length; i++) {
-                const gIdx = startIdx + i;
-                const ca = pageCAs[i];
-                try {
-                    const targetUrl = encodeURIComponent(`https://api.dexscreener.com/latest/dex/tokens/${ca}`);
-                    const res = await fetch(`https://corsproxy.io/?${targetUrl}`);
-                    if (res.ok) {
-                        const data = await res.json();
-                        const pair = (data.pairs && data.pairs.find(p => p.chainId === 'ton')) || data.pairs?.[0];
-                        if (pair) {
-                            const realName = pair.baseToken?.name || `Topblast Meme #${gIdx + 1}`;
-                            const realSymbol = pair.baseToken?.symbol || "BLAST";
-                            const mcapVal = pair.marketCap || pair.fdv || 0;
-                            const mcapStr = mcapVal ? `$${formatCompactNumber(mcapVal)}` : "$N/A";
-                            const logoUrl = pair.info?.imageUrl || pair.baseToken?.logoURI || "";
-                            
-                            const createdAt = pair.pairCreatedAt ? new Date(pair.pairCreatedAt) : new Date(Date.now() - (globalIdx * 3600000 * 3));
-                            const diffHours = Math.max(1, Math.floor((Date.now() - createdAt) / (1000 * 60 * 60)));
-                            const ageStr = diffHours > 24 ? `${Math.floor(diffHours / 24)}d ago` : `${diffHours}h ago`;
-                            const holdersCount = pair.holders || Math.max(85, Math.floor((pair.txns?.h24?.buys || 15) * 18 + (mcapVal / 7500)));
-                            const hasDexPaid = (pair.boosts && pair.boosts.active > 0) || (pair.info?.websites && pair.info.websites.length > 0) || pair.dexPaid === true;
-
-                            const nameEl = document.getElementById(`tb_name_${gIdx}`);
-                            const mcapEl = document.getElementById(`tb_mcap_${gIdx}`);
-                            const imgEl = document.getElementById(`tb_img_${gIdx}`);
-                            const ageEl = document.getElementById(`tb_age_${gIdx}`);
-                            const holdersEl = document.getElementById(`tb_holders_${gIdx}`);
-                            const paidEl = document.getElementById(`tb_paid_${gIdx}`);
-
-                            if (nameEl) nameEl.innerText = `${realName} (${realSymbol})`;
-                            if (mcapEl) mcapEl.innerHTML = `MCap: <b>${mcapStr}</b> | Age: `;
-                            if (ageEl) ageEl.innerText = ageStr;
-                            if (holdersEl) holdersEl.innerText = holdersCount.toLocaleString();
-                            if (paidEl) {
-                                paidEl.innerText = hasDexPaid ? "Yes" : "No";
-                                paidEl.style.color = hasDexPaid ? "var(--accent-green)" : "var(--text-muted)";
-                            }
-                            if (logoUrl && imgEl) imgEl.src = logoUrl;
-                        }
-                    }
-                } catch (e) {}
-            }
-        }
-
-        window.changeTopblastPage = function(dir) {
-            const totalPages = Math.ceil(TOPBLAST_CAs.length / TOKENS_PER_PAGE);
-            currentTopblastPage += dir;
-            if (currentTopblastPage > totalPages) currentTopblastPage = totalPages;
-            if (currentTopblastPage < 1) currentTopblastPage = 1;
-            renderTopblastPaginationPage();
-        };
-
-        window.openTokenDetails = function(ca, name, symbol, mcap, logo, age = "2d ago", holders = "340", isDexPaid = false, socials = []) {
-            activeModalToken = { ca, name, symbol, mcap, logo };
-            document.getElementById('modalTokenLogo').src = logo || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36'%3E%3Ccircle cx='18' cy='18' r='18' fill='%231e293b'/%3E%3Ctext x='50%25' y='50%25' font-size='16' fill='%23fff' text-anchor='middle' dominant-baseline='central'%3E💎%3C/text%3E%3C/svg%3E";
-            document.getElementById('modalTokenName').innerText = name;
-            document.getElementById('modalTokenSymbol').innerText = `${symbol} / TON`;
-            document.getElementById('modalTokenMcap').innerText = mcap;
-            document.getElementById('modalTokenAge').innerText = age;
-            document.getElementById('modalTokenHolders').innerText = holders;
-            
-            const paidLabel = document.getElementById('modalTokenDexPaid');
-            paidLabel.innerText = isDexPaid ? "Yes" : "No";
-            paidLabel.style.color = isDexPaid ? "var(--accent-green)" : "var(--text-muted)";
-            document.getElementById('modalTokenCA').value = ca;
-
-            const socialContainer = document.getElementById('modalSocialsContainer');
-            const socialList = document.getElementById('modalSocialLinksList');
-            if (socials && socials.length > 0) {
-                socialContainer.style.display = 'block';
-                socialList.innerHTML = socials.map(s => `<a href="${s.url}" target="_blank" class="social-pill">${s.icon} ${s.label}</a>`).join("");
-            } else {
-                socialContainer.style.display = 'none';
-                socialList.innerHTML = '';
-            }
-            openModal('tokenDetailModal');
-        };
-
-        window.openTokenDetailsByCA = async function(ca, fallbackName) {
-            openTokenDetails(ca, fallbackName, "BLAST", "Loading...", "", "Loading...", "Loading...", false, []);
-            try {
-                const targetUrl = encodeURIComponent(`https://api.dexscreener.com/latest/dex/tokens/${ca}`);
-                const res = await fetch(`https://corsproxy.io/?${targetUrl}`);
-                if (res.ok) {
-                    const data = await res.json();
-                    const pair = (data.pairs && data.pairs.find(p => p.chainId === 'ton')) || data.pairs?.[0];
-                    if (pair) {
-                        const name = pair.baseToken?.name || fallbackName;
-                        const symbol = pair.baseToken?.symbol || "BLAST";
-                        const mcapVal = pair.marketCap || pair.fdv || 0;
-                        const mcap = mcapVal ? `$${formatCompactNumber(mcapVal)}` : "$N/A";
-                        const logo = pair.info?.imageUrl || pair.baseToken?.logoURI || "";
-                        
-                        const createdAt = pair.pairCreatedAt ? new Date(pair.pairCreatedAt) : new Date(Date.now() - (3600000 * 12));
-                        const diffHours = Math.max(1, Math.floor((Date.now() - createdAt) / (1000 * 60 * 60)));
-                        const ageStr = diffHours > 24 ? `${Math.floor(diffHours / 24)} days ago` : `${diffHours} hours ago`;
-                        const holdersStr = (pair.holders || Math.max(95, Math.floor((pair.txns?.h24?.buys || 20) * 18))).toLocaleString();
-                        const isPaid = (pair.boosts && pair.boosts.active > 0) || (pair.info?.websites && pair.info.websites.length > 0) || pair.dexPaid === true;
-
-                        let socialsList = [];
-                        if (pair.info?.websites) pair.info.websites.forEach(w => socialsList.push({ label: 'Website', icon: '🌐', url: w.url }));
-                        if (pair.info?.socials) {
-                            pair.info.socials.forEach(s => {
-                                let icon = '🔗';
-                                if (s.type === 'twitter') icon = '𝕏';
-                                if (s.type === 'telegram') icon = '📱';
-                                socialsList.push({ label: s.type.toUpperCase(), icon: icon, url: s.url });
-                            });
-                        }
-                        if (socialsList.length === 0) {
-                            socialsList.push({ label: 'Telegram', icon: '📱', url: 'https://t.me/TopblastChat' });
-                            socialsList.push({ label: 'X (Twitter)', icon: '𝕏', url: 'https://twitter.com' });
-                        }
-
-                        activeModalToken = { ca, name, symbol, mcap, logo };
-                        document.getElementById('modalTokenLogo').src = logo || document.getElementById('modalTokenLogo').src;
-                        document.getElementById('modalTokenName').innerText = name;
-                        document.getElementById('modalTokenSymbol').innerText = `${symbol} / TON`;
-                        document.getElementById('modalTokenMcap').innerText = mcap;
-                        document.getElementById('modalTokenAge').innerText = ageStr;
-                        document.getElementById('modalTokenHolders').innerText = holdersStr;
-                        
-                        const paidLabel = document.getElementById('modalTokenDexPaid');
-                        paidLabel.innerText = isPaid ? "Yes" : "No";
-                        paidLabel.style.color = isPaid ? "var(--accent-green)" : "var(--text-muted)";
-
-                        const socialContainer = document.getElementById('modalSocialsContainer');
-                        const socialList = document.getElementById('modalSocialLinksList');
-                        socialContainer.style.display = 'block';
-                        socialList.innerHTML = socialsList.map(s => `<a href="${s.url}" target="_blank" class="social-pill">${s.icon} ${s.label}</a>`).join("");
-                    }
-                }
-            } catch(e) {}
-        };
-
         window.loadTokenData = async function() {
             const ca = document.getElementById('caInput').value.trim();
             if (!ca) return alert("Please enter a Contract Address (CA)");
@@ -1155,12 +698,12 @@
         };
 
         function updateEstTokens() {
-            const est = currentTradeToken.price > 0 ? (currentGramAmount * 0.39) / currentTradeToken.price : 0;
+            const est = currentTradeToken.price > 0 ? (currentTonAmount * 0.39) / currentTradeToken.price : 0;
             document.getElementById('estTokensReceived').innerText = `${Math.round(est).toLocaleString()} ${currentTradeToken.symbol}`;
         }
 
         let currentTradeMode = 'buy';
-        let currentGramAmount = 10;
+        let currentTonAmount = 10;
 
         window.setTradeMode = function(mode, btn) {
             currentTradeMode = mode;
@@ -1168,11 +711,11 @@
             btn.classList.add('active');
             const execBtn = document.getElementById('executeTradeBtn');
             execBtn.className = mode === 'buy' ? 'btn-action btn-green' : 'btn-action btn-red';
-            execBtn.innerText = mode === 'buy' ? `⚡ Instant On-Chain Snipe Buy (${currentGramAmount} GRAM)` : `⚡ Instant Sell (${currentGramAmount} GRAM)`;
+            execBtn.innerText = mode === 'buy' ? `⚡ Instant On-Chain Snipe Buy (${currentTonAmount} TON)` : `⚡ Instant Sell (${currentTonAmount} TON)`;
         };
 
         window.selectPreset = function(amt, btn) {
-            currentGramAmount = amt;
+            currentTonAmount = amt;
             document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             document.getElementById('gramAmountInput').value = amt;
@@ -1180,9 +723,9 @@
         };
 
         window.updateGramAmount = function(val) {
-            currentGramAmount = parseFloat(val) || 0;
+            currentTonAmount = parseFloat(val) || 0;
             const execBtn = document.getElementById('executeTradeBtn');
-            execBtn.innerText = currentTradeMode === 'buy' ? `⚡ Instant On-Chain Snipe Buy (${currentGramAmount} GRAM)` : `⚡ Instant Sell (${currentGramAmount} GRAM)`;
+            execBtn.innerText = currentTradeMode === 'buy' ? `⚡ Instant On-Chain Snipe Buy (${currentTonAmount} TON)` : `⚡ Instant Sell (${currentTonAmount} TON)`;
             updateEstTokens();
         };
 
@@ -1201,9 +744,9 @@
         // --- REAL ON-CHAIN SWAP EXECUTION VIA TON CONNECT ---
         window.executeLiveSwapOnChain = async function() {
             if (!userWallet || !userWallet.connected) {
-                return alert("Please connect your Tonkeeper wallet first using the Profile tab!");
+                return alert("Please connect your Tonkeeper wallet using the top right button first!");
             }
-            if (!KoteShield.verifyTransaction({ amount: currentGramAmount })) {
+            if (!KoteShield.verifyTransaction({ amount: currentTonAmount })) {
                 return alert("Security guard blocked transaction.");
             }
 
@@ -1211,11 +754,11 @@
                 const idx = openPositions.findIndex(p => p.ca === currentTradeToken.ca);
                 if (idx !== -1) {
                     const sold = openPositions.splice(idx, 1)[0];
-                    walletGramBalance += sold.amountGram;
+                    walletTonBalance += sold.amountTon;
                     saveAppState();
                     updateWalletUI();
                     renderPortfolio();
-                    alert(`✅ Sold ${sold.name} (${sold.amountGram} GRAM) instantly!`);
+                    alert(`✅ Sold ${sold.name} (${sold.amountTon} TON) instantly!`);
                 } else {
                     alert("No open position found for this token to sell.");
                 }
@@ -1223,30 +766,27 @@
             }
 
             try {
-                const amountInNano = BigInt(Math.floor(currentGramAmount * 1e9)).toString(); // 1 GRAM = 10^9 nanotons
+                const amountInNano = BigInt(Math.floor(currentTonAmount * 1e9)).toString(); // 1 TON = 10^9 nanotons
 
-                // Fetch STON.fi router address dynamically
                 const stonApiUrl = encodeURIComponent(`https://api.ston.fi/v1/routers`);
                 const routerRes = await fetch(`https://corsproxy.io/?${stonApiUrl}`);
                 const routerData = await routerRes.json();
                 const routerAddress = routerData[0]?.router_address || "EQC33ANHUzFA5S_FqgJq_86vBqA_vN8b0ZzK0QY5vN8b0ZzK";
 
-                // Build live transaction object for TON Connect
                 const transaction = {
-                    validUntil: Math.floor(Date.now() / 1000) + 300, // 5 minutes expiration
+                    validUntil: Math.floor(Date.now() / 1000) + 300,
                     messages: [
                         {
                             address: routerAddress,
-                            amount: amountInNano, // Nanotons attached for swap & forward fees
+                            amount: amountInNano,
                         }
                     ]
                 };
 
-                // Request user wallet signature and broadcast
                 const result = await tonConnectUI.sendTransaction(transaction);
                 
-                walletGramBalance -= currentGramAmount;
-                const estTokens = currentTradeToken.price > 0 ? (currentGramAmount * 0.39) / currentTradeToken.price : 0;
+                walletTonBalance = Math.max(0, walletTonBalance - currentTonAmount);
+                const estTokens = currentTradeToken.price > 0 ? (currentTonAmount * 0.39) / currentTradeToken.price : 0;
                 
                 openPositions.unshift({
                     id: Date.now(), 
@@ -1256,7 +796,7 @@
                     symbol: currentTradeToken.symbol, 
                     logo: currentTradeToken.logo,
                     entryPrice: currentTradeToken.price, 
-                    amountGram: currentGramAmount, 
+                    amountTon: currentTonAmount, 
                     tokensHeld: estTokens, 
                     slippage: currentSlippageVal,
                     boc: result.boc ? result.boc.slice(0, 16) + '...' : 'Broadcasted',
@@ -1278,11 +818,11 @@
             const idx = openPositions.findIndex(p => p.id === posId);
             if (idx !== -1) {
                 const closed = openPositions.splice(idx, 1)[0];
-                walletGramBalance += closed.amountGram;
+                walletTonBalance += closed.amountTon;
                 saveAppState();
                 updateWalletUI();
                 renderPortfolio();
-                alert(`💰 Sold 100% of ${closed.name} (${closed.amountGram} GRAM) instantly!`);
+                alert(`💰 Sold 100% of ${closed.name} (${closed.amountTon} TON) instantly!`);
             }
         };
 
@@ -1292,8 +832,8 @@
             const badgeEl = document.getElementById('activePositionsCountBadge');
 
             badgeEl.innerText = `${openPositions.length} Open`;
-            const totalGram = openPositions.reduce((acc, item) => acc + item.amountGram, 0);
-            totalEl.innerText = `${totalGram.toFixed(2)} GRAM`;
+            const totalTon = openPositions.reduce((acc, item) => acc + item.amountTon, 0);
+            totalEl.innerText = `${totalTon.toFixed(2)} TON`;
 
             if (openPositions.length === 0) {
                 container.innerHTML = `<div class="card" style="text-align: center; padding: 24px 14px; color: var(--text-muted); font-size: 12px;">No active trades or snipes yet. Execute a trade on the Snipe tab to track live PnL here!</div>`;
@@ -1301,9 +841,9 @@
             }
 
             container.innerHTML = openPositions.map(pos => {
-                const currentVal = pos.amountGram * (1 + (Math.random() * 0.1 - 0.04));
-                const pnlVal = currentVal - pos.amountGram;
-                const pnlPct = (pnlVal / pos.amountGram) * 100;
+                const currentVal = pos.amountTon * (1 + (Math.random() * 0.1 - 0.04));
+                const pnlVal = currentVal - pos.amountTon;
+                const pnlPct = (pnlVal / pos.amountTon) * 100;
                 const pnlColor = pnlVal >= 0 ? 'var(--accent-green)' : 'var(--accent-red)';
 
                 return `
@@ -1317,8 +857,8 @@
                                 </div>
                             </div>
                             <div style="text-align: right;">
-                                <div style="font-size: 14px; font-weight: 900; color: var(--accent-cyan);">${pos.amountGram} GRAM</div>
-                                <div style="font-size: 11px; font-weight: 900; color: ${pnlColor};">PnL: ${pnlVal >= 0 ? '+' : ''}${pnlVal.toFixed(2)} GRAM (${pnlPct.toFixed(2)}%)</div>
+                                <div style="font-size: 14px; font-weight: 900; color: var(--accent-cyan);">${pos.amountTon} TON</div>
+                                <div style="font-size: 11px; font-weight: 900; color: ${pnlColor};">PnL: ${pnlVal >= 0 ? '+' : ''}${pnlVal.toFixed(2)} TON (${pnlPct.toFixed(2)}%)</div>
                             </div>
                         </div>
                         <div style="display: flex; gap: 8px;">
@@ -1345,56 +885,29 @@
             }
             if (navBtn) navBtn.classList.add('active');
             if (pageId === 'sniper') initRealChart();
-            if (pageId === 'topblast') setTimeout(renderTopblastPaginationPage, 50);
             if (pageId === 'predict') { renderPredictMarkets(); renderUserPredictions(); }
-        };
-
-        window.copyReferralLink = function() {
-            const refInput = document.getElementById('uniqueRefLink');
-            refInput.select();
-            navigator.clipboard.writeText(refInput.value).then(() => alert('📋 Unique referral link copied!'));
         };
 
         window.addEventListener('DOMContentLoaded', () => {
             loadAppState();
 
-            // Initialize TON Connect UI
+            // Initialize TON Connect UI in header
             tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
                 manifestUrl: window.location.origin + '/tonconnect-manifest.json',
                 buttonRootId: 'tonConnectButtonContainer'
             });
 
-            // Listen to real wallet connection state changes
             tonConnectUI.onStatusChange(walletInfo => {
                 if (walletInfo) {
                     userWallet = { address: walletInfo.account.address, connected: true };
-                    walletGramBalance = 50.00; // Simulated connected mainnet liquidity buffer
+                    walletTonBalance = 50.00; // Live wallet balance buffer simulation
                     updateWalletUI();
                 } else {
                     userWallet = null;
-                    walletGramBalance = 0.00;
+                    walletTonBalance = 0.00;
                     updateWalletUI();
                 }
             });
-
-            const urlParams = new URLSearchParams(window.location.search);
-            const refParam = urlParams.get('ref') || urlParams.get('start');
-            
-            const tg = window.Telegram?.WebApp;
-            if (tg) {
-                tg.ready();
-                tg.expand();
-                if (tg.initDataUnsafe?.user) {
-                    const uid = tg.initDataUnsave.user.id;
-                    document.getElementById('uniqueRefLink').value = `https://t.me/KoteTrade_bot?start=ref_${uid}`;
-                }
-            }
-
-            if (refParam && !isReferredUserRegistered) {
-                referredUsers += 1;
-                isReferredUserRegistered = true;
-                saveAppState();
-            }
 
             renderPortfolio();
             renderPredictMarkets();
@@ -1403,8 +916,7 @@
 
             setTimeout(() => { 
                 initRealChart(); 
-                loadTokenData(); // Auto-load KOTE on startup
-                renderTopblastPaginationPage();
+                loadTokenData(); 
             }, 100);
 
             updateEstTokens();
