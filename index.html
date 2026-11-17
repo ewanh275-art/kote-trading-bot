@@ -534,7 +534,6 @@
             "EQAmaMdwCmpZNJSRfvbNZDu1HkjFbw2VtvvI1FDKvLJMgyXE", "EQAmB_sndV45N-cmgT2tihQOcaf4EgT3nhhsvYeJ4UnICc0A"
         ];
 
-        // Dedust pool tokens list (dynamically expandable up to unlimited pages)
         const DEDUST_CAs = [
             "EQC47093oX5Xhb0xuk2lCr2RhS8rj-vul61u4W2UH5ORmG_O",
             "EQDcm06RlreuMurm-yik9WbL6kI617B77OrSRF_ZjoCYFuny",
@@ -550,7 +549,6 @@
             "EQA61O71y4I8oZDXRvMOrHtub2vxcPI54f1oGA_e4h0JL64L"
         ];
 
-        // STON.fi pool tokens list (dynamically expandable up to unlimited pages)
         const STONFI_CAs = [
             "EQAnWanX8ohlsG6qBpfL2ritCQ7tr7MlJpEK64Khm-O4742K",
             "EQA6_KTcZORIevd4zw9GJGmpaWKrzdixod8J1fWfm4r7YxZm",
@@ -570,9 +568,9 @@
         
         let userWallet = null;
         let openPositions = [];
-        let walletGramBalance = 0.00; // Real wallet starts at 0.00 until funded or transferred
-        let referredUsers = 0; // Strict real count (0 if none)
-        let referredFeesEarned = 0.00; // Strict real fees earned (0.00 if none)
+        let walletGramBalance = 0.00;
+        let referredUsers = 0;
+        let referredFeesEarned = 0.00;
 
         let currentTopblastPage = 1;
         let currentDedustPage = 1;
@@ -628,7 +626,7 @@
                 randAddr += chars.charAt(Math.floor(Math.random() * chars.length));
             }
             userWallet = { address: randAddr, seedPhrase: words.join(" "), createdAt: new Date().toISOString() };
-            walletGramBalance = 0.00; // Fresh real wallet has 0 balance until funded
+            walletGramBalance = 0.00;
             saveAppState();
 
             document.getElementById('generatedWalletAddrDisplay').innerText = userWallet.address;
@@ -682,7 +680,6 @@
             document.getElementById('profileGramBalance').innerText = `${walletGramBalance.toFixed(2)} GRAM`;
             document.getElementById('tradePageGramBalance').innerText = `${walletGramBalance.toFixed(2)} GRAM`;
             
-            // Referral metrics strict update
             document.getElementById('referredUsersCount').innerText = referredUsers;
             document.getElementById('referredFeesEarned').innerText = `${referredFeesEarned.toFixed(2)} GRAM`;
         }
@@ -727,7 +724,6 @@
             document.getElementById('sendAmount').value = '';
         };
 
-        // --- CHART & LIVE M-CAP TRACKING ---
         let tvChart = null;
         let candleSeries = null;
         let maSeries = null;
@@ -770,7 +766,8 @@
                 const intervalMap = { '5m': 'minute', '10m': 'minute', '15m': 'minute', '30m': 'minute', '1h': 'hour', '4h': 'hour', '1d': 'day' };
                 const geckoInterval = intervalMap[tf] || 'hour';
 
-                const poolRes = await fetch(`https://api.geckoterminal.com/api/v2/networks/ton/tokens/${ca}/pools?page=1`);
+                const targetUrl = encodeURIComponent(`https://api.geckoterminal.com/api/v2/networks/ton/tokens/${ca}/pools?page=1`);
+                const poolRes = await fetch(`https://corsproxy.io/?${targetUrl}`);
                 if (poolRes.ok) {
                     const poolData = await poolRes.json();
                     const topPoolObj = poolData.data?.[0];
@@ -782,7 +779,8 @@
                     }
 
                     if (topPool) {
-                        const ohlcvRes = await fetch(`https://api.geckoterminal.com/api/v2/networks/ton/pools/${topPool}/ohlcv/${geckoInterval}?limit=80`);
+                        const ohlcvUrl = encodeURIComponent(`https://api.geckoterminal.com/api/v2/networks/ton/pools/${topPool}/ohlcv/${geckoInterval}?limit=80`);
+                        const ohlcvRes = await fetch(`https://corsproxy.io/?${ohlcvUrl}`);
                         if (ohlcvRes.ok) {
                             const ohlcvJson = await ohlcvRes.json();
                             const rawList = ohlcvJson.data?.attributes?.ohlcv_list || [];
@@ -843,7 +841,6 @@
             maSeries.setData(maData);
         }
 
-        // --- RENDER DEDUST, STON.FI & TOPBLAST LISTS ---
         async function renderTopblastAndMemesUI() {
             renderTopblastPaginationPage();
             renderDedustPaginationPage();
@@ -911,7 +908,8 @@
                 const gIdx = startIdx + i;
                 const ca = pageCAs[i];
                 try {
-                    const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${ca}`);
+                    const targetUrl = encodeURIComponent(`https://api.dexscreener.com/latest/dex/tokens/${ca}`);
+                    const res = await fetch(`https://corsproxy.io/?${targetUrl}`);
                     if (res.ok) {
                         const data = await res.json();
                         const pair = (data.pairs && data.pairs.find(p => p.chainId === 'ton')) || data.pairs?.[0];
@@ -954,7 +952,6 @@
             const totalPages = Math.ceil(DEDUST_CAs.length / TOKENS_PER_PAGE);
             currentDedustPage += dir;
             if (currentDedustPage > totalPages) {
-                // Unlimited pagination simulation: dynamically expand pool list
                 for(let k=1; k<=10; k++) DEDUST_CAs.push("EQD" + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15));
             }
             if (currentDedustPage < 1) currentDedustPage = 1;
@@ -1022,7 +1019,8 @@
                 const gIdx = startIdx + i;
                 const ca = pageCAs[i];
                 try {
-                    const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${ca}`);
+                    const targetUrl = encodeURIComponent(`https://api.dexscreener.com/latest/dex/tokens/${ca}`);
+                    const res = await fetch(`https://corsproxy.io/?${targetUrl}`);
                     if (res.ok) {
                         const data = await res.json();
                         const pair = (data.pairs && data.pairs.find(p => p.chainId === 'ton')) || data.pairs?.[0];
@@ -1065,7 +1063,6 @@
             const totalPages = Math.ceil(STONFI_CAs.length / TOKENS_PER_PAGE);
             currentStonfiPage += dir;
             if (currentStonfiPage > totalPages) {
-                // Unlimited pagination simulation: dynamically expand pool list
                 for(let k=1; k<=10; k++) STONFI_CAs.push("EQQ" + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15));
             }
             if (currentStonfiPage < 1) currentStonfiPage = 1;
@@ -1133,7 +1130,8 @@
                 const gIdx = startIdx + i;
                 const ca = pageCAs[i];
                 try {
-                    const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${ca}`);
+                    const targetUrl = encodeURIComponent(`https://api.dexscreener.com/latest/dex/tokens/${ca}`);
+                    const res = await fetch(`https://corsproxy.io/?${targetUrl}`);
                     if (res.ok) {
                         const data = await res.json();
                         const pair = (data.pairs && data.pairs.find(p => p.chainId === 'ton')) || data.pairs?.[0];
@@ -1182,7 +1180,6 @@
             renderTopblastPaginationPage();
         };
 
-        // --- TOKENOMICS MODAL WITH SOCIALS ---
         window.openTokenDetails = function(ca, name, symbol, mcap, logo, age = "2d ago", holders = "340", isDexPaid = false, socials = []) {
             activeModalToken = { ca, name, symbol, mcap, logo };
             document.getElementById('modalTokenLogo').src = logo || "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36'%3E%3Ccircle cx='18' cy='18' r='18' fill='%231e293b'/%3E%3Ctext x='50%25' y='50%25' font-size='16' fill='%23fff' text-anchor='middle' dominant-baseline='central'%3E💎%3C/text%3E%3C/svg%3E";
@@ -1212,7 +1209,8 @@
         window.openTokenDetailsByCA = async function(ca, fallbackName) {
             openTokenDetails(ca, fallbackName, "DEX", "Loading...", "", "Loading...", "Loading...", false, []);
             try {
-                const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${ca}`);
+                const targetUrl = encodeURIComponent(`https://api.dexscreener.com/latest/dex/tokens/${ca}`);
+                const res = await fetch(`https://corsproxy.io/?${targetUrl}`);
                 if (res.ok) {
                     const data = await res.json();
                     const pair = (data.pairs && data.pairs.find(p => p.chainId === 'ton')) || data.pairs?.[0];
@@ -1270,7 +1268,8 @@
             
             document.getElementById('tokenHeaderName').innerText = "⏳ Fetching Live Data...";
             try {
-                const res = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${ca}`);
+                const targetUrl = encodeURIComponent(`https://api.dexscreener.com/latest/dex/tokens/${ca}`);
+                const res = await fetch(`https://corsproxy.io/?${targetUrl}`);
                 const data = await res.json();
                 const pair = (data.pairs && data.pairs.find(p => p.chainId === 'ton')) || data.pairs?.[0];
 
