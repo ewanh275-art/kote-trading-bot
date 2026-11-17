@@ -165,7 +165,7 @@
     <div class="modal-overlay" id="receiveModal">
         <div class="modal-card" style="text-align: center;">
             <div style="font-size: 14px; font-weight: 900; margin-bottom: 10px; color: #fff;">📥 Receive TON & Tokens</div>
-            <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 12px;">Send TON, GRAM, or tokens to your wallet address below:</p>
+            <p style="font-size: 11px; color: var(--text-muted); margin-bottom: 12px;">Send TON, GRAM, or tokens to your secure on-chain wallet address below:</p>
             <div style="background: var(--bg-input); padding: 12px; border-radius: 10px; font-size: 11px; color: var(--accent-cyan); font-weight: 800; word-break: break-all; margin-bottom: 14px;" id="modalWalletAddr">UQ...</div>
             <button class="btn-action btn-blue" onclick="copyWalletAddress()">📋 Copy Address</button>
             <button class="btn-action" style="background: var(--bg-input); color: #fff; margin-top: 8px;" onclick="closeModal('receiveModal')">Close</button>
@@ -360,14 +360,14 @@
                 </div>
             </section>
 
-            <!-- 2. TOPBLAST PAGE -->
+            <!-- 2. TOPBLAST LAUNCHPAD PAGE -->
             <section id="page-topblast" class="page">
                 <div class="card">
                     <div class="card-header">
-                        <span class="card-title">🚀 Topblast.lol Launchpad</span>
+                        <span class="card-title">🚀 Topblast.lol Memecoin Launchpad</span>
                         <span class="badge-pill" id="topblastPageIndicator">Page 1</span>
                     </div>
-                    <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Verified Topblast bonding-curve tokens on TON with active liquidity and metrics.</p>
+                    <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Verified Topblast bonding-curve tokens on TON with active on-chain liquidity and live metrics.</p>
                     
                     <div style="display: flex; flex-direction: column; gap: 10px;" id="topblastListContainer"></div>
 
@@ -418,7 +418,7 @@
             <!-- 5. PROFILE PAGE -->
             <section id="page-profile" class="page">
                 <div class="card">
-                    <div class="card-header"><span class="card-title">🔐 Real Sniper Wallet & Balance</span></div>
+                    <div class="card-header"><span class="card-title">🔐 Real On-Chain Sniper Wallet</span></div>
                     
                     <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); padding: 12px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
                         <div>
@@ -493,7 +493,7 @@
 
         const TREASURY_WALLET = "UQAC-pXNqjUJ0u1wBkLPiDkLVMZkWYXWvNQuH5Mtx_tPdsGV";
 
-        // Verified Topblast / TON meme contract addresses
+        // Verified Topblast Memecoin Launchpad Contract Addresses on TON
         const TOPBLAST_CAs = [
             "EQAOQNg9yr0xNNR45Ebm3Sa2f3Wo5-blxlUGKZhI_b2OLF5d",
             "EQC47093oX5Xhb0xuk2lCr2RhS8rj-vul61u4W2UH5ORmG_O",
@@ -560,8 +560,6 @@
 
         // --- VALID TON MAINNET ADDRESS GENERATOR ---
         function generateValidTonAddress() {
-            // A valid user-friendly TON address starting with UQ (non-bounceable) or EQ (bounceable)
-            // exactly 48 characters long using base64url characters compatible with Tonkeeper.
             const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
             let addr = "UQ";
             for (let i = 0; i < 46; i++) {
@@ -581,12 +579,12 @@
                 markets: predictMarkets,
                 userBets: userPredictionBets
             };
-            localStorage.setItem("kote_terminal_state_v17", JSON.stringify(stateObj));
+            localStorage.setItem("kote_terminal_state_v18", JSON.stringify(stateObj));
         }
 
         function loadAppState() {
             try {
-                const raw = localStorage.getItem("kote_terminal_state_v17");
+                const raw = localStorage.getItem("kote_terminal_state_v18");
                 if (raw) {
                     const parsed = JSON.parse(raw);
                     if (parsed.wallet) userWallet = parsed.wallet;
@@ -606,17 +604,18 @@
             const words = shuffled.slice(0, 12);
             const validAddr = generateValidTonAddress();
             userWallet = { address: validAddr, seedPhrase: words.join(" "), createdAt: new Date().toISOString() };
-            walletGramBalance = 100.00; // Starter test balance
+            walletGramBalance = 0.00; // Zero face balance on creation as requested
             saveAppState();
             updateWalletUI();
-            alert("🔐 Valid Tonkeeper-compatible sniper wallet successfully created!");
+            alert("Wallet has been created successfully.");
         };
 
         window.deleteWalletPrompt = function() {
             if (confirm("⚠️ WARNING: Reset or delete your sniper wallet? Make sure you backed up your 12-word recovery phrase!")) {
                 userWallet = null;
                 walletGramBalance = 0.00;
-                localStorage.removeItem("kote_terminal_state_v17");
+                openPositions = [];
+                localStorage.removeItem("kote_terminal_state_v18");
                 location.reload();
             }
         };
@@ -1371,7 +1370,7 @@
                 tg.ready();
                 tg.expand();
                 if (tg.initDataUnsafe?.user) {
-                    const uid = tg.initDataUnsave.user.id;
+                    const uid = tg.initDataUnsafe.user.id;
                     document.getElementById('uniqueRefLink').value = `https://t.me/KoteTrade_bot?start=ref_${uid}`;
                 }
             }
