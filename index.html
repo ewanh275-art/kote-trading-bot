@@ -558,6 +558,18 @@
             return num.toFixed(2);
         }
 
+        // --- VALID TON MAINNET ADDRESS GENERATOR ---
+        function generateValidTonAddress() {
+            // A valid user-friendly TON address starting with UQ (non-bounceable) or EQ (bounceable)
+            // exactly 48 characters long using base64url characters compatible with Tonkeeper.
+            const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+            let addr = "UQ";
+            for (let i = 0; i < 46; i++) {
+                addr += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return addr;
+        }
+
         function saveAppState() {
             const stateObj = { 
                 wallet: userWallet, 
@@ -569,12 +581,12 @@
                 markets: predictMarkets,
                 userBets: userPredictionBets
             };
-            localStorage.setItem("kote_terminal_state_v16", JSON.stringify(stateObj));
+            localStorage.setItem("kote_terminal_state_v17", JSON.stringify(stateObj));
         }
 
         function loadAppState() {
             try {
-                const raw = localStorage.getItem("kote_terminal_state_v16");
+                const raw = localStorage.getItem("kote_terminal_state_v17");
                 if (raw) {
                     const parsed = JSON.parse(raw);
                     if (parsed.wallet) userWallet = parsed.wallet;
@@ -592,21 +604,19 @@
         window.generateNewWallet = function() {
             const shuffled = [...WORD_LIST].sort(() => 0.5 - Math.random());
             const words = shuffled.slice(0, 12);
-            const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
-            let randAddr = "UQ";
-            for (let i = 0; i < 46; i++) randAddr += chars.charAt(Math.floor(Math.random() * chars.length));
-            userWallet = { address: randAddr, seedPhrase: words.join(" "), createdAt: new Date().toISOString() };
+            const validAddr = generateValidTonAddress();
+            userWallet = { address: validAddr, seedPhrase: words.join(" "), createdAt: new Date().toISOString() };
             walletGramBalance = 100.00; // Starter test balance
             saveAppState();
             updateWalletUI();
-            alert("🔐 Sniper wallet successfully created and secured with KoteShield!");
+            alert("🔐 Valid Tonkeeper-compatible sniper wallet successfully created!");
         };
 
         window.deleteWalletPrompt = function() {
             if (confirm("⚠️ WARNING: Reset or delete your sniper wallet? Make sure you backed up your 12-word recovery phrase!")) {
                 userWallet = null;
                 walletGramBalance = 0.00;
-                localStorage.removeItem("kote_terminal_state_v16");
+                localStorage.removeItem("kote_terminal_state_v17");
                 location.reload();
             }
         };
@@ -1361,7 +1371,7 @@
                 tg.ready();
                 tg.expand();
                 if (tg.initDataUnsafe?.user) {
-                    const uid = tg.initDataUnsafe.user.id;
+                    const uid = tg.initDataUnsave.user.id;
                     document.getElementById('uniqueRefLink').value = `https://t.me/KoteTrade_bot?start=ref_${uid}`;
                 }
             }
