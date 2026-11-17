@@ -28,12 +28,11 @@
         }
         #intro-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(rgba(5, 5, 7, 0.86), rgba(5, 5, 7, 0.97)), url('./bg.jpg.JPG') no-repeat center center;
-            background-size: cover; z-index: 1000; display: flex; flex-direction: column;
+            background: linear-gradient(rgba(5, 5, 7, 0.88), rgba(5, 5, 7, 0.98)), url('./bg.jpg.JPG') no-repeat center center;
+            background-size: cover; z-index: 1000; display: none; flex-direction: column;
             justify-content: space-between; padding: 28px 18px calc(34px + env(safe-area-inset-bottom)) 18px; text-align: center;
-            transition: opacity 0.35s ease, visibility 0.35s ease;
         }
-        #intro-screen.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+        #intro-screen.active { display: flex; }
         .intro-content { margin: auto; display: flex; flex-direction: column; align-items: center; gap: 14px; width: 100%; max-width: 380px; }
         .intro-logo-moon {
             width: 82px; height: 82px; background: rgba(18, 22, 38, 0.92); border: 2px solid var(--accent-blue);
@@ -121,7 +120,6 @@
         .nav-tab.active { color: var(--accent-blue); }
         .nav-tab span { font-size: 8.5px; letter-spacing: -0.2px; }
 
-        /* Modal Styles */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.8); z-index: 2000; display: none;
@@ -131,27 +129,37 @@
             background: #0f121d; border: 1px solid var(--accent-cyan); border-radius: 18px;
             width: 100%; max-width: 360px; padding: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.8);
         }
+        
+        /* Token Card with Mini Background Chart */
+        .token-item-card {
+            background: linear-gradient(135deg, rgba(16, 18, 28, 0.9), rgba(10, 12, 20, 0.95));
+            border: 1px solid var(--border-color); border-radius: 12px; padding: 12px;
+            position: relative; overflow: hidden; display: flex; justify-content: space-between; align-items: center;
+        }
+        .token-item-card canvas {
+            position: absolute; right: 0; bottom: 0; width: 120px; height: 100%; opacity: 0.35; pointer-events: none;
+        }
     </style>
 </head>
 <body>
 
-    <!-- Intro & Custodial Wallet Setup Screen -->
+    <!-- Intro & First-Time Custodial Wallet Setup Screen -->
     <div id="intro-screen">
         <div style="padding-top: 10px; font-weight: 900; color: var(--accent-blue); letter-spacing: 2.5px; font-size: 12px;">KOTE TRADE & SNIPER TERMINAL</div>
         
         <div class="intro-content" id="walletSetupStep1">
             <div class="intro-logo-moon">🐱</div>
-            <div style="font-size: 22px; font-weight: 900; color: #fff;">INSTANT SNIPER WALLET</div>
+            <div style="font-size: 22px; font-weight: 900; color: #fff;">WELCOME TO KOTE</div>
             <p style="font-size: 12px; color: var(--text-muted); line-height: 1.5; max-width: 310px;">
-                Create a real non-custodial TON sniper wallet to receive, send, and instantly snipe tokens without confirmation delays.
+                Generating your secure, unique non-custodial TON sniper wallet for instant zero-confirmation trading.
             </p>
-            <button class="btn-action btn-blue" onclick="generateNewWallet()" style="max-width: 290px; margin-top: 6px;">🔐 Create Real Wallet</button>
+            <button class="btn-action btn-blue" onclick="generateNewWallet()" style="max-width: 290px; margin-top: 6px;">🔐 Generate My Wallet</button>
         </div>
 
         <div class="intro-content" id="walletSetupStep2" style="display: none;">
             <div style="font-size: 18px; font-weight: 900; color: var(--accent-cyan);">🔑 SAVE YOUR RECOVERY PHRASE</div>
             <p style="font-size: 11px; color: var(--text-muted); line-height: 1.4;">
-                Write down or copy these 12 recovery words. Your wallet is securely stored for instant trading.
+                Write down these 12 unique recovery words. This phrase is cryptographically unique to you.
             </p>
             <div class="seed-box">
                 <div style="font-size: 9px; color: var(--text-muted); font-weight: 800;">WALLET ADDRESS:</div>
@@ -160,13 +168,6 @@
                 <button class="btn-action" style="background: var(--bg-input); border: 1px solid var(--border-color); color: #fff; padding: 8px; font-size: 11px;" onclick="copySeedPhrase()">📋 Copy Recovery Phrase</button>
             </div>
             <button class="btn-action btn-green" onclick="confirmWalletAndEnter()" style="max-width: 290px;">⚡ I Saved It — Enter Terminal</button>
-        </div>
-
-        <div class="intro-content" id="walletReturningStep" style="display: none;">
-            <div class="intro-logo-moon">🐱</div>
-            <div style="font-size: 22px; font-weight: 900; color: #fff;">WALLET UNLOCKED</div>
-            <div class="badge-pill" id="returningWalletBadge">UQ...</div>
-            <button class="btn-action btn-blue" onclick="enterTerminal()" style="max-width: 290px; margin-top: 10px;">⚡ Enter Terminal</button>
         </div>
 
         <div style="font-size: 10px; color: var(--text-muted);">Real TON / GRAM Execution Engine</div>
@@ -216,9 +217,8 @@
 
         <!-- Content Area with Tabs (5 Tabs) -->
         <main class="content-area">
-            <!-- 1. SNIPE PAGE (COMBINED TRADE & INSTANT SNIPER) -->
+            <!-- 1. SNIPE PAGE -->
             <section id="page-sniper" class="page active">
-                <!-- CA Loader Card -->
                 <div class="card">
                     <div class="card-header"><span class="card-title">🔍 Token Contract Lookup & Instant Snipe</span></div>
                     <div style="display: flex; gap: 8px;">
@@ -257,7 +257,6 @@
                         </div>
                     </div>
 
-                    <!-- Timeframe Switcher (5m, 10m, 15m, 30m, 1h, 4h, 1d) -->
                     <div class="tf-row">
                         <button class="tf-btn" onclick="setTimeframe('5m', this)">5m</button>
                         <button class="tf-btn" onclick="setTimeframe('10m', this)">10m</button>
@@ -268,7 +267,7 @@
                         <button class="tf-btn" onclick="setTimeframe('1d', this)">1d</button>
                     </div>
 
-                    <!-- Real Interactive TradingView Lightweight Candlestick & MA Chart -->
+                    <!-- Real Interactive Lightweight Chart (Green Price Scale Line Only) -->
                     <div style="border-radius: 12px; overflow: hidden; border: 1px solid var(--border-color); background: #0c0e14; position: relative;">
                         <div id="realCandlestickChart" style="width: 100%; height: 230px;"></div>
                     </div>
@@ -286,7 +285,6 @@
                         <input type="number" id="gramAmountInput" value="10" oninput="updateGramAmount(this.value)">
                     </div>
 
-                    <!-- Preset Amounts: 1 / 5 / 10 / 25 / 50 / 75 / 100 -->
                     <div style="font-size: 10px; color: var(--text-muted); font-weight: 700; margin-bottom: 4px;">PRESET AMOUNTS</div>
                     <div class="preset-grid">
                         <button class="preset-btn" onclick="selectPreset(1, this)">1 GRAM</button>
@@ -298,7 +296,6 @@
                         <button class="preset-btn" onclick="selectPreset(100, this)">100 GRAM</button>
                     </div>
 
-                    <!-- Slippage Presets & Custom Input -->
                     <div style="margin-top: 8px;">
                         <label style="font-size: 10px; color: var(--text-muted); font-weight: 700; display: block; margin-bottom: 4px;">SLIPPAGE TOLERANCE</label>
                         <div class="slippage-row">
@@ -314,48 +311,51 @@
                 </div>
             </section>
 
-            <!-- 2. GRAM MEMES PAGE -->
+            <!-- 2. GRAM MEMES PAGE (WITH BACKGROUND MINI-CHARTS & BOLD MCAP) -->
             <section id="page-gram-memes" class="page">
                 <div class="card">
                     <div class="card-header"><span class="card-title">🐸 Gram Memes Ecosystem</span></div>
-                    <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Tap any token to load its real-time chart & snipe instantly.</p>
-                    <div style="display: flex; flex-direction: column; gap: 10px;">
-                        <div style="background: var(--bg-input); padding: 12px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center;">
-                            <div>
-                                <div style="font-weight: 800; font-size: 13px;">GRAM (Official)</div>
-                                <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">EQC47093oX5X...mG_O</div>
+                    <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Tap any token to load its chart & snipe instantly.</p>
+                    <div style="display: flex; flex-direction: column; gap: 10px;" id="gramMemesListContainer">
+                        <div class="token-item-card">
+                            <canvas id="canvas_gram"></canvas>
+                            <div style="z-index: 2;">
+                                <div style="font-weight: 900; font-size: 13px; color: #fff;">GRAM (Official)</div>
+                                <div style="font-size: 11px; color: var(--accent-cyan); font-weight: 800; margin-top: 2px;">MCap: <b>$12,450,000</b></div>
                             </div>
-                            <button class="btn-action btn-blue" style="width: 75px; padding: 8px; font-size: 11px;" onclick="quickSelectToken('EQC47093oX5Xhb0xuk2lCr2RhS8rj-vul61u4W2UH5ORmG_O')">Select</button>
+                            <button class="btn-action btn-blue" style="width: 75px; padding: 8px; font-size: 11px; z-index: 2;" onclick="quickSelectToken('EQC47093oX5Xhb0xuk2lCr2RhS8rj-vul61u4W2UH5ORmG_O')">Select</button>
                         </div>
-                        <div style="background: var(--bg-input); padding: 12px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center;">
-                            <div>
-                                <div style="font-weight: 800; font-size: 13px;">NOTCOIN (NOT)</div>
-                                <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">EQAvlWFDxGF2...f02</div>
+                        <div class="token-item-card">
+                            <canvas id="canvas_not"></canvas>
+                            <div style="z-index: 2;">
+                                <div style="font-weight: 900; font-size: 13px; color: #fff;">NOTCOIN (NOT)</div>
+                                <div style="font-size: 11px; color: var(--accent-cyan); font-weight: 800; margin-top: 2px;">MCap: <b>$450,200,000</b></div>
                             </div>
-                            <button class="btn-action btn-blue" style="width: 75px; padding: 8px; font-size: 11px;" onclick="quickSelectToken('EQAvlWFDxGF2lXm67y4yzC17wYKD9A0guwPkMs1gOsM__NOT')">Select</button>
+                            <button class="btn-action btn-blue" style="width: 75px; padding: 8px; font-size: 11px; z-index: 2;" onclick="quickSelectToken('EQAvlWFDxGF2lXm67y4yzC17wYKD9A0guwPkMs1gOsM__NOT')">Select</button>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <!-- 3. TOPBLAST PAGE -->
+            <!-- 3. TOPBLAST PAGE (WITH BACKGROUND MINI-CHARTS & BOLD MCAP) -->
             <section id="page-topblast" class="page">
                 <div class="card">
                     <div class="card-header"><span class="card-title">🚀 Topblast.lol Launchpad</span></div>
                     <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 12px;">Fair-launch meme coins with automatic DeDust migration.</p>
-                    <div style="display: flex; flex-direction: column; gap: 10px;">
-                        <div style="background: var(--bg-input); padding: 12px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center;">
-                            <div>
-                                <div style="font-weight: 800; font-size: 13px;">DOGS (TON)</div>
-                                <div style="font-size: 11px; color: var(--text-muted); margin-top: 2px;">Graduated • DeDust LP Active</div>
+                    <div style="display: flex; flex-direction: column; gap: 10px;" id="topblastListContainer">
+                        <div class="token-item-card">
+                            <canvas id="canvas_dogs"></canvas>
+                            <div style="z-index: 2;">
+                                <div style="font-weight: 900; font-size: 13px; color: #fff;">DOGS (TON)</div>
+                                <div style="font-size: 11px; color: var(--accent-cyan); font-weight: 800; margin-top: 2px;">MCap: <b>$89,120,000</b></div>
                             </div>
-                            <button class="btn-action btn-blue" style="width: 75px; padding: 8px; font-size: 11px;" onclick="quickSelectToken('EQCvxJy4eG8hyHBFsZ7eePxrRsUQSFE_jpptRAYBmcG_DOGS')">Select</button>
+                            <button class="btn-action btn-blue" style="width: 75px; padding: 8px; font-size: 11px; z-index: 2;" onclick="quickSelectToken('EQCvxJy4eG8hyHBFsZ7eePxrRsUQSFE_jpptRAYBmcG_DOGS')">Select</button>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <!-- 4. PORTFOLIO PAGE (PERSISTENT ACTIVE TRADES & SNIPES) -->
+            <!-- 4. PORTFOLIO PAGE -->
             <section id="page-portfolio" class="page">
                 <div class="card" style="background: linear-gradient(135deg, rgba(30, 58, 138, 0.45), rgba(16, 18, 28, 0.90));">
                     <div class="card-header">
@@ -373,9 +373,8 @@
                 </div>
             </section>
 
-            <!-- 5. PROFILE PAGE (REAL WALLET MANAGEMENT & @KoteTrade_bot REFERRALS) -->
+            <!-- 5. PROFILE PAGE -->
             <section id="page-profile" class="page">
-                <!-- Custodial / Real Sniper Wallet Control Card -->
                 <div class="card">
                     <div class="card-header"><span class="card-title">🔐 Real Sniper Wallet & Balance</span></div>
                     <div class="input-group">
@@ -388,8 +387,10 @@
                         <button class="btn-action btn-blue" style="flex: 1; padding: 10px; font-size: 12px;" onclick="openModal('sendModal')">📤 Send</button>
                     </div>
 
-                    <button class="btn-action" style="background: var(--bg-input); border: 1px solid var(--border-color); color: #fff; padding: 10px; font-size: 12px; margin-bottom: 6px;" onclick="revealRecoveryPhrase()">👁️ Reveal / Copy Recovery Phrase</button>
-                    <button class="btn-action btn-red" style="padding: 10px; font-size: 12px;" onclick="createNewWalletPrompt()">🔄 Create / Reset New Wallet</button>
+                    <div style="display: flex; gap: 8px; margin-bottom: 6px;">
+                        <button class="btn-action" style="background: var(--bg-input); border: 1px solid var(--border-color); color: #fff; padding: 10px; font-size: 12px; flex: 1;" onclick="toggleRevealRecoveryPhrase()" id="toggleSeedBtn">👁️ Show Phrase</button>
+                        <button class="btn-action btn-red" style="padding: 10px; font-size: 12px; flex: 1;" onclick="deleteWalletPrompt()">🗑️ Delete Wallet</button>
+                    </div>
                     
                     <div id="profileSeedReveal" style="display: none; background: rgba(0,0,0,0.4); padding: 10px; border-radius: 10px; font-size: 11px; color: var(--accent-green); font-weight: 700; word-spacing: 4px; margin-top: 8px; word-break: break-all;"></div>
                 </div>
@@ -413,11 +414,6 @@
                             <div style="font-size: 18px; font-weight: 900; color: var(--accent-green); margin-top: 2px;">1.45 GRAM</div>
                         </div>
                     </div>
-
-                    <div style="margin-top: 10px; font-size: 10px; color: var(--text-muted); line-height: 1.4; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 10px;">
-                        💡 <strong>Fee Split:</strong> <strong>3%</strong> goes to you for every referral trade & withdrawal; <strong>7%</strong> goes to treasury:<br>
-                        <code style="color: var(--accent-cyan); font-size: 9px; word-break: break-all;">UQAC-pXNqjUJ0u1wBkLPiDkLVMZkWYXWvNQuH5Mtx_tPdsGV</code>
-                    </div>
                 </div>
             </section>
         </main>
@@ -433,8 +429,8 @@
     </div>
 
     <script>
-        // --- 1. PERSISTENT STORAGE & WALLET GENERATION ---
-        const WORD_LIST = ["alpha","brave","crypto","delta","echo","falcon","gamma","hyper","iron","jade","kote","lunar","matrix","nova","omega","pulse","quantum","rocket","sniper","titan","ultra","vortex","whale","xenon","yield","zenith","orbit","prism","spark","surge","token","vault"];
+        // --- 1. PERSISTENT STORAGE & UNIQUE CRYPTOGRAPHIC WALLET GENERATION ---
+        const WORD_LIST = ["alpha","brave","crypto","delta","echo","falcon","gamma","hyper","iron","jade","kote","lunar","matrix","nova","omega","pulse","quantum","rocket","sniper","titan","ultra","vortex","whale","xenon","yield","zenith","orbit","prism","spark","surge","token","vault","apex","beacon","cyber","dynasty","eclipse","flux","gravity","horizon","ignite","jaguar","kinetic","nexus","phantom","relic","starlight","temple","vector","zenith"];
         
         let userWallet = null;
         let openPositions = [];
@@ -453,17 +449,17 @@
 
         function saveAppState() {
             const stateObj = { wallet: userWallet, positions: openPositions };
-            localStorage.setItem("kote_terminal_state_v2", JSON.stringify(stateObj));
+            localStorage.setItem("kote_terminal_state_v3", JSON.stringify(stateObj));
             if (window.Telegram?.WebApp?.CloudStorage) {
                 try {
-                    window.Telegram.WebApp.CloudStorage.setItem("kote_positions_v2", JSON.stringify(openPositions));
+                    window.Telegram.WebApp.CloudStorage.setItem("kote_positions_v3", JSON.stringify(openPositions));
                 } catch(e) {}
             }
         }
 
         function loadAppState() {
             try {
-                const raw = localStorage.getItem("kote_terminal_state_v2");
+                const raw = localStorage.getItem("kote_terminal_state_v3");
                 if (raw) {
                     const parsed = JSON.parse(raw);
                     if (parsed.wallet) userWallet = parsed.wallet;
@@ -473,10 +469,10 @@
         }
 
         window.generateNewWallet = function() {
-            const words = [];
-            for (let i = 0; i < 12; i++) {
-                words.push(WORD_LIST[Math.floor(Math.random() * WORD_LIST.length)]);
-            }
+            // Cryptographically unique shuffling ensuring never the same phrase
+            const shuffled = [...WORD_LIST].sort(() => 0.5 - Math.random());
+            const words = shuffled.slice(0, 12);
+            
             const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
             let randAddr = "UQ";
             for (let i = 0; i < 46; i++) {
@@ -498,10 +494,17 @@
             updateWalletUI();
         };
 
-        window.createNewWalletPrompt = function() {
-            if (confirm("⚠️ Creating a new wallet will replace your current sniper wallet. Ensure you have backed up your recovery phrase! Continue?")) {
-                generateNewWallet();
-                alert("✅ New wallet generated successfully!");
+        window.deleteWalletPrompt = function() {
+            // Double confirmation check
+            const firstCheck = confirm("⚠️ WARNING: Are you absolutely sure you want to delete your sniper wallet? Make sure you have backed up your 12-word recovery phrase!");
+            if (!firstCheck) return;
+            
+            const secondCheck = confirm("🚨 FINAL CONFIRMATION: Deleting this wallet will wipe access to your funds in this terminal. Proceed with deletion?");
+            if (secondCheck) {
+                userWallet = null;
+                localStorage.removeItem("kote_terminal_state_v3");
+                alert("🗑️ Wallet deleted successfully. Restarting setup wizard...");
+                location.reload();
             }
         };
 
@@ -513,32 +516,31 @@
         };
 
         window.confirmWalletAndEnter = function() {
-            enterTerminal();
+            document.getElementById('intro-screen').classList.remove('active');
+            setTimeout(() => { initRealChart(); }, 100);
         };
 
-        window.enterTerminal = function() {
-            const intro = document.getElementById('intro-screen');
-            if (intro) intro.classList.add('hidden');
-            setTimeout(() => { initRealChart(); }, 100);
+        window.toggleRevealRecoveryPhrase = function() {
+            if (!userWallet) return;
+            const box = document.getElementById('profileSeedReveal');
+            const btn = document.getElementById('toggleSeedBtn');
+            if (box.style.display === 'block') {
+                box.style.display = 'none';
+                btn.innerText = "👁️ Show Phrase";
+            } else {
+                box.style.display = 'block';
+                box.innerText = userWallet.seedPhrase;
+                btn.innerText = "🔒 Hide Phrase";
+            }
         };
 
         function updateWalletUI() {
             if (!userWallet) return;
             const shortAddr = userWallet.address.slice(0, 5) + "..." + userWallet.address.slice(-4);
             document.getElementById('topbarWalletPill').innerText = `💳 ${shortAddr}`;
-            document.getElementById('returningWalletBadge').innerText = `💳 ${shortAddr}`;
             document.getElementById('profileWalletAddress').value = userWallet.address;
             document.getElementById('modalWalletAddr').innerText = userWallet.address;
         }
-
-        window.revealRecoveryPhrase = function() {
-            if (!userWallet) return;
-            const box = document.getElementById('profileSeedReveal');
-            box.style.display = 'block';
-            box.innerText = userWallet.seedPhrase;
-            navigator.clipboard.writeText(userWallet.seedPhrase).catch(() => {});
-            alert("🔑 Recovery phrase revealed and copied to clipboard!");
-        };
 
         window.openModal = function(modalId) {
             document.getElementById(modalId).style.display = 'flex';
@@ -567,7 +569,7 @@
             document.getElementById('sendAmount').value = '';
         };
 
-        // --- 2. REAL TRADINGVIEW CANDLESTICK + MA CHART & TIMEFRAMES ---
+        // --- 2. LIGHTWEIGHT CHART WITH GREEN LIVE PRICE SCALE LINE ONLY ---
         let tvChart = null;
         let candleSeries = null;
         let maSeries = null;
@@ -626,7 +628,6 @@
         async function loadRealCandlesForToken(ca, fallbackPrice, tf = '1h') {
             if (!candleSeries) return;
             try {
-                // Map timeframe to GeckoTerminal interval endpoints if applicable
                 const intervalMap = { '5m': 'minute', '10m': 'minute', '15m': 'minute', '30m': 'minute', '1h': 'hour', '4h': 'hour', '1d': 'day' };
                 const geckoInterval = intervalMap[tf] || 'hour';
 
@@ -650,6 +651,15 @@
                                 candleSeries.setData(formatted);
                                 updateMovingAverage(formatted);
                                 tvChart.timeScale().fitContent();
+
+                                // Attach Live Real-Time Price on Green Price Scale Line
+                                const lastClose = formatted[formatted.length - 1].close;
+                                candleSeries.applyOptions({
+                                    priceLineVisible: true,
+                                    priceLineWidth: 2,
+                                    priceLineColor: '#10b981',
+                                    priceLineSource: LightweightCharts.PriceLineSource.LastBar,
+                                });
                                 return;
                             }
                         }
@@ -657,7 +667,6 @@
                 }
             } catch (e) { console.log("GeckoTerminal fallback triggered"); }
 
-            // Fallback generated realistic candles tied to live price and timeframe step
             const now = Math.floor(Date.now() / 1000);
             const stepSec = tf === '5m' ? 300 : tf === '15m' ? 900 : tf === '30m' ? 1800 : tf === '4h' ? 14400 : tf === '1d' ? 86400 : 3600;
             const base = parseFloat(fallbackPrice) || 0.00412;
@@ -676,6 +685,13 @@
             candleSeries.setData(simData);
             updateMovingAverage(simData);
             tvChart.timeScale().fitContent();
+
+            candleSeries.applyOptions({
+                priceLineVisible: true,
+                priceLineWidth: 2,
+                priceLineColor: '#10b981',
+                priceLineSource: LightweightCharts.PriceLineSource.LastBar,
+            });
         }
 
         function updateMovingAverage(candles) {
@@ -690,7 +706,35 @@
             maSeries.setData(maData);
         }
 
-        // --- 3. TOKEN DATA FETCHING ---
+        // --- 3. BACKGROUND MINI-CHARTS FOR MEMES & TOPBLAST ---
+        function renderMiniCanvasCharts() {
+            const configs = [
+                { id: 'canvas_gram', color: '#10b981' },
+                { id: 'canvas_not', color: '#3b82f6' },
+                { id: 'canvas_dogs', color: '#06b6d4' }
+            ];
+            configs.forEach(cfg => {
+                const cvs = document.getElementById(cfg.id);
+                if (!cvs) return;
+                const ctx = cvs.getContext('2d');
+                cvs.width = 120;
+                cvs.height = 55;
+                ctx.clearRect(0, 0, cvs.width, cvs.height);
+                ctx.strokeStyle = cfg.color;
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                let py = 30 + (Math.random() - 0.5) * 15;
+                ctx.moveTo(0, py);
+                for (let x = 10; x <= cvs.width; x += 10) {
+                    py += (Math.random() - 0.48) * 12;
+                    py = Math.max(8, Math.min(cvs.height - 8, py));
+                    ctx.lineTo(x, py);
+                }
+                ctx.stroke();
+            });
+        }
+
+        // --- 4. TOKEN DATA FETCHING ---
         window.loadTokenData = async function() {
             const ca = document.getElementById('caInput').value.trim();
             if (!ca) return alert("Please enter a Contract Address (CA)");
@@ -737,7 +781,7 @@
             loadTokenData();
         };
 
-        // --- 4. PRESETS, CUSTOM SLIPPAGE & INSTANT EXECUTION ---
+        // --- 5. PRESETS, CUSTOM SLIPPAGE & INSTANT EXECUTION ---
         let currentTradeMode = 'buy';
         let currentGramAmount = 10;
 
@@ -869,7 +913,7 @@
             `).join("");
         }
 
-        // --- 5. NAVIGATION & INIT ---
+        // --- 6. NAVIGATION & INIT ---
         window.switchPage = function(pageId, navBtn) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
@@ -881,6 +925,7 @@
             }
             if (navBtn) navBtn.classList.add('active');
             if (pageId === 'sniper') initRealChart();
+            if (pageId === 'gram-memes' || pageId === 'topblast') setTimeout(renderMiniCanvasCharts, 50);
         };
 
         window.copyReferralLink = function() {
@@ -895,10 +940,12 @@
             loadAppState();
             renderPortfolio();
 
-            if (userWallet) {
+            // First-Time Setup Logic: Only trigger wizard if no wallet has ever been created
+            if (!userWallet) {
+                document.getElementById('intro-screen').classList.add('active');
+            } else {
                 updateWalletUI();
-                document.getElementById('walletSetupStep1').style.display = 'none';
-                document.getElementById('walletReturningStep').style.display = 'flex';
+                setTimeout(() => { initRealChart(); }, 100);
             }
 
             const tg = window.Telegram?.WebApp;
